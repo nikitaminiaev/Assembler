@@ -1,7 +1,7 @@
 from tkinter import Text, WORD
 
 
-class MyScale:
+class ScaleDto:
 
     def __init__(self):
         self.var = 0
