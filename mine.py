@@ -9,5 +9,6 @@ root.wm_attributes('-alpha', 0.7)
 root.geometry('900x500')
 
 constructorFrames = ConstructorFrames(root)
+constructorFrames.pack()
 
 root.mainloop()
