@@ -3,9 +3,9 @@ from tkinter import Text, WORD
 
 class ScaleDto:
 
-    def __init__(self):
+    def __init__(self, frame=None):
         self.var = 0
-        self.text = Text(width=25, height=5, bg="darkgreen", fg='white', wrap=WORD)
+        self.text = Text(frame, width=25, height=5, bg="darkgreen", fg='white', wrap=WORD)
         self.text.pack()
 
     def on_scale(self, val):
