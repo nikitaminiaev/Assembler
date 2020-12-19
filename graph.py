@@ -1,19 +1,18 @@
 import matplotlib
 
 matplotlib.use("TkAgg")
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from matplotlib.figure import Figure
 import tkinter as tk
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
-import matplotlib.animation as animation
 
 LARGE_FONT = ("Verdana", 12)
 
 
 class SeaofBTCapp(tk.Tk):
 
-    def __init__(self, tkk=None, dto_x=None, dto_y=None, *args, **kwargs):
+    def __init__(self, dto_x=None, dto_y=None, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         tk.Tk.iconbitmap(self)
         tk.Tk.title(self, "client")
@@ -43,15 +42,8 @@ class PageThree(tk.Frame):
         label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
 
-        xData = [self.dto_x.var]
-        yData = [self.dto_y.var]
-        radius_in_pixels = [1]
-        color = ['b']
-
         fig = plt.figure()
         self.ax = fig.add_subplot(111, aspect='equal')
-        # for x, y, r, c in zip(xData, yData, radius_in_pixels, color):
-        #     ax.add_artist(Circle(xy=(x, y), radius=r, color=c))
         x = self.dto_x.var
         y = self.dto_y.var
         self.ax.add_artist(Circle(xy=(x, y), radius=1, color='b'))
@@ -66,15 +58,10 @@ class PageThree(tk.Frame):
         toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-    #     self.after_idle(self.update_data)
-    #
     def update_data(self, x=0, y=0):
         # if x != self.dto_y.var:
         self.ax.add_artist(Circle(xy=(x, y), radius=1, color='b'))
         self.canvas.draw_idle()
-        # plt.draw()
-        self.update_idletasks()
-        self.update()
 #
 # app = SeaofBTCapp()
 # app.mainloop()
