@@ -8,11 +8,11 @@ class Socket(socket.socket):
             socket.SOCK_STREAM,
         )
 
-    async def send_data(self, data):
+    def send_data(self, data):
         raise NotImplemented()
 
-    async def listen_socket(self, listened_socket: socket.socket = None):
+    def listen_socket(self, listened_socket: socket.socket = None):
         raise NotImplemented()
 
-    async def set_up(self):
+    def set_up(self):
         raise NotImplemented()
