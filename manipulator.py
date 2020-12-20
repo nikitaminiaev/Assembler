@@ -1,5 +1,4 @@
 import matplotlib as plt
-import sys
 from graph import SeaofBTCapp
 from tkinter import Frame, Button, Scale, Canvas, constants as c
 import tkinter as tk
@@ -35,7 +34,7 @@ class Manipulator(tk.Tk):
             self.app.frame.update_data(self.constructorFrames.scale_dto_x.var, self.constructorFrames.scale_dto_y.var)
             self.app.after(100, lambda: self.update())
         except:
-            sys.exit()
+            exit(0)
 
     def custom_mainloop(self):
         self.app.mainloop()

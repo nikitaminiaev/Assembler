@@ -62,6 +62,4 @@ class PageThree(tk.Frame):
         # if x != self.dto_y.var:
         self.ax.add_artist(Circle(xy=(x, y), radius=1, color='b'))
         self.canvas.draw_idle()
-#
-# app = SeaofBTCapp()
-# app.mainloop()
+
