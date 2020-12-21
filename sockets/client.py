@@ -6,6 +6,7 @@ import threading
 class Client(Socket):
     def __init__(self):
         super(Client, self).__init__()
+        self.type_object = 'Client'
 
     def set_up(self):
         try:
@@ -19,27 +20,21 @@ class Client(Socket):
         try:
             self.send(data.encode(CODING))
         except:
-            self.status = "\n[ Client Stopped ]"
-            print(self.status)
-            self.__quit = True
-            self.close()
+            self.set_down()
 
     def listen_server(self):
-        while not self.__quit:
+        while not self._quit:
             try:
-                data = self.recv(2048)
-                print(data.decode(CODING))
+                self.data = self.recv(PACKAGE_SIZE).decode(CODING)
+                if self.data == CONNECTED:
+                    self.status = CONNECTED
+                print(self.data)
             except:
-                self.status = "\n[ Client Stopped ]"
-                print(self.status)
-                self.__quit = True
-                self.close()
+                self.set_down()
 
 
 if __name__ == '__main__':
     client = Client()
     client.set_up()
     threading.Thread(target=client.listen_server).start()
-    client.send_data("fghfgh")
-    client.send_data("fghfgh")
-    client.send_data("fghfgh")
+    client.send_data("any_string")
