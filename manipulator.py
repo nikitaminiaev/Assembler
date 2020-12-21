@@ -18,7 +18,7 @@ class Manipulator(tk.Tk):
         self['bg'] = '#fafafa'
         self.title('Manipulator')
         self.wm_attributes('-alpha', 0.7)
-        self.geometry('600x600')
+        self.geometry('600x400')
 
         self.constructorFrames = ConstructorFrames(self)
         self.constructorFrames.pack()
@@ -44,22 +44,25 @@ class Manipulator(tk.Tk):
 class ConstructorFrames:
 
     def __init__(self, tk: object):
-        self.__canvas = Canvas(tk, height=1200, width=600)
+        self.__canvas = Canvas(tk, height=400, width=600)
+
+        self.__frame_debug = Frame(tk, bg='#beffae', bd=2)
+        self.__frame_debug.place(relx=0.15, rely=0.75, relwidth=0.7, relheight=0.20)
 
         self.__frame_top = Frame(tk, bg='#beffae', bd=2)
-        self.__frame_top.place(relx=0.15, rely=0.05, relwidth=0.7, relheight=0.30)
+        self.__frame_top.place(relx=0.15, rely=0.05, relwidth=0.7, relheight=0.50)
 
         self.__frame_bottom = Frame(tk, bg='#beffae', bd=2)
-        self.__frame_bottom.place(relx=0.15, rely=0.45, relwidth=0.7, relheight=0.40)
+        self.__frame_bottom.place(relx=0.15, rely=0.60, relwidth=0.7, relheight=0.1)
         self.__btn = Button(self.__frame_bottom, text='Auto on/off', command=self.go_auto)
 
-        self.scale_dto_x = ScaleDto(self.__frame_bottom)
+        self.scale_dto_x = ScaleDto(self.__frame_debug, side=c.LEFT)
         self.__scale_x = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='x',
                                command=self.scale_dto_x.on_scale)
-        self.scale_dto_y = ScaleDto(self.__frame_bottom)
+        self.scale_dto_y = ScaleDto(self.__frame_debug, side=c.RIGHT)
         self.__scale_y = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='y',
                                command=self.scale_dto_y.on_scale)
-        self.scale_dto_z = ScaleDto(self.__frame_bottom)
+        self.scale_dto_z = ScaleDto(self.__frame_debug, c.LEFT)
         self.__scale_z = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='z',
                                command=self.scale_dto_z.on_scale)
 
