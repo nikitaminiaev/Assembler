@@ -1,35 +1,38 @@
 #!/usr/bin/env python
-from mySocket import Socket
+from mySocket import *
 import threading
+
 
 class Client(Socket):
     def __init__(self):
         super(Client, self).__init__()
-        self.quit = False
 
     def set_up(self):
         try:
-            self.connect(('127.0.0.3', 1234))
+            self.connect((IP, PORT))
         except ConnectionRefusedError:
-            print('Server is offline')
+            self.status = 'Server is offline'
+            print(self.status)
             exit(0)
 
     def send_data(self, data: str):
         try:
-            self.send(data.encode('utf-8'))
+            self.send(data.encode(CODING))
         except:
-            print("\n[ Server Stopped ]")
-            self.quit = True
+            self.status = "\n[ Client Stopped ]"
+            print(self.status)
+            self.__quit = True
             self.close()
 
     def listen_server(self):
-        while not self.quit:
+        while not self.__quit:
             try:
                 data = self.recv(2048)
-                print(data.decode('utf-8'))
+                print(data.decode(CODING))
             except:
-                print("\n[ Client Stopped ]")
-                self.quit = True
+                self.status = "\n[ Client Stopped ]"
+                print(self.status)
+                self.__quit = True
                 self.close()
 
 
