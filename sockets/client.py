@@ -15,6 +15,7 @@ class Client(Socket):
             self.status = 'Server is offline'
             print(self.status)
             exit(0)
+        threading.Thread(target=self.listen_server).start()
 
     def send_data(self, data: str):
         try:
@@ -36,5 +37,4 @@ class Client(Socket):
 if __name__ == '__main__':
     client = Client()
     client.set_up()
-    threading.Thread(target=client.listen_server).start()
     client.send_data("any_string")

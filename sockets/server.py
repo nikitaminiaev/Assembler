@@ -16,6 +16,7 @@ class Server(Socket):
         self.listen(COUNT_CONNECTIONS)
         self.status = 'Server listen'
         print(self.status)
+        threading.Thread(target=self.accept_sockets).start()
 
     def send_data_to_all_clients(self, data: str):
         for client in self.clients:
@@ -36,6 +37,5 @@ class Server(Socket):
 if __name__ == '__main__':
     server = Server()
     server.set_up()
-    threading.Thread(target=server.accept_sockets).start()
     if 0 in server.clients:
         server.send_data_to_all_clients('hi')
