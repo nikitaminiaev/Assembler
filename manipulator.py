@@ -23,15 +23,20 @@ class Manipulator(tk.Tk):
         self.constructorFrames = ConstructorFrames(self)
         self.constructorFrames.pack()
 
-        x = self.constructorFrames.scale_dto_x
-        y = self.constructorFrames.scale_dto_y
-
-        self.app = SeaofBTCapp(dto_x=x, dto_y=y)
+        self.app = SeaofBTCapp(
+            dto_x=self.constructorFrames.scale_dto_x,
+            dto_y=self.constructorFrames.scale_dto_y,
+            dto_z=self.constructorFrames.scale_dto_z,
+        )
         self.app.after_idle(self.update)
 
     def update(self):
         try:
-            self.app.frame.update_data(int(self.constructorFrames.scale_dto_x.var['data']), int(self.constructorFrames.scale_dto_y.var['data']))
+            self.app.frame.update_data(
+                int(self.constructorFrames.scale_dto_x.var['data']),
+                int(self.constructorFrames.scale_dto_y.var['data']),
+                int(self.constructorFrames.scale_dto_z.var['data']),
+            )
             self.app.after(100, lambda: self.update())
         except:
             exit(0)
