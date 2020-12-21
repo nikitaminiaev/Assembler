@@ -1,3 +1,5 @@
+from tkinter.ttk import Style
+
 import matplotlib as plt
 from graph import SeaofBTCapp
 from tkinter import Frame, Button, Scale, Canvas, constants as c
@@ -19,6 +21,11 @@ class Manipulator(tk.Tk):
         super().__init__(*args, **kwargs)
         plt.use("TkAgg")
 
+        # s = Style(self)
+        # s.configure('Kim.TButton', foreground='maroon')
+        # s.configure('Kim.TScale', foreground='maroon')
+        # s.configure('.', font=('Helvetica', 12))
+
         self['bg'] = '#fafafa'
         self.title('Manipulator')
         self.wm_attributes('-alpha', 0.7)
@@ -27,11 +34,7 @@ class Manipulator(tk.Tk):
         self.constructorFrames = ConstructorFrames(self)
         self.constructorFrames.pack()
 
-        self.app = SeaofBTCapp(
-            dto_x=self.constructorFrames.scale_dto_x,
-            dto_y=self.constructorFrames.scale_dto_y,
-            dto_z=self.constructorFrames.scale_dto_z,
-        )
+        self.app = SeaofBTCapp()
         self.app.after_idle(self.update)
 
     def update(self):
@@ -84,3 +87,19 @@ class ConstructorFrames:
         self.__scale_x.pack(side=c.LEFT, padx=15)
         self.__scale_y.pack(side=c.RIGHT, padx=15)
         self.__scale_z.pack(fill=c.Y, anchor=c.S, pady=20)
+
+    # from mpl_toolkits.mplot3d import Axes3D
+    # import matplotlib.pyplot as plt
+    # from matplotlib import cm
+    # import numpy as np
+    # import pandas as pd
+    # from sys import argv
+    # file = argv[1]
+    # x, y, z = np.loadtxt(file, unpack=True)
+    # df = pd.DataFrame({'x': x, 'y': y, 'z': z})
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # surf = ax.plot_trisurf(df.x, df.y, df.z, cmap=cm.jet, linewidth=0.1)
+    # fig.colorbar(surf, shrink=0.5, aspect=5)
+    # plt.savefig('teste.pdf')
+    # plt.show()

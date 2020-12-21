@@ -13,19 +13,16 @@ LARGE_FONT = ("Verdana", 12)
 
 class SeaofBTCapp(tk.Tk):
 
-    def __init__(self, dto_x=None, dto_y=None, dto_z=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.title("client")
-        self.dto_x = dto_x
-        self.dto_y = dto_y
-        self.dto_z = dto_z
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        self.frame = PageThree(container, dto_x=self.dto_x, dto_y=self.dto_y, dto_z=self.dto_z)
+        self.frame = PageThree(container)
         self.frames[PageThree] = self.frame
         self.frame.grid(row=0, column=0, sticky="nsew")
 
@@ -36,26 +33,20 @@ class SeaofBTCapp(tk.Tk):
 
 class PageThree(tk.Frame):
 
-    def __init__(self, parent, dto_x=None, dto_y=None, dto_z=None, **kw):
+    def __init__(self, parent, **kw):
         super().__init__(parent, **kw)
-        self.dto_x = dto_x
-        self.dto_y = dto_y
-        self.dto_z = dto_z
         label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
 
         fig = plt.figure()
         self.ax = fig.add_subplot(111, projection='3d')
-        x = int(self.dto_x.var['data'])
-        y = int(self.dto_y.var['data'])
-        z = int(self.dto_z.var['data'])
 
         red = Color("blue")
         self.colors = list(red.range_to(Color("white"), 170))
 
-        self.ax.scatter(x, y, z, s=20, c=str(self.colors[z]), marker='8')
         plt.xlim(0, 100 + 2)
         plt.ylim(0, 100 + 2)
+        plt.draw()
         plt.draw()
 
         self.canvas = FigureCanvasTkAgg(fig, self)
@@ -69,5 +60,6 @@ class PageThree(tk.Frame):
     def update_data(self, x=0, y=0, z=0):
         # if x != self.dto_y.var:
         self.ax.scatter(x, y, z, s=20, c=str(self.colors[z]), marker='8')
+        # self.ax.plot(x, y, z, 'xb-')
         plt.draw()
         self.canvas.draw_idle()
