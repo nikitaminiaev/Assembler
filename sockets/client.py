@@ -5,6 +5,7 @@ from mySocket import Socket
 class Client(Socket):
     def __init__(self):
         super(Client, self).__init__()
+        self.quit = False
 
     def set_up(self):
         try:
@@ -12,21 +13,23 @@ class Client(Socket):
         except ConnectionRefusedError:
             print('Server is offline')
             exit(0)
-        # self.setblocking(False)
 
-    def listen_socket(self, listened_socket: Socket = None):
-        while True:
-            data = self.recv(2048)
-            print(data.decode('utf-8'))
-            self.send(input("::").encode('utf-8'))
+    def send_data(self, data: str):
+            self.send(data.encode('utf-8'))
 
-    def send_server(self):
-        data = self.recv(2048)
-        print(data.decode('utf-8'))
-        self.send(input("::").encode('utf-8'))
+    def listen_socket(self):
+        while not self.quit:
+            try:
+                data = self.recv(2048)
+                print(data.decode('utf-8'))
+                self.send_data(input("::"))
+            except:
+                print("\n[ Server Stopped ]")
+                self.quit = True
+        self.close()
 
 
 if __name__ == '__main__':
     client = Client()
     client.set_up()
-    client.send_server()
+    client.listen_socket()

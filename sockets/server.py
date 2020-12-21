@@ -13,33 +13,27 @@ class Server(Socket):
 
     def set_up(self):
         self.bind(('127.0.0.1', 1234))
-        self.listen(5)
+        self.listen(1)
         print('Server listen')
         self.__accept_sockets()
 
-    def send_data(self, data):
+    def send_data_to_all_clients(self, data: str):
         for client in self.clients:
-            client.send(data)
+            client.send(data.encode('utf-8'))
 
-    def listen_socket(self, listened_socket: Socket = None):
-        while True:
-            data = listened_socket.recv(2048)
-            self.send_data(data)
 
     def __accept_sockets(self):
-
         while not self.quit:
             try:
                 client_socket, address = self.accept()
                 print(f"client <{address[0]}> connected")
-
                 self.clients.append(client_socket)
-
                 client_socket.send("you are connected".encode('utf-8'))
                 data = client_socket.recv(2048)
                 print(data)
+                self.send_data_to_all_clients('55555')
             except:
-                print("\n[ Server Stopped]")
+                print("\n[ Client Stopped ]")
                 self.quit = True
         self.close()
 
