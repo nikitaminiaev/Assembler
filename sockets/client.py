@@ -37,4 +37,4 @@ class Client(Socket):
 if __name__ == '__main__':
     client = Client()
     client.set_up()
-    client.send_data("any_string")
+    client.send_data('any_string')

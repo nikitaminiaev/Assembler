@@ -44,8 +44,8 @@ class PageThree(tk.Frame):
 
         fig = plt.figure()
         self.ax = fig.add_subplot(111, aspect='equal')
-        x = self.dto_x.var
-        y = self.dto_y.var
+        x = int(self.dto_x.var['data'])
+        y = int(self.dto_y.var['data'])
         self.ax.add_artist(Circle(xy=(x, y), radius=1, color='b'))
         plt.xlim(0, 100 + 2)
         plt.ylim(0, 100 + 2)

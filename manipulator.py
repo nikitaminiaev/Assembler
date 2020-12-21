@@ -31,7 +31,7 @@ class Manipulator(tk.Tk):
 
     def update(self):
         try:
-            self.app.frame.update_data(self.constructorFrames.scale_dto_x.var, self.constructorFrames.scale_dto_y.var)
+            self.app.frame.update_data(int(self.constructorFrames.scale_dto_x.var['data']), int(self.constructorFrames.scale_dto_y.var['data']))
             self.app.after(100, lambda: self.update())
         except:
             exit(0)
