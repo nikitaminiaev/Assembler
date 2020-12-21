@@ -5,12 +5,6 @@ matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as tk
 import matplotlib.pyplot as plt
-from matplotlib.patches import Circle
-import pylab
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.colors import LinearSegmentedColormap
-from matplotlib import cm
-import numpy
 
 LARGE_FONT = ("Verdana", 12)
 
@@ -49,14 +43,15 @@ class PageThree(tk.Frame):
         label.pack(pady=10, padx=10)
 
         fig = plt.figure()
-        self.ax = fig.add_subplot(111, aspect='equal')
+        self.ax = fig.add_subplot(111, projection='3d')
         x = int(self.dto_x.var['data'])
         y = int(self.dto_y.var['data'])
         z = int(self.dto_z.var['data'])
-        self.ax.add_artist(Circle(xy=(x, y), radius=1, color='b'))
+        self.ax.scatter(x, y, z, s=30, c='b', marker='o')
         plt.xlim(0, 100 + 2)
         plt.ylim(0, 100 + 2)
         plt.draw()
+
         self.canvas = FigureCanvasTkAgg(fig, self)
         self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
         self.canvas.draw_idle()
@@ -67,5 +62,6 @@ class PageThree(tk.Frame):
 
     def update_data(self, x=0, y=0, z=0):
         # if x != self.dto_y.var:
-        self.ax.add_artist(Circle(xy=(x, y), radius=1, color='b'))
+        self.ax.scatter(x, y, z, s=30, c='b', marker='o')
+        plt.draw()
         self.canvas.draw_idle()
