@@ -60,6 +60,5 @@ class PageThree(tk.Frame):
     def update_data(self, x=0, y=0, z=0):
         # if x != self.dto_y.var:
         self.ax.scatter(x, y, z, s=20, c=str(self.colors[z]), marker='8')
-        # self.ax.plot(x, y, z, 'xb-')
         plt.draw()
         self.canvas.draw_idle()

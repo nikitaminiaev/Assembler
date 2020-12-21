@@ -19,5 +19,5 @@ class ScaleDto:
         self.text.pack(side=side)
 
     def on_scale(self, val):
-        self.var['data'] = str(int(float(val)))
+        self.var['data'] = str(int((val)))
         self.text.insert(1.0, str(self.var))
