@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-import socket
-
 from mySocket import Socket
-
+import threading
 
 class Server(Socket):
 
@@ -12,17 +10,16 @@ class Server(Socket):
         self.clients = []
 
     def set_up(self):
-        self.bind(('127.0.0.1', 1234))
+        self.bind(('127.0.0.3', 1234))
         self.listen(1)
         print('Server listen')
-        self.__accept_sockets()
+        # self.accept_sockets()
 
     def send_data_to_all_clients(self, data: str):
         for client in self.clients:
             client.send(data.encode('utf-8'))
 
-
-    def __accept_sockets(self):
+    def accept_sockets(self):
         while not self.quit:
             try:
                 client_socket, address = self.accept()
@@ -30,14 +27,16 @@ class Server(Socket):
                 self.clients.append(client_socket)
                 client_socket.send("you are connected".encode('utf-8'))
                 data = client_socket.recv(2048)
-                print(data)
-                self.send_data_to_all_clients('55555')
+                print(data.decode('utf-8'))
             except:
-                print("\n[ Client Stopped ]")
+                print("\n[ Server Stopped ]")
                 self.quit = True
-        self.close()
+                self.close()
 
 
 if __name__ == '__main__':
     server = Server()
     server.set_up()
+    threading.Thread(target=server.accept_sockets).start()
+    if 0 in server.clients:
+        server.send_data_to_all_clients('hi')
