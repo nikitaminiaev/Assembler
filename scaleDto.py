@@ -1,5 +1,12 @@
 from tkinter import Text, constants as c
 
+SENSOR_NAME = {
+    'SERVO_X': 'servo_x',
+    'SERVO_Y': 'servo_y',
+    'SERVO_Z': 'servo_z',
+    'HALL': 'hall',
+}
+
 
 class ScaleDto:
 

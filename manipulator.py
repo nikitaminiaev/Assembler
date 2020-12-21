@@ -4,9 +4,13 @@ from tkinter import Frame, Button, Scale, Canvas, constants as c
 import tkinter as tk
 from scaleDto import ScaleDto
 
+CANVAS_SIZE = 1000
+
+WINDOW_SIZE = '600x400'
+FRAME_COLOR = '#98a192'
 MAX = 100
 MIN = 0
-LENGTH = 200
+LENGTH = 300
 
 
 class Manipulator(tk.Tk):
@@ -18,7 +22,7 @@ class Manipulator(tk.Tk):
         self['bg'] = '#fafafa'
         self.title('Manipulator')
         self.wm_attributes('-alpha', 0.7)
-        self.geometry('600x400')
+        self.geometry(WINDOW_SIZE)
 
         self.constructorFrames = ConstructorFrames(self)
         self.constructorFrames.pack()
@@ -49,15 +53,15 @@ class Manipulator(tk.Tk):
 class ConstructorFrames:
 
     def __init__(self, tk: object):
-        self.__canvas = Canvas(tk, height=400, width=600)
+        self.__canvas = Canvas(tk, height=CANVAS_SIZE, width=CANVAS_SIZE)
 
-        self.__frame_debug = Frame(tk, bg='#beffae', bd=2)
+        self.__frame_debug = Frame(tk, bg=FRAME_COLOR, bd=2)
         self.__frame_debug.place(relx=0.15, rely=0.75, relwidth=0.7, relheight=0.20)
 
-        self.__frame_top = Frame(tk, bg='#beffae', bd=2)
+        self.__frame_top = Frame(tk, bg=FRAME_COLOR, bd=2)
         self.__frame_top.place(relx=0.15, rely=0.05, relwidth=0.7, relheight=0.50)
 
-        self.__frame_bottom = Frame(tk, bg='#beffae', bd=2)
+        self.__frame_bottom = Frame(tk, bg=FRAME_COLOR, bd=2)
         self.__frame_bottom.place(relx=0.15, rely=0.60, relwidth=0.7, relheight=0.1)
         self.__btn = Button(self.__frame_bottom, text='Auto on/off', command=self.go_auto)
 

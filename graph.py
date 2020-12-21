@@ -5,6 +5,8 @@ matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as tk
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from colour import Color
 
 LARGE_FONT = ("Verdana", 12)
 
@@ -47,7 +49,11 @@ class PageThree(tk.Frame):
         x = int(self.dto_x.var['data'])
         y = int(self.dto_y.var['data'])
         z = int(self.dto_z.var['data'])
-        self.ax.scatter(x, y, z, s=30, c='b', marker='o')
+
+        red = Color("blue")
+        self.colors = list(red.range_to(Color("white"), 170))
+
+        self.ax.scatter(x, y, z, s=20, c=str(self.colors[z]), marker='8')
         plt.xlim(0, 100 + 2)
         plt.ylim(0, 100 + 2)
         plt.draw()
@@ -62,6 +68,6 @@ class PageThree(tk.Frame):
 
     def update_data(self, x=0, y=0, z=0):
         # if x != self.dto_y.var:
-        self.ax.scatter(x, y, z, s=30, c='b', marker='o')
+        self.ax.scatter(x, y, z, s=20, c=str(self.colors[z]), marker='8')
         plt.draw()
         self.canvas.draw_idle()
