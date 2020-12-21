@@ -6,16 +6,20 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 import tkinter as tk
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
+import pylab
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib import cm
+import numpy
 
 LARGE_FONT = ("Verdana", 12)
 
 
 class SeaofBTCapp(tk.Tk):
 
-    def __init__(self, dto_x=None, dto_y=None, dto_z=None,*args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
-        tk.Tk.iconbitmap(self)
-        tk.Tk.title(self, "client")
+    def __init__(self, dto_x=None, dto_y=None, dto_z=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.title("client")
         self.dto_x = dto_x
         self.dto_y = dto_y
         self.dto_z = dto_z
@@ -25,7 +29,7 @@ class SeaofBTCapp(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        self.frame = PageThree(container, dto_x=self.dto_x, dto_y=self.dto_y)
+        self.frame = PageThree(container, dto_x=self.dto_x, dto_y=self.dto_y, dto_z=self.dto_z)
         self.frames[PageThree] = self.frame
         self.frame.grid(row=0, column=0, sticky="nsew")
 
@@ -36,8 +40,8 @@ class SeaofBTCapp(tk.Tk):
 
 class PageThree(tk.Frame):
 
-    def __init__(self, parent, dto_x=None, dto_y=None, dto_z=None):
-        tk.Frame.__init__(self, parent)
+    def __init__(self, parent, dto_x=None, dto_y=None, dto_z=None, **kw):
+        super().__init__(parent, **kw)
         self.dto_x = dto_x
         self.dto_y = dto_y
         self.dto_z = dto_z
@@ -65,4 +69,3 @@ class PageThree(tk.Frame):
         # if x != self.dto_y.var:
         self.ax.add_artist(Circle(xy=(x, y), radius=1, color='b'))
         self.canvas.draw_idle()
-
