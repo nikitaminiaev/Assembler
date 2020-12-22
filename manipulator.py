@@ -1,10 +1,8 @@
-import queue
 import matplotlib as plt
 from graph import SeaofBTCapp
 from tkinter import Frame, Button, Scale, Canvas, constants as c
 import tkinter as tk
 from scaleDto import ScaleDto
-import threading
 
 CANVAS_SIZE = 1000
 
@@ -19,7 +17,6 @@ class Manipulator(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.quit = False
         plt.use("TkAgg")
 
         self['bg'] = '#fafafa'
@@ -33,40 +30,20 @@ class Manipulator(tk.Tk):
         self.app = SeaofBTCapp()
         self.app.after_idle(self.update)
 
-        self.data = ()
-        self.q_data = queue.Queue()
-
     def update(self):
         try:
-            while not self.q_data.empty():
-                data = self.q_data.get()
-                self.app.frame.update_data(
-                    data[0],
-                    data[1],
-                    data[2],
-                )
-            self.app.after(200, lambda: self.update())
+            self.app.frame.update_data(
+                int(self.constructorFrames.scale_dto_x.var['data']),
+                int(self.constructorFrames.scale_dto_y.var['data']),
+                int(self.constructorFrames.scale_dto_z.var['data']),
+            )
+            self.app.after(100, lambda: self.update())
         except:
             exit(0)
 
     def custom_mainloop(self):
-        threading.Thread(target=self.add_data_in_queue, args=(
-            int(self.constructorFrames.scale_dto_x.var['data']),
-            int(self.constructorFrames.scale_dto_y.var['data']),
-            int(self.constructorFrames.scale_dto_z.var['data']),
-        )).start()
         self.app.mainloop()
         self.mainloop()
-
-    def add_data_in_queue(self, x, y, z):
-        while not self.quit:
-            try:
-                if (x, y, z) != self.data:
-                    self.q_data.put((x, y, z))
-                    self.data = (x, y, z)
-            except:
-                self.quit = True
-                exit(0)
 
 
 class ConstructorFrames:
