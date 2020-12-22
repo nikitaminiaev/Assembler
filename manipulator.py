@@ -30,7 +30,6 @@ class Manipulator(tk.Tk):
 
         self.app = SeaofBTCapp()
         self.app.after_idle(self.update)
-        # self.app.after_idle(self.app.frame.draw_graph)
 
     def update(self):
         try:
@@ -39,7 +38,7 @@ class Manipulator(tk.Tk):
                 int(self.constructorFrames.scale_dto_y.var['data']),
                 int(self.constructorFrames.scale_dto_z.var['data']),
             )
-            self.app.after(200, lambda: self.update())
+            self.app.after(50, lambda: self.update())
         except:
             exit(0)
 
