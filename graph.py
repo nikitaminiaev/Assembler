@@ -66,10 +66,16 @@ class PageThree(tk.Frame):
             self.z = z
 
     def draw_graph(self):
+        sleep_time = 0.5
+        total_time = 0
         while not self.quit:
             try:
-                time.sleep(0.5)
+                if total_time > sleep_time:
+                    self.quit = True
+                time.sleep(sleep_time)
+                start_time = time.time()
                 self.canvas.draw_idle()
+                total_time = time.time() - start_time
             except:
                 self.quit = True
                 exit(0)

@@ -28,32 +28,35 @@ class Manipulator(tk.Tk):
         self.constructorFrames = ConstructorFrames(self)
         self.constructorFrames.pack()
 
-        self.app = SeaofBTCapp()
-        self.app.after_idle(self.update_graph)
+        self.graph = SeaofBTCapp()
+        self.graph.after_idle(self.update_graph)
 
     def update_graph(self):
         try:
-            self.app.frame.update_data(
+            self.graph.frame.update_data(
                 int(self.constructorFrames.scale_dto_x.var['data']),
                 int(self.constructorFrames.scale_dto_y.var['data']),
                 int(self.constructorFrames.scale_dto_z.var['data']),
             )
-            self.app.after(50, lambda: self.update_graph())
+            self.graph.after(50, lambda: self.update_graph())
         except:
             exit(0)
 
     def custom_mainloop(self):
         try:
-            threading.Thread(target=self.app.frame.draw_graph).start()
+            threading.Thread(target=self.graph.frame.draw_graph).start()
         except:
             exit(0)
-        self.app.mainloop()
+        # threading.Thread(target=self.app.mainloop).start()
+        # threading.Thread(target=self.mainloop).start()
+        self.graph.mainloop()
         self.mainloop()
 
 
 class ConstructorFrames:
 
-    def __init__(self, tk: object):
+    def __init__(self, tk: Manipulator):
+        self.tk = tk
         self.__canvas = Canvas(tk, height=CANVAS_SIZE, width=CANVAS_SIZE)
 
         self.__frame_debug = Frame(tk, bg=FRAME_COLOR, bd=2)
@@ -64,7 +67,7 @@ class ConstructorFrames:
 
         self.__frame_bottom = Frame(tk, bg=FRAME_COLOR, bd=2)
         self.__frame_bottom.place(relx=0.15, rely=0.60, relwidth=0.7, relheight=0.1)
-        self.__btn = Button(self.__frame_bottom, text='Auto on/off', command=self.go_auto)
+        self.__btn = Button(self.__frame_bottom, text='Auto on/off', command=self.__go_auto)
 
         self.scale_dto_x = ScaleDto(self.__frame_debug, side=c.LEFT)
         self.__scale_x = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='x',
@@ -76,12 +79,22 @@ class ConstructorFrames:
         self.__scale_z = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='z',
                                command=self.scale_dto_z.on_scale)
 
-    def go_auto(self):
+        self.__stop_render_button = Button(self.__frame_debug, text='stop/go render', command=self.stop_render)
+
+    def __go_auto(self):
         pass
+
+    def stop_render(self):
+        if self.tk.graph.frame.quit:
+            self.tk.graph.frame.quit = False
+            threading.Thread(target=self.tk.graph.frame.draw_graph).start()
+        else:
+            self.tk.graph.frame.quit = True
 
     def pack(self):
         self.__canvas.pack()
         self.__btn.pack()
+        self.__stop_render_button.pack()
         self.__scale_x.pack(side=c.LEFT, padx=15)
         self.__scale_y.pack(side=c.RIGHT, padx=15)
         self.__scale_z.pack(fill=c.Y, anchor=c.S, pady=20)
