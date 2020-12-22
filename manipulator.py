@@ -1,5 +1,5 @@
 import matplotlib as plt
-from graph import SeaofBTCapp
+from graph import Graph
 from tkinter import Frame, Button, Scale, Canvas, constants as c
 import tkinter as tk
 from scaleDto import ScaleDto
@@ -28,7 +28,7 @@ class Manipulator(tk.Tk):
         self.constructorFrames = ConstructorFrames(self)
         self.constructorFrames.pack()
 
-        self.graph = SeaofBTCapp()
+        self.graph = Graph()
         self.graph.after_idle(self.update_graph)
 
     def update_graph(self):
@@ -47,8 +47,6 @@ class Manipulator(tk.Tk):
             threading.Thread(target=self.graph.frame.draw_graph).start()
         except:
             exit(0)
-        # threading.Thread(target=self.app.mainloop).start()
-        # threading.Thread(target=self.mainloop).start()
         self.graph.mainloop()
         self.mainloop()
 
@@ -79,12 +77,12 @@ class ConstructorFrames:
         self.__scale_z = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='z',
                                command=self.scale_dto_z.on_scale)
 
-        self.__stop_render_button = Button(self.__frame_debug, text='stop/go render', command=self.stop_render)
+        self.__stop_render_btn = Button(self.__frame_bottom, text='stop/go render', command=self.__stop_go_render)
 
     def __go_auto(self):
         pass
 
-    def stop_render(self):
+    def __stop_go_render(self):
         if self.tk.graph.frame.quit:
             self.tk.graph.frame.quit = False
             threading.Thread(target=self.tk.graph.frame.draw_graph).start()
@@ -93,8 +91,8 @@ class ConstructorFrames:
 
     def pack(self):
         self.__canvas.pack()
-        self.__btn.pack()
-        self.__stop_render_button.pack()
+        self.__btn.pack(side=c.LEFT)
+        self.__stop_render_btn.pack(side=c.LEFT)
         self.__scale_x.pack(side=c.LEFT, padx=15)
         self.__scale_y.pack(side=c.RIGHT, padx=15)
         self.__scale_z.pack(fill=c.Y, anchor=c.S, pady=20)

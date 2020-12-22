@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 from manipulator import Manipulator
 
-root = Manipulator()
-root.custom_mainloop()
+try:
+    root = Manipulator()
+    root.custom_mainloop()
+except:
+    exit(0)

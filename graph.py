@@ -12,7 +12,7 @@ import time
 LARGE_FONT = ("Verdana", 12)
 
 
-class SeaofBTCapp(tk.Tk):
+class Graph(tk.Tk):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -23,8 +23,8 @@ class SeaofBTCapp(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        self.frame = PageThree(container)
-        self.frames[PageThree] = self.frame
+        self.frame = GraphFrame(container)
+        self.frames[GraphFrame] = self.frame
         self.frame.grid(row=0, column=0, sticky="nsew")
 
     def show_frame(self, cont):
@@ -32,7 +32,7 @@ class SeaofBTCapp(tk.Tk):
         frame.tkraise()
 
 
-class PageThree(tk.Frame):
+class GraphFrame(tk.Frame):
 
     def __init__(self, parent, **kw):
         super().__init__(parent, **kw)
@@ -66,16 +66,10 @@ class PageThree(tk.Frame):
             self.z = z
 
     def draw_graph(self):
-        sleep_time = 0.5
-        total_time = 0
         while not self.quit:
             try:
-                if total_time > sleep_time:
-                    self.quit = True
-                time.sleep(sleep_time)
-                start_time = time.time()
+                time.sleep(0.5)
                 self.canvas.draw_idle()
-                total_time = time.time() - start_time
             except:
                 self.quit = True
                 exit(0)
