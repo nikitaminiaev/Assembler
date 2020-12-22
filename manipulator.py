@@ -37,7 +37,7 @@ class Manipulator(tk.Tk):
                 int(self.constructorFrames.scale_dto_y.var['data']),
                 int(self.constructorFrames.scale_dto_z.var['data']),
             )
-            self.app.after(100, lambda: self.update())
+            self.app.after(200, lambda: self.update())
         except:
             exit(0)
 

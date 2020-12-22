@@ -46,12 +46,9 @@ class PageThree(tk.Frame):
 
         plt.xlim(0, 100 + 2)
         plt.ylim(0, 100 + 2)
-        plt.draw()
-        plt.draw()
 
         self.canvas = FigureCanvasTkAgg(fig, self)
         self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-        self.canvas.draw_idle()
 
         toolbar = NavigationToolbar2Tk(self.canvas, self)
         toolbar.update()
@@ -60,5 +57,4 @@ class PageThree(tk.Frame):
     def update_data(self, x=0, y=0, z=0):
         # if x != self.dto_y.var:
         self.ax.scatter(x, y, z, s=20, c=str(self.colors[z]), marker='8')
-        plt.draw()
-        self.canvas.draw_idle()
+        self.canvas.draw_idle() # начинает тормозить при большом кол-ве точек
