@@ -29,16 +29,16 @@ class Manipulator(tk.Tk):
         self.constructorFrames.pack()
 
         self.app = SeaofBTCapp()
-        self.app.after_idle(self.update)
+        self.app.after_idle(self.update_graph)
 
-    def update(self):
+    def update_graph(self):
         try:
             self.app.frame.update_data(
                 int(self.constructorFrames.scale_dto_x.var['data']),
                 int(self.constructorFrames.scale_dto_y.var['data']),
                 int(self.constructorFrames.scale_dto_z.var['data']),
             )
-            self.app.after(50, lambda: self.update())
+            self.app.after(50, lambda: self.update_graph())
         except:
             exit(0)
 
