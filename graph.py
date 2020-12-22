@@ -7,6 +7,7 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from colour import Color
+import time
 
 LARGE_FONT = ("Verdana", 12)
 
@@ -37,7 +38,10 @@ class PageThree(tk.Frame):
         super().__init__(parent, **kw)
         label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
-
+        self.quit = False
+        self.x = 0
+        self.y = 0
+        self.z = 0
         fig = plt.figure()
         self.ax = fig.add_subplot(111, projection='3d')
 
@@ -55,6 +59,17 @@ class PageThree(tk.Frame):
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
     def update_data(self, x=0, y=0, z=0):
-        # if x != self.dto_y.var:
-        self.ax.scatter(x, y, z, s=20, c=str(self.colors[z]), marker='8')
-        self.canvas.draw_idle() # начинает тормозить при большом кол-ве точек
+        if x != self.x or y != self.y or z != self.z:
+            self.ax.scatter(x, y, z, s=20, c=str(self.colors[z]), marker='8')
+            self.x = x
+            self.y = y
+            self.z = z
+
+    def draw_graph(self):
+        while not self.quit:
+            try:
+                time.sleep(0.5)
+                self.canvas.draw_idle()
+            except:
+                self.quit = True
+                exit(0)

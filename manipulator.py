@@ -3,6 +3,7 @@ from graph import SeaofBTCapp
 from tkinter import Frame, Button, Scale, Canvas, constants as c
 import tkinter as tk
 from scaleDto import ScaleDto
+import threading
 
 CANVAS_SIZE = 1000
 
@@ -29,6 +30,7 @@ class Manipulator(tk.Tk):
 
         self.app = SeaofBTCapp()
         self.app.after_idle(self.update)
+        # self.app.after_idle(self.app.frame.draw_graph)
 
     def update(self):
         try:
@@ -42,6 +44,10 @@ class Manipulator(tk.Tk):
             exit(0)
 
     def custom_mainloop(self):
+        try:
+            threading.Thread(target=self.app.frame.draw_graph).start()
+        except:
+            exit(0)
         self.app.mainloop()
         self.mainloop()
 
