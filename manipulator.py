@@ -39,7 +39,9 @@ class Manipulator(tk.Tk):
                 int(self.constructorFrames.scale_dto_z.var['data']),
             )
             self.graph.after(50, lambda: self.update_graph())
-        except:
+
+        except Exception as e:
+            print(str(e))
             exit(0)
 
     def custom_mainloop(self):

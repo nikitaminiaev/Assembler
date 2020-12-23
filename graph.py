@@ -60,7 +60,8 @@ class GraphFrame(tk.Frame):
 
     def update_data(self, x=0, y=0, z=0):
         if x != self.x or y != self.y or z != self.z:
-            self.ax.scatter(x, y, z, s=20, c=str(self.colors[z]), marker='8')
+            self.ax.scatter(x, y, z, s=2, c=str(self.colors[z]), marker='8')
+            self.ax.plot([x, self.x], [y, self.y], [z, self.z], c=str(self.colors[z]))
             self.x = x
             self.y = y
             self.z = z
