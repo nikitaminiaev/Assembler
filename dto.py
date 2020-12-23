@@ -13,7 +13,7 @@ class Dto:
     def __init__(self, sensor_name: str = '', frame=None, side=c.TOP):
         self.sensor_name = sensor_name
         self.var = {
-            'sensor': '',
+            'sensor': sensor_name,
             'data': '0',
         }
         # self.text = Text(frame, width=25, height=4, bg='darkgreen', fg='white', wrap=c.WORD)

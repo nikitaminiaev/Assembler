@@ -34,6 +34,7 @@ class Manipulator(tk.Tk):
         self.graph = Graph()
         self.graph.after_idle(self.update_graph)
         Manipulator.write_data_to_json_file('data.json', self.constructorFrames.scale_dto_x)
+        Manipulator.read_json_file('data.json')
 
     def update_graph(self):
         try:
@@ -61,8 +62,10 @@ class Manipulator(tk.Tk):
                 data_file.write(f"[{json.dumps(dto.var)}]")
 
     @staticmethod
-    def read_json_file():
-        pass
+    def read_json_file(file_name: str):
+        if os.path.exists(file_name):
+            with open(file_name, 'r') as data_file:
+                return json.load(data_file)
 
     def custom_mainloop(self):
         try:
