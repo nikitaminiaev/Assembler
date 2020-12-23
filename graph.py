@@ -71,13 +71,16 @@ class GraphFrame(tk.Frame):
                               ((x % multiplicity == 0) or (y % multiplicity == 0) or (z % multiplicity == 0))
 
         if condition_add_point:
-            # self.ax.scatter(x, y, z, s=2, c=str(self.colors[z]), marker='8')
-            # self.ax.plot([x, self.x], [y, self.y], [z, self.z], c=str(self.colors[z]))
-            # self.ax.plot_trisurf(x_arr, y_arr, z_arr, rstride=2, cstride=1, cmap=plt.cm.get_cmap('Blues_r')) # не работает
-            self.ax.plot_surface(self.x_arr, self.y_arr, self.z_arr, rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues_r'))
+            self.ax.scatter(x, y, z, s=2, c=str(self.colors[z]), marker='8')
+            self.ax.plot([x, self.x], [y, self.y], [z, self.z], c=str(self.colors[z]))
+            # self.ax.plot_surface(self.x_arr, self.y_arr, self.z_arr, rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues_r'))
             self.x = x
             self.y = y
             self.z = z
+
+    def render_surface(self):
+        pass
+
 
     def draw_graph(self):
         while not self.quit:

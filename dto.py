@@ -8,9 +8,10 @@ SENSOR_NAME = {
 }
 
 
-class ScaleDto:
+class Dto:
 
-    def __init__(self, frame=None, side=c.TOP):
+    def __init__(self, sensor_name: str = '', frame=None, side=c.TOP):
+        self.sensor_name = sensor_name
         self.var = {
             'sensor': '',
             'data': '0',
