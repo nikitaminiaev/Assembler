@@ -47,10 +47,11 @@ class Manipulator(tk.Tk):
     def custom_mainloop(self):
         try:
             threading.Thread(target=self.graph.frame.draw_graph).start()
-        except:
+            self.graph.mainloop()
+            self.mainloop()
+        except Exception as e:
+            print(str(e))
             exit(0)
-        self.graph.mainloop()
-        self.mainloop()
 
 
 class ConstructorFrames:

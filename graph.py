@@ -59,7 +59,10 @@ class GraphFrame(tk.Frame):
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
     def update_data(self, x=0, y=0, z=0):
-        if x != self.x or y != self.y or z != self.z:
+        multiplicity = 2
+        condition_add_point = (x != self.x or y != self.y or z != self.z) and \
+                              ((x % multiplicity == 0) or (y % multiplicity == 0) or (z % multiplicity == 0))
+        if condition_add_point:
             self.ax.scatter(x, y, z, s=2, c=str(self.colors[z]), marker='8')
             self.ax.plot([x, self.x], [y, self.y], [z, self.z], c=str(self.colors[z]))
             self.x = x
@@ -71,6 +74,7 @@ class GraphFrame(tk.Frame):
             try:
                 time.sleep(0.5)
                 self.canvas.draw_idle()
-            except:
+            except Exception as e:
                 self.quit = True
+                print(str(e))
                 exit(0)
