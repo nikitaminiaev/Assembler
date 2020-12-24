@@ -82,13 +82,17 @@ class ConstructorFrames:
 
         self.__file_name = StringVar()
         self.__stop_render_btn = Button(self.__frame_bottom, text='stop/go render', command=self.__stop_go_render)
-        self.__render_surface_btn = Button(self.__frame_bottom, text='render surface', command=self.__render_surface)
+        # self.__render_surface_btn = Button(self.__frame_bottom, text='render surface', command=self.__render_surface)
         self.__save_data_entry = Entry(self.__frame_debug, textvariable=self.__file_name)
         self.__save_data_entry.place(width=20, height=5)
         self.__save_data_btn = Button(self.__frame_debug, text='save data', command=self.__save_file)
+        self.__remove_surface_btn = Button(self.__frame_debug, text='remove_surface', command=self.__remove_surface)
 
-    def __render_surface(self):
-        self.tk.graph.frame.render_surface()
+    def __remove_surface(self):
+        self.tk.graph.frame.remove_surface()
+
+    # def __render_surface(self):
+    #     self.tk.graph.frame.render_surface()
 
     def __save_file(self):
         GraphFrame.write_data_to_json_file(self.__file_name.get(), self.tk.graph.frame.data_arr.tolist())
@@ -99,14 +103,17 @@ class ConstructorFrames:
     def __stop_go_render(self):
         if self.tk.graph.frame.quit:
             self.tk.graph.frame.quit = False
+            self.tk.graph.frame.condition_build_surface = True
             threading.Thread(target=self.tk.graph.frame.draw_graph).start()
         else:
+            self.tk.graph.frame.condition_build_surface = False
             self.tk.graph.frame.quit = True
 
     def pack(self):
         self.__canvas.pack()
         self.__Auto_on_off_btn.pack(side=c.LEFT)
-        self.__render_surface_btn.pack(side=c.LEFT)
+        self.__remove_surface_btn.pack(side=c.LEFT)
+        # self.__render_surface_btn.pack(side=c.LEFT)
         self.__stop_render_btn.pack(side=c.LEFT)
         self.__save_data_entry.pack(side=c.LEFT)
         self.__save_data_btn.pack(side=c.LEFT)

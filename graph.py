@@ -1,8 +1,9 @@
 import json
 import os
-import matplotlib
+import matplotlib as cm
 
-matplotlib.use("TkAgg")
+cm.use("TkAgg")
+cm.use('Qt4Agg')
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as tk
@@ -40,6 +41,7 @@ class GraphFrame(tk.Frame):
 
     def __init__(self, parent, **kw):
         super().__init__(parent, **kw)
+        self.condition_build_surface = True
         label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
         self.condition_add_point = False
@@ -47,10 +49,12 @@ class GraphFrame(tk.Frame):
         self.__x_previous = 0
         self.__y_previous = 0
         self.__z_previous = 0
-        self.dots_graph = None
-        self.__x_arr = np.arange(0, 100, 1)
-        self.__y_arr = np.arange(0, 100, 1)
+        self.dots_graph_list = []
+        self.lines_graph_list = []
+        self.x_arr, self.y_arr = np.meshgrid(np.arange(0, 100, 1), np.arange(0, 100, 1))
         self.data_arr = np.zeros((100, 100))
+        self.surface = None
+        self.dots_graph = None
         fig = plt.figure()
         self.ax = fig.add_subplot(111, projection='3d')
 
@@ -71,18 +75,38 @@ class GraphFrame(tk.Frame):
         self.condition_add_point = (x != self.__x_previous or y != self.__y_previous or z != self.__z_previous) and \
                                    ((x % MULTIPLICITY == 0) or (y % MULTIPLICITY == 0) or (z % MULTIPLICITY == 0))
         if self.condition_add_point:
-            self.dots_graph = self.ax.scatter(x, y, z, s=2, c=str(self.colors[z]), marker='8')
-            self.ax.plot([x, self.__x_previous], [y, self.__y_previous], [z, self.__z_previous], c=str(self.colors[z]))
+            try:
+                self.dots_graph.remove()
+            except:
+                pass
+            self.dots_graph = self.ax.scatter(x, y, z, s=2, c='r', marker='8')
+
+            # self.build_dots_graph(x, y, z)
             self.__x_previous = x
             self.__y_previous = y
             self.__z_previous = z
             self.data_arr[y, x] = z
+            if self.condition_build_surface:
+                self.build_surface()
 
-    def render_surface(self):
-        self.dots_graph.remove()
-        x_arr, y_arr = np.meshgrid(self.__x_arr, self.__y_arr)
-        self.ax.plot_surface(x_arr, y_arr, self.data_arr, rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues_r'))
-        self.canvas.draw_idle()
+    def build_dots_graph(self, x, y, z):
+        self.dots_graph_list.append(self.ax.scatter(x, y, z, s=2, c=str(self.colors[z]), marker='8'))
+        self.ax.plot([x, self.__x_previous], [y, self.__y_previous], [z, self.__z_previous], c=str(self.colors[z]))
+
+    def build_surface(self):
+        # data_arr = self.data_arr[~(self.data_arr == 0).all(1)]
+        # self.ax.remove()
+        self.remove_surface()
+        self.surface = self.ax.plot_surface(self.x_arr, self.y_arr, self.data_arr,
+                                            rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues'),
+                                            )
+        # self.canvas.draw_idle()
+
+    def remove_surface(self):
+        try:
+            self.surface.remove()
+        except:
+            pass
 
     def draw_graph(self):
         while not self.quit:
