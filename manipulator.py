@@ -1,6 +1,6 @@
 import json
 import os
-
+import time
 import matplotlib as plt
 from graph import Graph
 from tkinter import Frame, Button, Scale, Canvas, constants as c
@@ -12,7 +12,7 @@ CANVAS_SIZE = 1000
 
 WINDOW_SIZE = '600x400'
 FRAME_COLOR = '#98a192'
-MAX = 100
+MAX = 99
 MIN = 0
 LENGTH = 300
 
@@ -22,7 +22,7 @@ class Manipulator(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         plt.use("TkAgg")
-
+        self.quit = False
         self['bg'] = '#fafafa'
         self.title('Manipulator')
         self.wm_attributes('-alpha', 0.7)
@@ -33,8 +33,6 @@ class Manipulator(tk.Tk):
 
         self.graph = Graph()
         self.graph.after_idle(self.update_graph)
-        Manipulator.write_data_to_json_file('data.json', self.constructorFrames.scale_dto_x)
-        Manipulator.read_json_file('data.json')
 
     def update_graph(self):
         try:
@@ -49,27 +47,14 @@ class Manipulator(tk.Tk):
             print(str(e))
             exit(0)
 
-    @staticmethod
-    def write_data_to_json_file(file_name: str, dto):
-        if os.path.exists(file_name):
-            with open(file_name, 'rb+') as data_file:
-                data_file.seek(-1, os.SEEK_END)
-                data_file.truncate()
-            with open(file_name, 'a') as data_file:
-                data_file.write(f",{json.dumps(dto.var)}]")
-        else:
-            with open(file_name, 'a') as data_file:
-                data_file.write(f"[{json.dumps(dto.var)}]")
-
-    @staticmethod
-    def read_json_file(file_name: str):
-        if os.path.exists(file_name):
-            with open(file_name, 'r') as data_file:
-                return json.load(data_file)
-
     def custom_mainloop(self):
         try:
             threading.Thread(target=self.graph.frame.draw_graph).start()
+            # threading.Thread(target=self.graph.frame.update_file, args=(  # запись данных в файл
+            #     self.constructorFrames.scale_dto_x.var,
+            #     self.constructorFrames.scale_dto_y.var,
+            #     self.constructorFrames.scale_dto_z.var,
+            # )).start()
             self.graph.mainloop()
             self.mainloop()
         except Exception as e:
@@ -104,6 +89,10 @@ class ConstructorFrames:
                                command=self.scale_dto_z.on_scale)
 
         self.__stop_render_btn = Button(self.__frame_bottom, text='stop/go render', command=self.__stop_go_render)
+        self.__render_surface_btn = Button(self.__frame_bottom, text='render surface', command=self.__render_surface)
+
+    def __render_surface(self):
+        self.tk.graph.frame.render_surface()
 
     def __go_auto(self):
         pass
@@ -118,6 +107,7 @@ class ConstructorFrames:
     def pack(self):
         self.__canvas.pack()
         self.__btn.pack(side=c.LEFT)
+        self.__render_surface_btn.pack(side=c.LEFT)
         self.__stop_render_btn.pack(side=c.LEFT)
         self.__scale_x.pack(side=c.LEFT, padx=15)
         self.__scale_y.pack(side=c.RIGHT, padx=15)
