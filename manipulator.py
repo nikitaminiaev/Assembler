@@ -1,15 +1,9 @@
-import json
-import os
-import time
-from tkinter.ttk import Entry
-
 import matplotlib as plt
 from graph import Graph, GraphFrame
-from tkinter import Frame, Button, Scale, Canvas, StringVar, constants as c
+from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as c
 import tkinter as tk
 from dto import Dto, SENSOR_NAME
 import threading
-import pandas as pd
 
 CANVAS_SIZE = 1000
 
@@ -53,11 +47,6 @@ class Manipulator(tk.Tk):
     def custom_mainloop(self):
         try:
             threading.Thread(target=self.graph.frame.draw_graph).start()
-            # threading.Thread(target=self.graph.frame.update_file, args=(  # запись данных в файл
-            #     self.constructorFrames.scale_dto_x.var,
-            #     self.constructorFrames.scale_dto_y.var,
-            #     self.constructorFrames.scale_dto_z.var,
-            # )).start()
             self.graph.mainloop()
             self.mainloop()
         except Exception as e:
@@ -94,8 +83,9 @@ class ConstructorFrames:
         self.__file_name = StringVar()
         self.__stop_render_btn = Button(self.__frame_bottom, text='stop/go render', command=self.__stop_go_render)
         self.__render_surface_btn = Button(self.__frame_bottom, text='render surface', command=self.__render_surface)
-        self.__save_data_entry = Entry(self.__frame_debug, text='render surface', textvariable=self.__file_name)
-        self.__save_data_btn = Button(self.__frame_debug, text='save', command=self.__save_file)
+        self.__save_data_entry = Entry(self.__frame_debug, textvariable=self.__file_name)
+        self.__save_data_entry.place(width=20, height=5)
+        self.__save_data_btn = Button(self.__frame_debug, text='save data', command=self.__save_file)
 
     def __render_surface(self):
         self.tk.graph.frame.render_surface()

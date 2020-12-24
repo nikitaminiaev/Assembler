@@ -1,9 +1,6 @@
 import json
 import os
-
 import matplotlib
-
-# from manipulator import Manipulator
 
 matplotlib.use("TkAgg")
 
@@ -17,6 +14,7 @@ import numpy as np
 
 LARGE_FONT = ("Verdana", 12)
 MULTIPLICITY = 1
+
 
 class Graph(tk.Tk):
 
@@ -50,9 +48,6 @@ class GraphFrame(tk.Frame):
         self.__y_previous = 0
         self.__z_previous = 0
         self.dots_graph = None
-        # self.__x_arr = np.array([])
-        # self.y_arr = np.array([])
-        # self.z_arr = np.array([])
         self.__x_arr = np.arange(0, 100, 1)
         self.__y_arr = np.arange(0, 100, 1)
         self.data_arr = np.zeros((100, 100))
@@ -98,19 +93,6 @@ class GraphFrame(tk.Frame):
                 self.quit = True
                 print(str(e))
                 exit(0)
-
-    # def update_file(self, dto_x, dto_y, dto_z):
-    #     while not self.quit:
-    #         try:
-    #             time.sleep(0.1)
-    #             if self.condition_add_point:
-    #                 GraphFrame.write_data_to_json_file('data.json', dto_x)
-    #                 GraphFrame.write_data_to_json_file('data.json', dto_y)
-    #                 GraphFrame.write_data_to_json_file('data.json', dto_z)
-    #         except Exception as e:
-    #             self.quit = True
-    #             print(str(e))
-    #             exit(0)
 
     @staticmethod
     def write_data_to_json_file(file_name: str, data):
