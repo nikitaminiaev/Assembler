@@ -1,12 +1,15 @@
 import json
 import os
 import time
+from tkinter.ttk import Entry
+
 import matplotlib as plt
-from graph import Graph
-from tkinter import Frame, Button, Scale, Canvas, constants as c
+from graph import Graph, GraphFrame
+from tkinter import Frame, Button, Scale, Canvas, StringVar, constants as c
 import tkinter as tk
 from dto import Dto, SENSOR_NAME
 import threading
+import pandas as pd
 
 CANVAS_SIZE = 1000
 
@@ -76,7 +79,7 @@ class ConstructorFrames:
 
         self.__frame_bottom = Frame(tk, bg=FRAME_COLOR, bd=2)
         self.__frame_bottom.place(relx=0.15, rely=0.60, relwidth=0.7, relheight=0.1)
-        self.__btn = Button(self.__frame_bottom, text='Auto on/off', command=self.__go_auto)
+        self.__Auto_on_off_btn = Button(self.__frame_bottom, text='Auto on/off', command=self.__go_auto)
 
         self.scale_dto_x = Dto(SENSOR_NAME['SERVO_X'], self.__frame_debug, side=c.LEFT)
         self.__scale_x = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='x',
@@ -88,11 +91,17 @@ class ConstructorFrames:
         self.__scale_z = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='z',
                                command=self.scale_dto_z.on_scale)
 
+        self.__file_name = StringVar()
         self.__stop_render_btn = Button(self.__frame_bottom, text='stop/go render', command=self.__stop_go_render)
         self.__render_surface_btn = Button(self.__frame_bottom, text='render surface', command=self.__render_surface)
+        self.__save_data_entry = Entry(self.__frame_debug, text='render surface', textvariable=self.__file_name)
+        self.__save_data_btn = Button(self.__frame_debug, text='save', command=self.__save_file)
 
     def __render_surface(self):
         self.tk.graph.frame.render_surface()
+
+    def __save_file(self):
+        GraphFrame.write_data_to_json_file(self.__file_name.get(), self.tk.graph.frame.data_arr.tolist())
 
     def __go_auto(self):
         pass
@@ -106,9 +115,11 @@ class ConstructorFrames:
 
     def pack(self):
         self.__canvas.pack()
-        self.__btn.pack(side=c.LEFT)
+        self.__Auto_on_off_btn.pack(side=c.LEFT)
         self.__render_surface_btn.pack(side=c.LEFT)
         self.__stop_render_btn.pack(side=c.LEFT)
+        self.__save_data_entry.pack(side=c.LEFT)
+        self.__save_data_btn.pack(side=c.LEFT)
         self.__scale_x.pack(side=c.LEFT, padx=15)
         self.__scale_y.pack(side=c.RIGHT, padx=15)
         self.__scale_z.pack(fill=c.Y, anchor=c.S, pady=20)

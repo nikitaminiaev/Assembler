@@ -99,30 +99,30 @@ class GraphFrame(tk.Frame):
                 print(str(e))
                 exit(0)
 
-    def update_file(self, dto_x, dto_y, dto_z):
-        while not self.quit:
-            try:
-                time.sleep(0.1)
-                if self.condition_add_point:
-                    GraphFrame.write_data_to_json_file('data.json', dto_x)
-                    GraphFrame.write_data_to_json_file('data.json', dto_y)
-                    GraphFrame.write_data_to_json_file('data.json', dto_z)
-            except Exception as e:
-                self.quit = True
-                print(str(e))
-                exit(0)
+    # def update_file(self, dto_x, dto_y, dto_z):
+    #     while not self.quit:
+    #         try:
+    #             time.sleep(0.1)
+    #             if self.condition_add_point:
+    #                 GraphFrame.write_data_to_json_file('data.json', dto_x)
+    #                 GraphFrame.write_data_to_json_file('data.json', dto_y)
+    #                 GraphFrame.write_data_to_json_file('data.json', dto_z)
+    #         except Exception as e:
+    #             self.quit = True
+    #             print(str(e))
+    #             exit(0)
 
     @staticmethod
-    def write_data_to_json_file(file_name: str, dto):
+    def write_data_to_json_file(file_name: str, data):
         if os.path.exists(file_name):
             with open(file_name, 'rb+') as data_file:
                 data_file.seek(-1, os.SEEK_END)
                 data_file.truncate()
             with open(file_name, 'a') as data_file:
-                data_file.write(f",{json.dumps(dto)}]")
+                data_file.write(f",{json.dumps(data)}]")
         else:
             with open(file_name, 'a') as data_file:
-                data_file.write(f"[{json.dumps(dto)}]")
+                data_file.write(f"[{json.dumps(data)}]")
 
     @staticmethod
     def read_json_file(file_name: str):
