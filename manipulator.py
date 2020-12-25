@@ -90,11 +90,15 @@ class ConstructorFrames:
         self.__save_data_entry.place(width=20, height=5)
         self.__save_data_btn = Button(self.__frame_debug, text='save data', command=self.__save_file)
         self.__remove_surface_btn = Button(self.__frame_debug, text='remove_surface', command=self.__remove_surface)
+        self.__show_surface_btn = Button(self.__frame_debug, text='show_surface', command=self.__show_surface)
         self.scanAlgorithm = ScanAlgorithm()
         self.condition_auto = False
 
     def __remove_surface(self):
         self.tk.graph.frame.remove_surface()
+
+    def __show_surface(self):
+        self.tk.graph.frame.show_surface()
 
     def __build_surface(self):
         if self.tk.graph.frame.condition_build_surface:
@@ -138,6 +142,7 @@ class ConstructorFrames:
         self.__canvas.pack()
         self.__Auto_on_off_btn.pack(side=c.LEFT)
         self.__remove_surface_btn.pack(side=c.LEFT)
+        self.__show_surface_btn.pack(side=c.LEFT)
         self.__render_surface_btn.pack(side=c.LEFT)
         self.__stop_render_btn.pack(side=c.LEFT)
         self.__save_data_entry.pack(side=c.LEFT)

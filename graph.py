@@ -4,7 +4,6 @@ import matplotlib as cm
 
 # cm.use("TkAgg")
 cm.use('Qt4Agg')
-# todo  сделать чтобы красная точка рендерилась без графика
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as tk
 import matplotlib.pyplot as plt
@@ -98,6 +97,9 @@ class GraphFrame(tk.Frame):
                                             rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues'),
                                             )
         self.canvas.draw_idle()
+
+    def show_surface(self):
+        self.build_surface()
 
     def remove_surface(self):
         try:

@@ -1,3 +1,5 @@
+import random
+
 from dto import Dto, SENSOR_NAME
 
 
@@ -12,5 +14,5 @@ class ScanAlgorithm:
     def data_generator(self):
         for y in range(49):
             for x in range(49):
-                yield x, y, 5
+                yield x, y, random.randint(5, 8)
         self.stop = True
