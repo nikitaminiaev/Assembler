@@ -2,9 +2,9 @@ import json
 import os
 import matplotlib as cm
 
-cm.use("TkAgg")
+# cm.use("TkAgg")
 cm.use('Qt4Agg')
-
+# todo  сделать чтобы красная точка рендерилась без графика
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as tk
 import matplotlib.pyplot as plt
@@ -15,6 +15,7 @@ import numpy as np
 
 LARGE_FONT = ("Verdana", 12)
 MULTIPLICITY = 1
+COLOR_DOT = 'g'
 
 
 class Graph(tk.Tk):
@@ -51,8 +52,8 @@ class GraphFrame(tk.Frame):
         self.__z_previous = 0
         self.dots_graph_list = []
         self.lines_graph_list = []
-        self.x_arr, self.y_arr = np.meshgrid(np.arange(0, 100, 1), np.arange(0, 100, 1))
-        self.data_arr = np.zeros((100, 100))
+        self.x_arr, self.y_arr = np.meshgrid(np.arange(0, 50, 1), np.arange(0, 50, 1))
+        self.data_arr = np.zeros((50, 50))
         self.surface = None
         self.dots_graph = None
         fig = plt.figure()
@@ -61,8 +62,8 @@ class GraphFrame(tk.Frame):
         red = Color("blue")
         self.colors = list(red.range_to(Color("white"), 170))
 
-        plt.xlim(0, 100 + 2)
-        plt.ylim(0, 100 + 2)
+        plt.xlim(0, 50 + 2)
+        plt.ylim(0, 50 + 2)
 
         self.canvas = FigureCanvasTkAgg(fig, self)
         self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
@@ -79,9 +80,7 @@ class GraphFrame(tk.Frame):
                 self.dots_graph.remove()
             except:
                 pass
-            self.dots_graph = self.ax.scatter(x, y, z, s=2, c='r', marker='8')
-
-            # self.build_dots_graph(x, y, z)
+            self.dots_graph = self.ax.scatter(x, y, z, s=5, c=COLOR_DOT, marker='8')
             self.__x_previous = x
             self.__y_previous = y
             self.__z_previous = z
@@ -94,13 +93,11 @@ class GraphFrame(tk.Frame):
         self.ax.plot([x, self.__x_previous], [y, self.__y_previous], [z, self.__z_previous], c=str(self.colors[z]))
 
     def build_surface(self):
-        # data_arr = self.data_arr[~(self.data_arr == 0).all(1)]
-        # self.ax.remove()
         self.remove_surface()
         self.surface = self.ax.plot_surface(self.x_arr, self.y_arr, self.data_arr,
                                             rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues'),
                                             )
-        # self.canvas.draw_idle()
+        self.canvas.draw_idle()
 
     def remove_surface(self):
         try:

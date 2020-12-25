@@ -1,4 +1,6 @@
 import matplotlib as plt
+import time
+from esp8266.ScanAlgorithm import ScanAlgorithm
 from graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as c
 import tkinter as tk
@@ -9,7 +11,7 @@ CANVAS_SIZE = 1000
 
 WINDOW_SIZE = '600x400'
 FRAME_COLOR = '#98a192'
-MAX = 99
+MAX = 49
 MIN = 0
 LENGTH = 300
 
@@ -68,7 +70,7 @@ class ConstructorFrames:
 
         self.__frame_bottom = Frame(tk, bg=FRAME_COLOR, bd=2)
         self.__frame_bottom.place(relx=0.15, rely=0.60, relwidth=0.7, relheight=0.1)
-        self.__Auto_on_off_btn = Button(self.__frame_bottom, text='Auto on/off', command=self.__go_auto)
+        self.__Auto_on_off_btn = Button(self.__frame_bottom, text='Auto on/off', command=self.auto)
 
         self.scale_dto_x = Dto(SENSOR_NAME['SERVO_X'], self.__frame_debug, side=c.LEFT)
         self.__scale_x = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='x',
@@ -82,41 +84,69 @@ class ConstructorFrames:
 
         self.__file_name = StringVar()
         self.__stop_render_btn = Button(self.__frame_bottom, text='stop/go render', command=self.__stop_go_render)
-        # self.__render_surface_btn = Button(self.__frame_bottom, text='render surface', command=self.__render_surface)
+        self.__render_surface_btn = Button(self.__frame_bottom, text='on/off build surface',
+                                           command=self.__build_surface)
         self.__save_data_entry = Entry(self.__frame_debug, textvariable=self.__file_name)
         self.__save_data_entry.place(width=20, height=5)
         self.__save_data_btn = Button(self.__frame_debug, text='save data', command=self.__save_file)
         self.__remove_surface_btn = Button(self.__frame_debug, text='remove_surface', command=self.__remove_surface)
+        self.scanAlgorithm = ScanAlgorithm()
+        self.condition_auto = False
 
     def __remove_surface(self):
         self.tk.graph.frame.remove_surface()
 
-    # def __render_surface(self):
-    #     self.tk.graph.frame.render_surface()
+    def __build_surface(self):
+        if self.tk.graph.frame.condition_build_surface:
+            self.tk.graph.frame.condition_build_surface = False
+        else:
+            self.tk.graph.frame.condition_build_surface = True
 
     def __save_file(self):
         GraphFrame.write_data_to_json_file(self.__file_name.get(), self.tk.graph.frame.data_arr.tolist())
 
+    def auto(self):
+        if self.scanAlgorithm.stop:
+            self.scanAlgorithm.stop = False
+            # self.condition_auto = True
+            threading.Thread(target=self.__go_auto).start()
+        else:
+            self.scanAlgorithm.stop = True
+            # self.condition_auto = False
+
     def __go_auto(self):
-        pass
+        self.gen = self.scanAlgorithm.data_generator()
+        # if self.condition_auto:
+        while not self.scanAlgorithm.stop:
+            time.sleep(0.11)
+            x, y, z = next(self.gen)
+            # self.__scale_x.set(x)
+            # self.__scale_y.set(y)
+            # self.__scale_z.set(z)
+            self.scale_dto_x.var['data'] = x
+            self.scale_dto_y.var['data'] = y
+            self.scale_dto_z.var['data'] = z
 
     def __stop_go_render(self):
         if self.tk.graph.frame.quit:
             self.tk.graph.frame.quit = False
-            self.tk.graph.frame.condition_build_surface = True
             threading.Thread(target=self.tk.graph.frame.draw_graph).start()
         else:
-            self.tk.graph.frame.condition_build_surface = False
             self.tk.graph.frame.quit = True
 
     def pack(self):
         self.__canvas.pack()
         self.__Auto_on_off_btn.pack(side=c.LEFT)
         self.__remove_surface_btn.pack(side=c.LEFT)
-        # self.__render_surface_btn.pack(side=c.LEFT)
+        self.__render_surface_btn.pack(side=c.LEFT)
         self.__stop_render_btn.pack(side=c.LEFT)
         self.__save_data_entry.pack(side=c.LEFT)
         self.__save_data_btn.pack(side=c.LEFT)
         self.__scale_x.pack(side=c.LEFT, padx=15)
         self.__scale_y.pack(side=c.RIGHT, padx=15)
         self.__scale_z.pack(fill=c.Y, anchor=c.S, pady=20)
+
+    def scale_set(self, x, y, z):
+        self.__scale_x.set(x)
+        self.__scale_y.set(y)
+        self.__scale_z.set(z)
