@@ -94,7 +94,7 @@ class GraphFrame(tk.Frame):
     def build_surface(self):
         self.remove_surface()
         self.surface = self.ax.plot_surface(self.x_arr, self.y_arr, self.data_arr,
-                                            rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues'),
+                                            rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues_r'),
                                             )
         self.canvas.draw_idle()
 

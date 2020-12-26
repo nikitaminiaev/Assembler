@@ -1,6 +1,6 @@
 import matplotlib as plt
 import time
-from esp8266.ScanAlgorithm import ScanAlgorithm
+from esp8266.scanAlgorithm import ScanAlgorithm
 from graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as c
 import tkinter as tk
@@ -92,7 +92,12 @@ class ConstructorFrames:
         self.__remove_surface_btn = Button(self.__frame_debug, text='remove_surface', command=self.__remove_surface)
         self.__show_surface_btn = Button(self.__frame_debug, text='show_surface', command=self.__show_surface)
         self.scanAlgorithm = ScanAlgorithm()
-        self.condition_auto = False
+        self.__snap_to_point_btn = Button(self.__frame_debug, text='snap_to_point', command=self.__snap_to_point)
+
+    def __snap_to_point(self):
+        self.__scale_x.set(self.scale_dto_x.var['data'])
+        self.__scale_y.set(self.scale_dto_y.var['data'])
+        self.__scale_z.set(self.scale_dto_z.var['data'])
 
     def __remove_surface(self):
         self.tk.graph.frame.remove_surface()
@@ -112,21 +117,15 @@ class ConstructorFrames:
     def auto(self):
         if self.scanAlgorithm.stop:
             self.scanAlgorithm.stop = False
-            # self.condition_auto = True
             threading.Thread(target=self.__go_auto).start()
         else:
             self.scanAlgorithm.stop = True
-            # self.condition_auto = False
 
     def __go_auto(self):
         self.gen = self.scanAlgorithm.data_generator()
-        # if self.condition_auto:
         while not self.scanAlgorithm.stop:
             time.sleep(0.11)
             x, y, z = next(self.gen)
-            # self.__scale_x.set(x)
-            # self.__scale_y.set(y)
-            # self.__scale_z.set(z)
             self.scale_dto_x.var['data'] = x
             self.scale_dto_y.var['data'] = y
             self.scale_dto_z.var['data'] = z
@@ -141,6 +140,7 @@ class ConstructorFrames:
     def pack(self):
         self.__canvas.pack()
         self.__Auto_on_off_btn.pack(side=c.LEFT)
+        self.__snap_to_point_btn.pack(side=c.LEFT)
         self.__remove_surface_btn.pack(side=c.LEFT)
         self.__show_surface_btn.pack(side=c.LEFT)
         self.__render_surface_btn.pack(side=c.LEFT)
