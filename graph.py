@@ -59,9 +59,6 @@ class GraphFrame(tk.Frame):
         fig = plt.figure()
         self.ax = fig.add_subplot(111, projection='3d')
 
-        red = Color("blue")
-        self.colors = list(red.range_to(Color("white"), 170))
-
         plt.xlim(0, 50 + 2)
         plt.ylim(0, 50 + 2)
 
@@ -87,10 +84,6 @@ class GraphFrame(tk.Frame):
             self.data_arr[y, x] = z
             if self.condition_build_surface:
                 self.build_surface()
-
-    def build_dots_graph(self, x, y, z):
-        self.dots_graph_list.append(self.ax.scatter(x, y, z, s=2, c=str(self.colors[z]), marker='8'))
-        self.ax.plot([x, self.__x_previous], [y, self.__y_previous], [z, self.__z_previous], c=str(self.colors[z]))
 
     def build_surface(self):
         self.remove_surface()
