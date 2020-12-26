@@ -7,9 +7,11 @@ import tkinter as tk
 from dto import Dto, SENSOR_NAME
 import threading
 
+RELWIDTH = 0.7
+
 CANVAS_SIZE = 1000
 
-WINDOW_SIZE = '600x400'
+WINDOW_SIZE = '800x600'
 FRAME_COLOR = '#98a192'
 MAX = 49
 MIN = 0
@@ -62,15 +64,14 @@ class ConstructorFrames:
         self.tk = tk
         self.__canvas = Canvas(tk, height=CANVAS_SIZE, width=CANVAS_SIZE)
 
-        self.__frame_debug = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__frame_debug.place(relx=0.15, rely=0.75, relwidth=0.7, relheight=0.20)
-
         self.__frame_top = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__frame_top.place(relx=0.15, rely=0.05, relwidth=0.7, relheight=0.50)
-
-        self.__frame_bottom = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__frame_bottom.place(relx=0.15, rely=0.60, relwidth=0.7, relheight=0.1)
-        self.__Auto_on_off_btn = Button(self.__frame_bottom, text='Auto on/off', command=self.auto)
+        self.__frame_top.place(relx=0.15, rely=0.05, relwidth=RELWIDTH, relheight=0.50)
+        self.__frame_bottom_1 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__frame_bottom_1.place(relx=0.15, rely=0.60, relwidth=RELWIDTH, relheight=0.05)
+        self.__frame_bottom_2 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__frame_bottom_2.place(relx=0.15, rely=0.65, relwidth=RELWIDTH, relheight=0.05)
+        self.__frame_debug = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__frame_debug.place(relx=0.15, rely=0.75, relwidth=RELWIDTH, relheight=0.05)
 
         self.scale_dto_x = Dto(SENSOR_NAME['SERVO_X'], self.__frame_debug, side=c.LEFT)
         self.__scale_x = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='x',
@@ -82,17 +83,23 @@ class ConstructorFrames:
         self.__scale_z = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='z',
                                command=self.scale_dto_z.on_scale)
 
+        self.__auto_on_off_btn = Button(self.__frame_bottom_1, text='go/stop auto_scan ', command=self.auto)
+        self.__build_surface_btn = Button(self.__frame_bottom_1, text='on/off build surface', command=self.__build_surface)
+        self.__stop_render_btn = Button(self.__frame_bottom_1, text='stop/go render', command=self.__stop_go_render)
+        self.__snap_to_point_btn = Button(self.__frame_bottom_2, text='snap_to_point', command=self.__snap_to_point)
+        self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
+        self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
         self.__file_name = StringVar()
-        self.__stop_render_btn = Button(self.__frame_bottom, text='stop/go render', command=self.__stop_go_render)
-        self.__render_surface_btn = Button(self.__frame_bottom, text='on/off build surface',
-                                           command=self.__build_surface)
         self.__save_data_entry = Entry(self.__frame_debug, textvariable=self.__file_name)
         self.__save_data_entry.place(width=20, height=5)
         self.__save_data_btn = Button(self.__frame_debug, text='save data', command=self.__save_file)
-        self.__remove_surface_btn = Button(self.__frame_debug, text='remove_surface', command=self.__remove_surface)
-        self.__show_surface_btn = Button(self.__frame_debug, text='show_surface', command=self.__show_surface)
+        self.__load_data_entry = Entry(self.__frame_debug, textvariable=self.__file_name)
+        self.__load_data_entry.place(width=20, height=5)
+        self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
+
+
         self.scanAlgorithm = ScanAlgorithm()
-        self.__snap_to_point_btn = Button(self.__frame_debug, text='snap_to_point', command=self.__snap_to_point)
+
 
     def __snap_to_point(self):
         self.__scale_x.set(self.scale_dto_x.var['data'])
@@ -114,6 +121,9 @@ class ConstructorFrames:
     def __save_file(self):
         GraphFrame.write_data_to_json_file(self.__file_name.get(), self.tk.graph.frame.data_arr.tolist())
 
+    def __load_file(self):
+        pass
+
     def auto(self):
         if self.scanAlgorithm.stop:
             self.scanAlgorithm.stop = False
@@ -125,10 +135,13 @@ class ConstructorFrames:
         self.gen = self.scanAlgorithm.data_generator()
         while not self.scanAlgorithm.stop:
             time.sleep(0.11)
-            x, y, z = next(self.gen)
-            self.scale_dto_x.var['data'] = x
-            self.scale_dto_y.var['data'] = y
-            self.scale_dto_z.var['data'] = z
+            try:
+                x, y, z = next(self.gen)
+                self.scale_dto_x.var['data'] = x
+                self.scale_dto_y.var['data'] = y
+                self.scale_dto_z.var['data'] = z
+            except Exception as e:
+                print(str(e))
 
     def __stop_go_render(self):
         if self.tk.graph.frame.quit:
@@ -139,17 +152,24 @@ class ConstructorFrames:
 
     def pack(self):
         self.__canvas.pack()
-        self.__Auto_on_off_btn.pack(side=c.LEFT)
-        self.__snap_to_point_btn.pack(side=c.LEFT)
-        self.__remove_surface_btn.pack(side=c.LEFT)
-        self.__show_surface_btn.pack(side=c.LEFT)
-        self.__render_surface_btn.pack(side=c.LEFT)
+
+        self.__scale_x.pack(side=c.LEFT, padx=10)
+        self.__scale_y.pack(side=c.LEFT, padx=10)
+        self.__scale_z.pack(side=c.BOTTOM, pady=5)
+
+        self.__auto_on_off_btn.pack(side=c.LEFT)
+        self.__build_surface_btn.pack(side=c.LEFT, padx=5)
         self.__stop_render_btn.pack(side=c.LEFT)
+
+        self.__snap_to_point_btn.pack(side=c.LEFT)
+        self.__remove_surface_btn.pack(side=c.LEFT, padx=50)
+        self.__show_surface_btn.pack(side=c.LEFT)
+
         self.__save_data_entry.pack(side=c.LEFT)
-        self.__save_data_btn.pack(side=c.LEFT)
-        self.__scale_x.pack(side=c.LEFT, padx=15)
-        self.__scale_y.pack(side=c.RIGHT, padx=15)
-        self.__scale_z.pack(fill=c.Y, anchor=c.S, pady=20)
+        self.__save_data_btn.pack(side=c.LEFT, padx=5)
+        self.__load_data_entry.pack(side=c.LEFT, padx=5)
+        self.__load_data_btn.pack(side=c.LEFT)
+
 
     def scale_set(self, x, y, z):
         self.__scale_x.set(x)

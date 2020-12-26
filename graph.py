@@ -1,9 +1,10 @@
-import json
-import os
 import matplotlib as cm
 
-# cm.use("TkAgg")
 cm.use('Qt4Agg')
+# cm.use("TkAgg")
+
+import json
+import os
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as tk
 import matplotlib.pyplot as plt
@@ -77,8 +78,8 @@ class GraphFrame(tk.Frame):
         if self.condition_add_point:
             try:
                 self.dots_graph.remove()
-            except:
-                pass
+            except Exception as e:
+                print(str(e))
             self.dots_graph = self.ax.scatter(x, y, z, s=5, c=COLOR_DOT, marker='8')
             self.__x_previous = x
             self.__y_previous = y
@@ -104,8 +105,8 @@ class GraphFrame(tk.Frame):
     def remove_surface(self):
         try:
             self.surface.remove()
-        except:
-            pass
+        except Exception as e:
+            print(str(e))
 
     def draw_graph(self):
         while not self.quit:

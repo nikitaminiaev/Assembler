@@ -12,7 +12,7 @@ class ScanAlgorithm:
         self.stop = True
 
     def data_generator(self):
-        for y in range(49):
-            for x in range(49):
+        for y in range(50):
+            for x in range(50):
                 yield x, y, random.randint(5, 8)
         self.stop = True
