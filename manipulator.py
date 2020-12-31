@@ -4,7 +4,7 @@ from esp8266.scanAlgorithm import ScanAlgorithm
 from graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as c
 import tkinter as tk
-from dto import Dto, SENSOR_NAME
+from dto import Dto
 import threading
 
 RELWIDTH = 0.7
@@ -12,11 +12,10 @@ RELWIDTH = 0.7
 CANVAS_SIZE = 1000
 
 WINDOW_SIZE = '800x600'
-FRAME_COLOR = '#98a192'
+FRAME_COLOR = '#3d3d42'
 MAX = 49
 MIN = 0
 LENGTH = 300
-
 
 class Manipulator(tk.Tk):
 
@@ -24,7 +23,7 @@ class Manipulator(tk.Tk):
         super().__init__(*args, **kwargs)
         plt.use("TkAgg")
         self.quit = False
-        self['bg'] = '#fafafa'
+        self['bg'] = '#ccc'
         self.title('Manipulator')
         self.wm_attributes('-alpha', 0.7)
         self.geometry(WINDOW_SIZE)
@@ -73,13 +72,13 @@ class ConstructorFrames:
         self.__frame_debug = Frame(tk, bg=FRAME_COLOR, bd=2)
         self.__frame_debug.place(relx=0.15, rely=0.75, relwidth=RELWIDTH, relheight=0.05)
 
-        self.scale_dto_x = Dto(SENSOR_NAME['SERVO_X'], self.__frame_debug, side=c.LEFT)
+        self.scale_dto_x = Dto(Dto.SERVO_X, self.__frame_debug, side=c.LEFT)
         self.__scale_x = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='x',
                                command=self.scale_dto_x.on_scale)
-        self.scale_dto_y = Dto(SENSOR_NAME['SERVO_Y'], self.__frame_debug, side=c.RIGHT)
+        self.scale_dto_y = Dto(Dto.SERVO_Y, self.__frame_debug, side=c.RIGHT)
         self.__scale_y = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='y',
                                command=self.scale_dto_y.on_scale)
-        self.scale_dto_z = Dto(SENSOR_NAME['SERVO_Z'], self.__frame_debug, c.LEFT)
+        self.scale_dto_z = Dto(Dto.SERVO_Z, self.__frame_debug, c.LEFT)
         self.__scale_z = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='z',
                                command=self.scale_dto_z.on_scale)
 

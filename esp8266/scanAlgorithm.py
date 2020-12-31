@@ -1,14 +1,14 @@
 import random
 
-from dto import Dto, SENSOR_NAME
+from dto import Dto
 
 
 class ScanAlgorithm:
 
     def __init__(self):
-        self.dto_x = Dto(SENSOR_NAME['SERVO_X'])
-        self.dto_y = Dto(SENSOR_NAME['SERVO_Y'])
-        self.dto_z = Dto(SENSOR_NAME['SERVO_Z'])
+        self.dto_x = Dto(Dto.SERVO_X)
+        self.dto_y = Dto(Dto.SERVO_Y)
+        self.dto_z = Dto(Dto.SERVO_Z)
         self.stop = True
 
     def data_generator(self):

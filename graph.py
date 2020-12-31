@@ -1,7 +1,6 @@
 import matplotlib as cm
 
-cm.use('Qt4Agg')
-# cm.use("TkAgg")
+cm.use("TkAgg")
 
 import json
 import os
@@ -9,7 +8,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 import tkinter as tk
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from colour import Color
 import time
 import numpy as np
 
@@ -50,15 +48,13 @@ class GraphFrame(tk.Frame):
         self.__x_previous = 0
         self.__y_previous = 0
         self.__z_previous = 0
-        self.dots_graph_list = []
-        self.lines_graph_list = []
         self.x_arr, self.y_arr = np.meshgrid(np.arange(0, 50, 1), np.arange(0, 50, 1))
         self.data_arr = np.zeros((50, 50))
         self.surface = None
         self.dots_graph = None
         fig = plt.figure()
         self.ax = fig.add_subplot(111, projection='3d')
-
+        self.ax.mouse_init()
         plt.xlim(0, 50 + 2)
         plt.ylim(0, 50 + 2)
 

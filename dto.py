@@ -1,14 +1,11 @@
 from tkinter import Text, constants as c
 
-SENSOR_NAME = {
-    'SERVO_X': 'servo_x',
-    'SERVO_Y': 'servo_y',
-    'SERVO_Z': 'servo_z',
-    'HALL': 'hall',
-}
-
-
 class Dto:
+
+    SERVO_X = 'servo_x'
+    SERVO_Y = 'servo_y'
+    SERVO_Z = 'servo_z'
+    HALL = 'hall'
 
     def __init__(self, sensor_name: str = '', frame=None, side=c.TOP):
         self.sensor_name = sensor_name
