@@ -1,6 +1,6 @@
 import matplotlib as plt
 import time
-from esp8266.scanAlgorithm import ScanAlgorithm
+from esp8266.scanAlgorithms import ScanAlgorithms
 from graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as c
 import tkinter as tk
@@ -38,9 +38,9 @@ class Manipulator(tk.Tk):
     def update_graph(self):
         try:
             self.graph.frame.update_data(
-                int(self.constructorFrames.scale_dto_x.var['data']),
-                int(self.constructorFrames.scale_dto_y.var['data']),
-                int(self.constructorFrames.scale_dto_z.var['data']),
+                int(self.constructorFrames.scale_dto_x.var['value']),
+                int(self.constructorFrames.scale_dto_y.var['value']),
+                int(self.constructorFrames.scale_dto_z.var['value']),
             )
             self.graph.after(50, lambda: self.update_graph())
 
@@ -98,13 +98,13 @@ class ConstructorFrames:
         self.__load_data_entry.place(width=20, height=5)
         self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
 
-        self.scanAlgorithm = ScanAlgorithm()
+        self.scanAlgorithm = ScanAlgorithms()
 
 
     def __snap_to_point(self):
-        self.__scale_x.set(self.scale_dto_x.var['data'])
-        self.__scale_y.set(self.scale_dto_y.var['data'])
-        self.__scale_z.set(self.scale_dto_z.var['data'])
+        self.__scale_x.set(self.scale_dto_x.var['value'])
+        self.__scale_y.set(self.scale_dto_y.var['value'])
+        self.__scale_z.set(self.scale_dto_z.var['value'])
 
     def __remove_surface(self):
         self.tk.graph.frame.remove_surface()
@@ -138,9 +138,9 @@ class ConstructorFrames:
             time.sleep(0.11)
             try:
                 x, y, z = next(self.gen)
-                self.scale_dto_x.var['data'] = x
-                self.scale_dto_y.var['data'] = y
-                self.scale_dto_z.var['data'] = z
+                self.scale_dto_x.var['value'] = x
+                self.scale_dto_y.var['value'] = y
+                self.scale_dto_z.var['value'] = z
             except Exception as e:
                 print(str(e))
 

@@ -3,7 +3,7 @@ import random
 from dto import Dto
 
 
-class ScanAlgorithm:
+class ScanAlgorithms:
 
     def __init__(self):
         self.dto_x = Dto(Dto.SERVO_X)
@@ -16,3 +16,9 @@ class ScanAlgorithm:
             for x in range(50):
                 yield x, y, random.randint(5, 8)
         self.stop = True
+
+    @staticmethod
+    def process_data(data: dict):
+        sensor = data['sensor']
+        value = data['value']
+        exec('self.%s.duty(%d)' % (sensor, value))

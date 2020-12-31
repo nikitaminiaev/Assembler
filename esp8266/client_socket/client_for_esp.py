@@ -1,10 +1,14 @@
+from esp8266.scanAlgorithms import ScanAlgorithms
 from mySocket import *
+import ujson
 
 
 class Client(Socket):
     def __init__(self):
         super(Client, self).__init__()
+        self.data_prev = ''
         self.type_object = 'Client'
+        self.scan_algorithms = ScanAlgorithms()
 
     def set_up(self):
         try:
@@ -15,12 +19,6 @@ class Client(Socket):
             exit(0)
         self.listen_server()
 
-    def send_data(self, data: str):
-        try:
-            self.send(data.encode(CODING))
-        except:
-            self.set_down()
-
     def listen_server(self):
         while not self._quit:
             try:
@@ -28,10 +26,22 @@ class Client(Socket):
                 if self.data == CONNECTED:
                     self.status = CONNECTED
                 print(self.data)
-                self.send_data('any_string')
+                if self.data_prev != self.data:
+                    parsed = ujson.loads(self.data)
+                    self.scan_algorithms.process_data(parsed)
+                    self.data_prev = self.data
+
             except:
                 self.set_down()
                 break
+
+    def send_data(self, data: str):
+        try:
+            self.send(data.encode(CODING))
+        except:
+            self.set_down()
+
+
 
 
 if __name__ == '__main__':
