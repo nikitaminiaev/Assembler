@@ -1,6 +1,4 @@
-#!/usr/bin/env python
 from mySocket import *
-import threading
 
 
 class Client(Socket):
@@ -15,7 +13,7 @@ class Client(Socket):
             self.status = 'Server is offline'
             print(self.status)
             exit(0)
-        threading.Thread(target=self.listen_server).start()
+        self.listen_server()
 
     def send_data(self, data: str):
         try:
@@ -30,6 +28,7 @@ class Client(Socket):
                 if self.data == CONNECTED:
                     self.status = CONNECTED
                 print(self.data)
+                self.send_data('any_string')
             except:
                 self.set_down()
                 break

@@ -6,6 +6,8 @@ from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as
 import tkinter as tk
 from dto import Dto
 import threading
+from sockets import server
+
 
 RELWIDTH = 0.7
 
@@ -27,10 +29,9 @@ class Manipulator(tk.Tk):
         self.title('Manipulator')
         self.wm_attributes('-alpha', 0.7)
         self.geometry(WINDOW_SIZE)
-
+        self.server = server.Server()
         self.constructorFrames = ConstructorFrames(self)
         self.constructorFrames.pack()
-
         self.graph = Graph()
         self.graph.after_idle(self.update_graph)
 
@@ -50,6 +51,7 @@ class Manipulator(tk.Tk):
     def custom_mainloop(self):
         try:
             threading.Thread(target=self.graph.frame.draw_graph).start()
+            self.server.set_up()
             self.graph.mainloop()
             self.mainloop()
         except Exception as e:
@@ -96,7 +98,6 @@ class ConstructorFrames:
         self.__load_data_entry.place(width=20, height=5)
         self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
 
-
         self.scanAlgorithm = ScanAlgorithm()
 
 
@@ -132,6 +133,7 @@ class ConstructorFrames:
 
     def __go_auto(self):
         self.gen = self.scanAlgorithm.data_generator()
+        self.tk.server.send_data_to_all_clients('hi')
         while not self.scanAlgorithm.stop:
             time.sleep(0.11)
             try:

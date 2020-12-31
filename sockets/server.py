@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from mySocket import *
+from .mySocket import *
 import threading
 
 COUNT_CONNECTIONS = 1
@@ -37,5 +37,5 @@ class Server(Socket):
 if __name__ == '__main__':
     server = Server()
     server.set_up()
-    if 0 in server.clients:
+    if 1 in server.clients:
         server.send_data_to_all_clients('hi')
