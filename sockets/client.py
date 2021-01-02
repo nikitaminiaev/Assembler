@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from mySocket import *
+from sockets.mySocket import *
 import threading
 
 
@@ -30,6 +30,7 @@ class Client(Socket):
                 if self.data == CONNECTED:
                     self.status = CONNECTED
                 print(self.data)
+                self.send_data('hi')
             except:
                 self.set_down()
                 break

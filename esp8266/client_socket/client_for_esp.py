@@ -1,6 +1,7 @@
-from esp8266.scanAlgorithms import ScanAlgorithms
-from mySocket import *
+from scanAlgorithms import ScanAlgorithms
+from .mySocket import *
 import ujson
+import sys
 
 
 class Client(Socket):
@@ -13,10 +14,10 @@ class Client(Socket):
     def set_up(self):
         try:
             self.connect((IP, PORT))
-        except ConnectionRefusedError:
+        except Exception:
             self.status = 'Server is offline'
             print(self.status)
-            exit(0)
+            sys.exit(0)
         self.listen_server()
 
     def listen_server(self):
@@ -26,11 +27,11 @@ class Client(Socket):
                 if self.data == CONNECTED:
                     self.status = CONNECTED
                 print(self.data)
-                if self.data_prev != self.data:
+                self.send_data('hi_esp8266')
+                if (self.data_prev != self.data) and (CONNECTED != self.data):
                     parsed = ujson.loads(self.data)
                     self.scan_algorithms.process_data(parsed)
                     self.data_prev = self.data
-
             except:
                 self.set_down()
                 break

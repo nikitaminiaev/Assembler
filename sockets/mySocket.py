@@ -1,7 +1,7 @@
 import socket
 
-IP = '127.0.0.3'
-PORT = 1234
+IP = '192.168.0.104'
+PORT = 8266
 CODING = 'utf-8'
 PACKAGE_SIZE = 2048
 CONNECTED = 'connected'

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from .mySocket import *
 import threading
+from sockets.mySocket import *
 
 COUNT_CONNECTIONS = 1
 
