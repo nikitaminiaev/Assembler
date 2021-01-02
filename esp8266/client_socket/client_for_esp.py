@@ -1,4 +1,5 @@
 from scanAlgorithms import ScanAlgorithms
+
 from .mySocket import *
 import ujson
 import sys
@@ -14,9 +15,9 @@ class Client(Socket):
     def set_up(self):
         try:
             self.connect((IP, PORT))
-        except Exception:
+        except Exception as e:
             self.status = 'Server is offline'
-            print(self.status)
+            print(str(e))
             sys.exit(0)
         self.listen_server()
 
@@ -32,7 +33,8 @@ class Client(Socket):
                     parsed = ujson.loads(self.data)
                     self.scan_algorithms.process_data(parsed)
                     self.data_prev = self.data
-            except:
+            except Exception as e:
+                print(str(e))
                 self.set_down()
                 break
 

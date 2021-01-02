@@ -2,4 +2,5 @@
 /*.pdb
 /plt
 /sys
-/esp8266/wifi*
+/esp8266/wifi_mod.py
+/.env

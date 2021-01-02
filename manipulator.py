@@ -132,17 +132,17 @@ class ConstructorFrames:
             self.scanAlgorithm.stop = True
 
     def __go_auto(self):
-        self.gen = self.scanAlgorithm.data_generator()
-        self.tk.server.send_data_to_all_clients('hi')
-        while not self.scanAlgorithm.stop:
-            time.sleep(0.11)
-            try:
-                x, y, z = next(self.gen)
-                self.scale_dto_x.var['value'] = x
-                self.scale_dto_y.var['value'] = y
-                self.scale_dto_z.var['value'] = z
-            except Exception as e:
-                print(str(e))
+        # self.gen = self.scanAlgorithm.data_generator()
+        self.tk.server.send_data_to_all_clients('{"sensor": "servo_x", "value": 115}')
+        # while not self.scanAlgorithm.stop:
+        #     time.sleep(0.11)
+        #     try:
+        #         x, y, z = next(self.gen)
+        #         self.scale_dto_x.var['value'] = x
+        #         self.scale_dto_y.var['value'] = y
+        #         self.scale_dto_z.var['value'] = z
+        #     except Exception as e:
+        #         print(str(e))
 
     def __stop_go_render(self):
         if self.tk.graph.frame.quit:

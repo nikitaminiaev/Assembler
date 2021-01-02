@@ -1,7 +1,13 @@
 import socket
+import os
+from dotenv import load_dotenv
 
-IP = '192.168.0.104'
-PORT = 8266
+dotenv_path = os.path.join(os.path.dirname(__file__), '../.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+
+IP = os.getenv('IP')
+PORT = int(os.getenv('PORT'))
 CODING = 'utf-8'
 PACKAGE_SIZE = 2048
 CONNECTED = 'connected'

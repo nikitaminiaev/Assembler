@@ -1,7 +1,8 @@
 import socket
+from wifi_mod import *
 
-IP = '192.168.0.104'
-PORT = 8266
+IP = IP
+PORT = PORT
 CODING = 'utf-8'
 PACKAGE_SIZE = 2048
 CONNECTED = 'connected'
