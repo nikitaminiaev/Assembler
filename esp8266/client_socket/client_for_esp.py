@@ -1,4 +1,4 @@
-from scanAlgorithms import ScanAlgorithms
+from servoController import ServoController
 
 from .mySocket import *
 import ujson
@@ -10,7 +10,7 @@ class Client(Socket):
         super(Client, self).__init__()
         self.data_prev = ''
         self.type_object = 'Client'
-        self.scan_algorithms = ScanAlgorithms()
+        self.servoController = ServoController()
 
     def set_up(self):
         try:
@@ -32,7 +32,7 @@ class Client(Socket):
                 if (self.data_prev != self.data) and (CONNECTED != self.data):
                     try:
                         parsed = ujson.loads(self.data)
-                        self.scan_algorithms.process_data(parsed)
+                        self.servoController.process_data(parsed)
                     except ValueError as e:
                         print(str(e))
                     finally:
