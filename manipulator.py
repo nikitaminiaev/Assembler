@@ -8,16 +8,16 @@ from dto import Dto
 import threading
 from sockets import server
 
-
 RELWIDTH = 0.7
 
 CANVAS_SIZE = 1000
 
 WINDOW_SIZE = '800x600'
 FRAME_COLOR = '#3d3d42'
-MAX = 49
+MAX = 75
 MIN = 0
 LENGTH = 300
+
 
 class Manipulator(tk.Tk):
 
@@ -29,7 +29,6 @@ class Manipulator(tk.Tk):
         self.title('Manipulator')
         self.wm_attributes('-alpha', 0.7)
         self.geometry(WINDOW_SIZE)
-        self.server = server.Server()
         self.constructorFrames = ConstructorFrames(self)
         self.constructorFrames.pack()
         self.graph = Graph()
@@ -38,9 +37,9 @@ class Manipulator(tk.Tk):
     def update_graph(self):
         try:
             self.graph.frame.update_data(
-                int(self.constructorFrames.scale_dto_x.var['value']),
-                int(self.constructorFrames.scale_dto_y.var['value']),
-                int(self.constructorFrames.scale_dto_z.var['value']),
+                self.constructorFrames.scale_dto_x.var,
+                self.constructorFrames.scale_dto_y.var,
+                self.constructorFrames.scale_dto_z.var,
             )
             self.graph.after(50, lambda: self.update_graph())
 
@@ -51,7 +50,7 @@ class Manipulator(tk.Tk):
     def custom_mainloop(self):
         try:
             threading.Thread(target=self.graph.frame.draw_graph).start()
-            self.server.set_up()
+            self.graph.frame.server.set_up()
             self.graph.mainloop()
             self.mainloop()
         except Exception as e:
@@ -85,7 +84,8 @@ class ConstructorFrames:
                                command=self.scale_dto_z.on_scale)
 
         self.__auto_on_off_btn = Button(self.__frame_bottom_1, text='go/stop auto_scan ', command=self.auto)
-        self.__build_surface_btn = Button(self.__frame_bottom_1, text='on/off build surface', command=self.__build_surface)
+        self.__build_surface_btn = Button(self.__frame_bottom_1, text='on/off build surface',
+                                          command=self.__build_surface)
         self.__stop_render_btn = Button(self.__frame_bottom_1, text='stop/go render', command=self.__stop_go_render)
         self.__snap_to_point_btn = Button(self.__frame_bottom_2, text='snap_to_point', command=self.__snap_to_point)
         self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
@@ -99,7 +99,6 @@ class ConstructorFrames:
         self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
 
         self.scanAlgorithm = ScanAlgorithms()
-
 
     def __snap_to_point(self):
         self.__scale_x.set(self.scale_dto_x.var['value'])
@@ -132,17 +131,16 @@ class ConstructorFrames:
             self.scanAlgorithm.stop = True
 
     def __go_auto(self):
-        # self.gen = self.scanAlgorithm.data_generator()
-        self.tk.server.send_data_to_all_clients('{"sensor": "servo_x", "value": 115}')
-        # while not self.scanAlgorithm.stop:
-        #     time.sleep(0.11)
-        #     try:
-        #         x, y, z = next(self.gen)
-        #         self.scale_dto_x.var['value'] = x
-        #         self.scale_dto_y.var['value'] = y
-        #         self.scale_dto_z.var['value'] = z
-        #     except Exception as e:
-        #         print(str(e))
+        self.gen = self.scanAlgorithm.data_generator()
+        while not self.scanAlgorithm.stop:
+            time.sleep(0.11)
+            try:
+                x, y = next(self.gen)
+                self.scale_dto_x.var['value'] = x
+                self.scale_dto_y.var['value'] = y
+                # self.scale_dto_z.var['value'] = z
+            except Exception as e:
+                print(str(e))
 
     def __stop_go_render(self):
         if self.tk.graph.frame.quit:
@@ -170,7 +168,6 @@ class ConstructorFrames:
         self.__save_data_btn.pack(side=c.LEFT, padx=5)
         self.__load_data_entry.pack(side=c.LEFT, padx=5)
         self.__load_data_btn.pack(side=c.LEFT)
-
 
     def scale_set(self, x, y, z):
         self.__scale_x.set(x)

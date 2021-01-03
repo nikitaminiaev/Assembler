@@ -14,3 +14,9 @@ class ScanAlgorithms:
         value = data['value']
         if -1 != (sensor.find('servo')):
             exec('self.%s.duty(%d)' % (sensor, value), {}, {'self': self})
+
+    def data_generator(self):
+        for y in range(75):
+            for x in range(75):
+                yield x, y #random.randint(5, 8)
+        self.stop = True

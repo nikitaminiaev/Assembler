@@ -1,5 +1,7 @@
 import matplotlib as cm
 
+from sockets import server
+
 cm.use("TkAgg")
 
 import json
@@ -14,6 +16,7 @@ import numpy as np
 LARGE_FONT = ("Verdana", 12)
 MULTIPLICITY = 1
 COLOR_DOT = 'g'
+MAX_VALUE = 76
 
 
 class Graph(tk.Tk):
@@ -25,7 +28,6 @@ class Graph(tk.Tk):
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
-
         self.frames = {}
         self.frame = GraphFrame(container)
         self.frames[GraphFrame] = self.frame
@@ -40,6 +42,7 @@ class GraphFrame(tk.Frame):
 
     def __init__(self, parent, **kw):
         super().__init__(parent, **kw)
+        self.server = server.Server()
         self.condition_build_surface = True
         label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
@@ -48,15 +51,15 @@ class GraphFrame(tk.Frame):
         self.__x_previous = 0
         self.__y_previous = 0
         self.__z_previous = 0
-        self.x_arr, self.y_arr = np.meshgrid(np.arange(0, 50, 1), np.arange(0, 50, 1))
-        self.data_arr = np.zeros((50, 50))
+        self.x_arr, self.y_arr = np.meshgrid(np.arange(0, MAX_VALUE, 1), np.arange(0, MAX_VALUE, 1))
+        self.data_arr = np.zeros((MAX_VALUE, MAX_VALUE))
         self.surface = None
         self.dots_graph = None
         fig = plt.figure()
         self.ax = fig.add_subplot(111, projection='3d')
         self.ax.mouse_init()
-        plt.xlim(0, 50 + 2)
-        plt.ylim(0, 50 + 2)
+        plt.xlim(0, MAX_VALUE + 2)
+        plt.ylim(0, MAX_VALUE + 2)
 
         self.canvas = FigureCanvasTkAgg(fig, self)
         self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
@@ -65,7 +68,10 @@ class GraphFrame(tk.Frame):
         toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-    def update_data(self, x=0, y=0, z=0):
+    def update_data(self, x_dict: dict, y_dict: dict, z_dict: dict):
+        x = int(x_dict['value'])
+        y = int(y_dict['value'])
+        z = int(z_dict['value'])
         self.condition_add_point = (x != self.__x_previous or y != self.__y_previous or z != self.__z_previous) and \
                                    ((x % MULTIPLICITY == 0) or (y % MULTIPLICITY == 0) or (z % MULTIPLICITY == 0))
         if self.condition_add_point:
@@ -74,12 +80,30 @@ class GraphFrame(tk.Frame):
             except Exception as e:
                 print(str(e))
             self.dots_graph = self.ax.scatter(x, y, z, s=5, c=COLOR_DOT, marker='8')
+            self.__sed_command_to_microcontroller(x_dict, y_dict, z_dict, x, y, z)
             self.__x_previous = x
             self.__y_previous = y
             self.__z_previous = z
             self.data_arr[y, x] = z
             if self.condition_build_surface:
                 self.build_surface()
+
+    def __sed_command_to_microcontroller(self, x_dict, y_dict, z_dict, *args):
+        if args[0] != self.__x_previous:
+            x_data = x_dict.copy()
+            x_data = GraphFrame.__prepare_data(x_data)
+            self.server.send_data_to_all_clients(json.dumps(x_data))
+            del x_data
+        if args[1] != self.__y_previous:
+            y_data = y_dict.copy()
+            y_data = GraphFrame.__prepare_data(y_data)
+            self.server.send_data_to_all_clients(json.dumps(y_data))
+            del y_data
+        if args[2] != self.__z_previous:
+            z_data = z_dict.copy()
+            z_data = GraphFrame.__prepare_data(z_data)
+            self.server.send_data_to_all_clients(json.dumps(z_data))
+            del z_data
 
     def build_surface(self):
         self.remove_surface()
@@ -124,3 +148,9 @@ class GraphFrame(tk.Frame):
         if os.path.exists(file_name):
             with open(file_name, 'r') as data_file:
                 return json.load(data_file)
+
+    @staticmethod
+    def __prepare_data(data: dict):
+        val = int(data['value'])
+        data['value'] = val+40
+        return data

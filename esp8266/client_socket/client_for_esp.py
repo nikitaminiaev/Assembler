@@ -30,9 +30,13 @@ class Client(Socket):
                 print(self.data)
                 self.send_data('hi_esp8266')
                 if (self.data_prev != self.data) and (CONNECTED != self.data):
-                    parsed = ujson.loads(self.data)
-                    self.scan_algorithms.process_data(parsed)
-                    self.data_prev = self.data
+                    try:
+                        parsed = ujson.loads(self.data)
+                        self.scan_algorithms.process_data(parsed)
+                    except ValueError as e:
+                        print(str(e))
+                    finally:
+                        self.data_prev = self.data
             except Exception as e:
                 print(str(e))
                 self.set_down()
