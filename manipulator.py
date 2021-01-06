@@ -135,10 +135,10 @@ class ConstructorFrames:
         while not self.scanAlgorithm.stop:
             time.sleep(0.11)
             try:
-                x, y = next(self.gen)
+                x, y, z = next(self.gen)
                 self.scale_dto_x.var['value'] = x
                 self.scale_dto_y.var['value'] = y
-                # self.scale_dto_z.var['value'] = z
+                self.scale_dto_z.var['value'] = z
             except Exception as e:
                 print(str(e))
 
