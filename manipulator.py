@@ -6,7 +6,6 @@ from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as
 import tkinter as tk
 from dto import Dto
 import threading
-from sockets import server
 
 RELWIDTH = 0.7
 
@@ -30,8 +29,8 @@ class Manipulator(tk.Tk):
         self.wm_attributes('-alpha', 0.7)
         self.geometry(WINDOW_SIZE)
         self.constructorFrames = ConstructorFrames(self)
-        self.constructorFrames.pack()
         self.graph = Graph()
+        self.constructorFrames.pack()
         self.graph.after_idle(self.update_graph)
 
     def update_graph(self):
@@ -97,7 +96,7 @@ class ConstructorFrames:
         self.__load_data_entry = Entry(self.__frame_debug, textvariable=self.__file_name)
         self.__load_data_entry.place(width=20, height=5)
         self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
-
+        self.default_bg = self.__stop_render_btn.cget("background")
         self.scanAlgorithm = ScanAlgorithms()
 
     def __snap_to_point(self):
@@ -150,6 +149,14 @@ class ConstructorFrames:
             self.tk.graph.frame.quit = True
 
     def pack(self):
+        self.__build_surface_btn.bind('<Button-1>',
+                                      lambda e, cause='tk.graph.frame.condition_build_surface': self.change_button(e, cause))
+
+        self.__stop_render_btn.bind('<Button-1>',
+                                      lambda e, cause='tk.graph.frame.quit': self.change_button(e, cause))
+        self.__auto_on_off_btn.bind('<Button-1>',
+                                      lambda e, cause='scanAlgorithm.stop': self.change_button(e, cause))
+
         self.__canvas.pack()
 
         self.__scale_x.pack(side=c.LEFT, padx=10)
@@ -173,3 +180,19 @@ class ConstructorFrames:
         self.__scale_x.set(x)
         self.__scale_y.set(y)
         self.__scale_z.set(z)
+
+    def change_button(self, event, cause):
+        cause = {
+            'scanAlgorithm.stop': {'condition': not self.scanAlgorithm.stop, 'button': self.__auto_on_off_btn},
+            'tk.graph.frame.quit': {'condition': not self.tk.graph.frame.quit, 'button': self.__stop_render_btn},
+            'tk.graph.frame.condition_build_surface': {'condition': self.tk.graph.frame.condition_build_surface, 'button': self.__build_surface_btn},
+        }.get(cause)
+
+        self.cycle_change_bg(cause)
+
+
+    def cycle_change_bg(self, cause):
+        if cause['condition']:
+            cause['button'].configure(bg="#595959")
+        else:
+            cause['button'].configure(bg=self.default_bg)
