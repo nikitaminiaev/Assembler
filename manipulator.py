@@ -82,7 +82,7 @@ class ConstructorFrames:
         self.__scale_z = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='z',
                                command=self.scale_dto_z.on_scale)
 
-        self.__auto_on_off_btn = Button(self.__frame_bottom_1, text='go/stop auto_scan ', command=self.auto)
+        self.__auto_on_off_btn = Button(self.__frame_bottom_1, text='go/stop auto_scan', bg='#595959', command=self.auto)
         self.__build_surface_btn = Button(self.__frame_bottom_1, text='on/off build surface',
                                           command=self.__build_surface)
         self.__stop_render_btn = Button(self.__frame_bottom_1, text='stop/go render', command=self.__stop_go_render)
@@ -193,6 +193,9 @@ class ConstructorFrames:
 
     def cycle_change_bg(self, cause):
         if cause['condition']:
-            cause['button'].configure(bg="#595959")
+            if self.default_bg == '#595959':
+                cause['button'].configure(bg='#d9d9d9')
+            else:
+                cause['button'].configure(bg='#595959')
         else:
             cause['button'].configure(bg=self.default_bg)
