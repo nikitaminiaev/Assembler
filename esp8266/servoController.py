@@ -15,6 +15,8 @@ class ServoController:
         value = data['value']
         if -1 != (sensor.find('servo')):
             exec('self.%s.duty(%d)' % (sensor, value), {}, {'self': self})
+        if -1 != (sensor.find('')):
+            pass
 
     def callback(self):
         pass

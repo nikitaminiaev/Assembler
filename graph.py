@@ -1,9 +1,8 @@
-import matplotlib as cm
+import matplotlib
+
+matplotlib.use("TkAgg")
 
 from sockets import server
-
-cm.use("TkAgg")
-
 import json
 import os
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
