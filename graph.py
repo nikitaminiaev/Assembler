@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import time
 import numpy as np
+# import pylab
 
 LARGE_FONT = ("Verdana", 12)
 MULTIPLICITY = 1
@@ -56,7 +57,7 @@ class GraphFrame(tk.Frame):
         self.dots_graph = None
         fig = plt.figure()
         self.ax = fig.add_subplot(111, projection='3d')
-        self.ax.mouse_init()
+
         plt.xlim(0, MAX_VALUE + 2)
         plt.ylim(0, MAX_VALUE + 2)
 
@@ -79,7 +80,7 @@ class GraphFrame(tk.Frame):
             except Exception as e:
                 print(str(e))
             self.dots_graph = self.ax.scatter(x, y, z, s=5, c=COLOR_DOT, marker='8')
-            self.__sed_command_to_microcontroller(x_dict, y_dict, z_dict, x, y, z)
+            self.__set_command_to_microcontroller(x_dict, y_dict, z_dict, x, y, z)
             self.__x_previous = x
             self.__y_previous = y
             self.__z_previous = z
@@ -87,7 +88,7 @@ class GraphFrame(tk.Frame):
             if self.condition_build_surface:
                 self.build_surface()
 
-    def __sed_command_to_microcontroller(self, x_dict, y_dict, z_dict, *args):
+    def __set_command_to_microcontroller(self, x_dict, y_dict, z_dict, *args):
         if args[0] != self.__x_previous:
             x_data = x_dict.copy()
             x_data = GraphFrame.__prepare_data(x_data)
@@ -110,6 +111,7 @@ class GraphFrame(tk.Frame):
                                             rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues_r'),
                                             )
         self.canvas.draw_idle()
+        self.ax.mouse_init()
 
     def show_surface(self):
         self.build_surface()
