@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import time
 import numpy as np
-# import pylab
 
 LARGE_FONT = ("Verdana", 12)
 MULTIPLICITY = 1
