@@ -101,6 +101,7 @@ class GraphFrame(tk.Frame):
         if args[2] != self.__z_previous:
             z_data = z_dict.copy()
             z_data = GraphFrame.__prepare_data(z_data)
+            print(z_data)
             self.server.send_data_to_all_clients(json.dumps(z_data))
             del z_data
 

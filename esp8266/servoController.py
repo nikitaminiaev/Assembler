@@ -6,9 +6,10 @@ class ServoController:
     def __init__(self):
         self.servo_x = machine.PWM(machine.Pin(13), freq=50)
         self.servo_y = machine.PWM(machine.Pin(12), freq=50)
-        # self.servo_z = machine.PWM(machine.Pin(5), freq=50)
-        self.hall_sensor = machine.Pin(0, machine.Pin.IN)
-        self.surface_sensor = machine.Pin(1, machine.Pin.IN)
+        self.servo_z = machine.PWM(machine.Pin(5), freq=50)
+        # self.hall_sensor = machine.Pin(0, machine.Pin.IN)
+        # self.surface_sensor = machine.Pin(1, machine.Pin.IN)
+        print('ServoController init')
 
     def process_data(self, data: dict):
         sensor = data['sensor']

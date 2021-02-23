@@ -1,6 +1,5 @@
 from servoController import ServoController
-
-from .mySocket import *
+from client_socket.mySocket import Socket
 import ujson
 import sys
 
@@ -11,10 +10,11 @@ class Client(Socket):
         self.data_prev = ''
         self.type_object = 'Client'
         self.servoController = ServoController()
+        print('Client init')
 
     def set_up(self):
         try:
-            self.connect((IP, PORT))
+            self.connect((self.IP, self.PORT))
         except Exception as e:
             self.status = 'Server is offline'
             print(str(e))
@@ -24,12 +24,12 @@ class Client(Socket):
     def listen_server(self):
         while not self._quit:
             try:
-                self.data = self.recv(PACKAGE_SIZE).decode(CODING)
-                if self.data == CONNECTED:
-                    self.status = CONNECTED
-                print(self.data)
+                self.data = self.recv(self.PACKAGE_SIZE).decode(self.CODING)
+                if self.data == self.CONNECTED:
+                    self.status = self.CONNECTED
+                # print(self.data)
                 self.send_data('hi_esp8266')
-                if (self.data_prev != self.data) and (CONNECTED != self.data):
+                if (self.data_prev != self.data) and (self.CONNECTED != self.data):
                     try:
                         parsed = ujson.loads(self.data)
                         self.servoController.process_data(parsed)
@@ -44,11 +44,9 @@ class Client(Socket):
 
     def send_data(self, data: str):
         try:
-            self.send(data.encode(CODING))
+            self.send(data.encode(self.CODING))
         except:
             self.set_down()
-
-
 
 
 if __name__ == '__main__':
