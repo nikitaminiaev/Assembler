@@ -85,36 +85,10 @@ class GraphFrame(tk.Frame):
             self.__z_previous = z
             self.data_arr[y, x] = z
             if self.condition_build_surface:
-                self.build_surface()
-
-    def __set_command_to_microcontroller(self, x_dict, y_dict, z_dict, *args):
-        if args[0] != self.__x_previous:
-            x_data = x_dict.copy()
-            x_data = GraphFrame.__prepare_data(x_data)
-            self.server.send_data_to_all_clients(json.dumps(x_data))
-            del x_data
-        if args[1] != self.__y_previous:
-            y_data = y_dict.copy()
-            y_data = GraphFrame.__prepare_data(y_data)
-            self.server.send_data_to_all_clients(json.dumps(y_data))
-            del y_data
-        if args[2] != self.__z_previous:
-            z_data = z_dict.copy()
-            z_data = GraphFrame.__prepare_data(z_data)
-            print(z_data)
-            self.server.send_data_to_all_clients(json.dumps(z_data))
-            del z_data
-
-    def build_surface(self):
-        self.remove_surface()
-        self.surface = self.ax.plot_surface(self.x_arr, self.y_arr, self.data_arr,
-                                            rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues_r'),
-                                            )
-        self.canvas.draw_idle()
-        self.ax.mouse_init()
+                self.__build_surface()
 
     def show_surface(self):
-        self.build_surface()
+        self.__build_surface()
 
     def remove_surface(self):
         try:
@@ -149,6 +123,32 @@ class GraphFrame(tk.Frame):
         if os.path.exists(file_name):
             with open(file_name, 'r') as data_file:
                 return json.load(data_file)
+
+    def __set_command_to_microcontroller(self, x_dict, y_dict, z_dict, *args):
+        if args[0] != self.__x_previous:
+            x_data = x_dict.copy()
+            x_data = GraphFrame.__prepare_data(x_data)
+            self.server.send_data_to_all_clients(json.dumps(x_data))
+            del x_data
+        if args[1] != self.__y_previous:
+            y_data = y_dict.copy()
+            y_data = GraphFrame.__prepare_data(y_data)
+            self.server.send_data_to_all_clients(json.dumps(y_data))
+            del y_data
+        if args[2] != self.__z_previous:
+            z_data = z_dict.copy()
+            z_data = GraphFrame.__prepare_data(z_data)
+            print(z_data)
+            self.server.send_data_to_all_clients(json.dumps(z_data))
+            del z_data
+
+    def __build_surface(self):
+        self.remove_surface()
+        self.surface = self.ax.plot_surface(self.x_arr, self.y_arr, self.data_arr,
+                                            rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues_r'),
+                                            )
+        self.canvas.draw_idle()
+        self.ax.mouse_init()
 
     @staticmethod
     def __prepare_data(data: dict):
