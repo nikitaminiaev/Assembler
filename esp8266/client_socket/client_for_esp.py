@@ -27,7 +27,6 @@ class Client(Socket):
                 self.data = self.recv(self.PACKAGE_SIZE).decode(self.CODING)
                 if self.data == self.CONNECTED:
                     self.status = self.CONNECTED
-                # print(self.data)
                 self.send_data('hi_esp8266')
                 if (self.data_prev != self.data) and (self.CONNECTED != self.data):
                     try:
