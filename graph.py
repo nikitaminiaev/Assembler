@@ -41,6 +41,8 @@ class GraphFrame(tk.Frame):
 
     def __init__(self, parent, **kw):
         super().__init__(parent, **kw)
+        self.condition_is_it_surface = True
+        self.condition_is_it_atom = False #TODO реализовать логику появление атома на графике
         self.server = server.Server()
         self.condition_build_surface = True
         label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
@@ -83,7 +85,8 @@ class GraphFrame(tk.Frame):
             self.__x_previous = x
             self.__y_previous = y
             self.__z_previous = z
-            self.data_arr[y, x] = z
+            if self.condition_is_it_surface:
+                self.data_arr[y, x] = z
             if self.condition_build_surface:
                 self.__build_surface()
 
@@ -128,11 +131,13 @@ class GraphFrame(tk.Frame):
         if args[0] != self.__x_previous:
             x_data = x_dict.copy()
             x_data = GraphFrame.__prepare_data(x_data)
+            print(x_data)
             self.server.send_data_to_all_clients(json.dumps(x_data))
             del x_data
         if args[1] != self.__y_previous:
             y_data = y_dict.copy()
             y_data = GraphFrame.__prepare_data(y_data)
+            print(y_data)
             self.server.send_data_to_all_clients(json.dumps(y_data))
             del y_data
         if args[2] != self.__z_previous:

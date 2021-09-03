@@ -6,7 +6,6 @@ def do_connect():
     ap_if = network.WLAN(network.AP_IF)
     ap_if.active(False)
     if not sta_if.isconnected():
-        print('connecting to network...')
         sta_if.active(True)
         sta_if.connect(ESSID, PASS)
         while not sta_if.isconnected():

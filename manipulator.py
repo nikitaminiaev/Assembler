@@ -85,6 +85,8 @@ class ConstructorFrames:
         self.__auto_on_off_btn = Button(self.__frame_bottom_1, text='go/stop auto_scan', bg='#595959', command=self.auto)
         self.__build_surface_btn = Button(self.__frame_bottom_1, text='on/off build surface',
                                           command=self.__build_surface)
+        self.__is_it_surface_btn = Button(self.__frame_bottom_1, text='is it surface',
+                                  command=self.__is_it_surface)
         self.__stop_render_btn = Button(self.__frame_bottom_1, text='stop/go render', command=self.__stop_go_render)
         self.__snap_to_point_btn = Button(self.__frame_bottom_2, text='snap_to_point', command=self.__snap_to_point)
         self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
@@ -115,6 +117,12 @@ class ConstructorFrames:
             self.tk.graph.frame.condition_build_surface = False
         else:
             self.tk.graph.frame.condition_build_surface = True
+
+    def __is_it_surface(self):
+        if self.tk.graph.frame.condition_is_it_surface:
+            self.tk.graph.frame.condition_is_it_surface = False
+        else:
+            self.tk.graph.frame.condition_is_it_surface = True
 
     def __save_file(self):
         GraphFrame.write_data_to_json_file(self.__file_name.get(), self.tk.graph.frame.data_arr.tolist())
@@ -151,6 +159,8 @@ class ConstructorFrames:
     def pack(self):
         self.__build_surface_btn.bind('<Button-1>',
                                       lambda e, cause='tk.graph.frame.condition_build_surface': self.change_button(e, cause))
+        self.__is_it_surface_btn.bind('<Button-1>',
+                                      lambda e, cause='tk.graph.frame.condition_is_it_surface': self.change_button(e, cause))
 
         self.__stop_render_btn.bind('<Button-1>',
                                       lambda e, cause='tk.graph.frame.quit': self.change_button(e, cause))
@@ -165,6 +175,7 @@ class ConstructorFrames:
 
         self.__auto_on_off_btn.pack(side=c.LEFT)
         self.__build_surface_btn.pack(side=c.LEFT, padx=5)
+        self.__is_it_surface_btn.pack(side=c.LEFT, padx=5)
         self.__stop_render_btn.pack(side=c.LEFT)
 
         self.__snap_to_point_btn.pack(side=c.LEFT)
@@ -186,6 +197,7 @@ class ConstructorFrames:
             'scanAlgorithm.stop': {'condition': not self.scanAlgorithm.stop, 'button': self.__auto_on_off_btn},
             'tk.graph.frame.quit': {'condition': not self.tk.graph.frame.quit, 'button': self.__stop_render_btn},
             'tk.graph.frame.condition_build_surface': {'condition': self.tk.graph.frame.condition_build_surface, 'button': self.__build_surface_btn},
+            'tk.graph.frame.condition_is_it_surface': {'condition': self.tk.graph.frame.condition_is_it_surface, 'button': self.__is_it_surface_btn},
         }.get(cause)
 
         self.cycle_change_bg(cause)

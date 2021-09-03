@@ -10,7 +10,6 @@ class Client(Socket):
         self.data_prev = ''
         self.type_object = 'Client'
         self.servoController = ServoController()
-        print('Client init')
 
     def set_up(self):
         try:
