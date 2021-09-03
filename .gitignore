@@ -2,5 +2,5 @@
 /*.pdb
 /plt
 /sys
-/esp8266/wifi_mod.py
+/esp8266/cred.*
 /.env
