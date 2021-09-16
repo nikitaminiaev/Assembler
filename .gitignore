@@ -1,0 +1,6 @@
+/*.json
+/*.pdb
+/plt
+/sys
+/esp8266/cred.*
+/.env
