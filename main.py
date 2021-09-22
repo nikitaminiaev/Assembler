@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from manipulator import Manipulator
+from controller.manipulator import Manipulator
 
 try:
     root = Manipulator()
