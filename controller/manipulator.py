@@ -1,10 +1,10 @@
 import matplotlib as plt
 import time
 from esp8266.scanAlgorithms import ScanAlgorithms
-from graph import Graph, GraphFrame
+from .graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as c
 import tkinter as tk
-from dto import Dto
+from .dto import Dto
 import threading
 
 RELWIDTH = 0.7
