@@ -1,16 +1,17 @@
 import matplotlib as plt
 import time
-from esp8266.scanAlgorithms import ScanAlgorithms
+from controller.scanAlgorithms import ScanAlgorithms
 from .graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as c
 import tkinter as tk
 from .dto import Dto
 import threading
 
+SLEEP_BETWEEN_SCAN_ITERATION = 0.11
+
+
 RELWIDTH = 0.7
-
 CANVAS_SIZE = 1000
-
 WINDOW_SIZE = '800x600'
 FRAME_COLOR = '#3d3d42'
 MAX = 75
@@ -119,13 +120,13 @@ class ConstructorFrames:
             self.tk.graph.frame.condition_build_surface = True
 
     def __is_it_surface(self):
-        if self.tk.graph.frame.condition_is_it_surface:
-            self.tk.graph.frame.condition_is_it_surface = False
+        if self.tk.graph.frame.is_it_surface:
+            self.tk.graph.frame.is_it_surface = False
         else:
-            self.tk.graph.frame.condition_is_it_surface = True
+            self.tk.graph.frame.is_it_surface = True
 
     def __save_file(self):
-        GraphFrame.write_data_to_json_file(self.__file_name.get(), self.tk.graph.frame.data_arr.tolist())
+        GraphFrame.write_data_to_json_file(self.__file_name.get(), self.tk.graph.frame.data_arr_for_graph.tolist())
 
     def __load_file(self):
         pass
@@ -138,11 +139,11 @@ class ConstructorFrames:
             self.scanAlgorithm.stop = True
 
     def __go_auto(self):
-        self.gen = self.scanAlgorithm.data_generator()
+        gen = self.scanAlgorithm.data_generator()
         while not self.scanAlgorithm.stop:
-            time.sleep(0.11)
+            time.sleep(SLEEP_BETWEEN_SCAN_ITERATION)
             try:
-                x, y, z = next(self.gen)
+                x, y, z = next(gen)
                 self.scale_dto_x.var['value'] = x
                 self.scale_dto_y.var['value'] = y
                 self.scale_dto_z.var['value'] = z
@@ -197,7 +198,7 @@ class ConstructorFrames:
             'scanAlgorithm.stop': {'condition': not self.scanAlgorithm.stop, 'button': self.__auto_on_off_btn},
             'tk.graph.frame.quit': {'condition': not self.tk.graph.frame.quit, 'button': self.__stop_render_btn},
             'tk.graph.frame.condition_build_surface': {'condition': self.tk.graph.frame.condition_build_surface, 'button': self.__build_surface_btn},
-            'tk.graph.frame.condition_is_it_surface': {'condition': self.tk.graph.frame.condition_is_it_surface, 'button': self.__is_it_surface_btn},
+            'tk.graph.frame.condition_is_it_surface': {'condition': self.tk.graph.frame.is_it_surface, 'button': self.__is_it_surface_btn},
         }.get(cause)
 
         self.cycle_change_bg(cause)
@@ -211,3 +212,5 @@ class ConstructorFrames:
                 cause['button'].configure(bg='#595959')
         else:
             cause['button'].configure(bg=self.default_bg)
+
+

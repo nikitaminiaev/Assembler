@@ -11,6 +11,7 @@ class ScanAlgorithms:
     def data_generator(self):
         for y in range(FIELD_SIZE):
             if y % 2 == 0:
+                # print(f'{int(y*100/FIELD_SIZE)}%')
                 for x in range(FIELD_SIZE):
                     yield x, y, random.randint(5, 8)
             else:

@@ -1,7 +1,11 @@
+import threading
+
 import matplotlib
+from matplotlib.collections import PathCollection
+
+from controller.scanAlgorithms import ScanAlgorithms
 
 matplotlib.use("TkAgg")
-
 from sockets import server
 import json
 import os
@@ -14,9 +18,10 @@ import numpy as np
 
 LARGE_FONT = ("Verdana", 12)
 MULTIPLICITY = 1
-COLOR_DOT = 'g'
+COLOR_TIP = 'g'
+COLOR_ATOM = 'r'
 MAX_VALUE = 76
-
+SLEEP_BETWEEN_DRAW_GRAPH = 0.5
 
 class Graph(tk.Tk):
 
@@ -41,8 +46,11 @@ class GraphFrame(tk.Frame):
 
     def __init__(self, parent, **kw):
         super().__init__(parent, **kw)
-        self.condition_is_it_surface = True
-        self.condition_is_it_atom = False #TODO реализовать логику появление атома на графике
+        self.__scanAlgorithm = ScanAlgorithms()
+        self.is_it_surface = True
+        self.is_it_atom = False  # TODO реализовать перемещение атома
+        self.atoms_set = set()
+        self.atoms_list = []
         self.server = server.Server()
         self.condition_build_surface = True
         label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
@@ -53,7 +61,7 @@ class GraphFrame(tk.Frame):
         self.__y_previous = 0
         self.__z_previous = 0
         self.x_arr, self.y_arr = np.meshgrid(np.arange(0, MAX_VALUE, 1), np.arange(0, MAX_VALUE, 1))
-        self.data_arr = np.zeros((MAX_VALUE, MAX_VALUE))
+        self.data_arr_for_graph = np.zeros((MAX_VALUE, MAX_VALUE))
         self.surface = None
         self.dots_graph = None
         fig = plt.figure()
@@ -80,15 +88,45 @@ class GraphFrame(tk.Frame):
                 self.dots_graph.remove()
             except Exception as e:
                 print(str(e))
-            self.dots_graph = self.ax.scatter(x, y, z, s=5, c=COLOR_DOT, marker='8')
+            self.dots_graph = self.ax.scatter(x, y, z, s=5, c=COLOR_TIP, marker='8')
             self.__set_command_to_microcontroller(x_dict, y_dict, z_dict, x, y, z)
             self.__x_previous = x
             self.__y_previous = y
             self.__z_previous = z
-            if self.condition_is_it_surface:
-                self.data_arr[y, x] = z
+            if self.is_it_surface:
+                self.data_arr_for_graph[y, x] = z
+                # threading.Thread(target=self.__generate_surface).start() # независимая генерация данных для графика
+            if self.is_it_atom:
+                self.__add_unique_atom(x, y, z)
             if self.condition_build_surface:
                 self.__build_surface()
+
+    def __add_unique_atom(self, x, y, z):
+        atom_len = len(self.atoms_set)
+        self.atoms_set.add(f"{{'x':{x}, 'y':{y}, 'z':{z}}}")
+        if len(self.atoms_set) > atom_len:
+            dot_atom = self.ax.scatter(x, y, z, s=5, c=COLOR_ATOM, marker='8')
+            dot_atom: PathCollection
+            # coordinate = self.__get_coordinates(dot_atom)
+            self.atoms_list.append(dot_atom)
+
+    def __get_coordinates(self, dot_atom: PathCollection) -> dict:
+        _offsets3d = dot_atom.__getattribute__('_offsets3d')
+        return {
+            'x': int(_offsets3d[0][0]),
+            'y': int(_offsets3d[1][0]),
+            'z': int(_offsets3d[2][0]),
+        }
+
+    def __generate_surface(self):
+        gen = self.__scanAlgorithm.data_generator()
+        self.__scanAlgorithm.stop = False
+        while not self.__scanAlgorithm.stop:
+            try:
+                x, y, z = next(gen)
+                self.data_arr_for_graph[y, x] = z
+            except Exception as e:
+                print(str(e))
 
     def show_surface(self):
         self.__build_surface()
@@ -102,7 +140,7 @@ class GraphFrame(tk.Frame):
     def draw_graph(self):
         while not self.quit:
             try:
-                time.sleep(0.5)
+                time.sleep(SLEEP_BETWEEN_DRAW_GRAPH)
                 self.canvas.draw_idle()
             except Exception as e:
                 self.quit = True
@@ -131,25 +169,25 @@ class GraphFrame(tk.Frame):
         if args[0] != self.__x_previous:
             x_data = x_dict.copy()
             x_data = GraphFrame.__prepare_data(x_data)
-            print(x_data)
+            # print(x_data)
             self.server.send_data_to_all_clients(json.dumps(x_data))
             del x_data
         if args[1] != self.__y_previous:
             y_data = y_dict.copy()
             y_data = GraphFrame.__prepare_data(y_data)
-            print(y_data)
+            # print(y_data)
             self.server.send_data_to_all_clients(json.dumps(y_data))
             del y_data
         if args[2] != self.__z_previous:
             z_data = z_dict.copy()
             z_data = GraphFrame.__prepare_data(z_data)
-            print(z_data)
+            # print(z_data)
             self.server.send_data_to_all_clients(json.dumps(z_data))
             del z_data
 
     def __build_surface(self):
         self.remove_surface()
-        self.surface = self.ax.plot_surface(self.x_arr, self.y_arr, self.data_arr,
+        self.surface = self.ax.plot_surface(self.x_arr, self.y_arr, self.data_arr_for_graph,
                                             rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues_r'),
                                             )
         self.canvas.draw_idle()
@@ -158,5 +196,5 @@ class GraphFrame(tk.Frame):
     @staticmethod
     def __prepare_data(data: dict):
         val = int(data['value'])
-        data['value'] = val+40
+        data['value'] = val + 40 # todo вынести логику косающуюся конкретных реализаций манипулятора в код для него
         return data
