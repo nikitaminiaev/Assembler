@@ -1,10 +1,7 @@
 import threading
-
 import matplotlib
 from matplotlib.collections import PathCollection
-
 from controller.scanAlgorithms import ScanAlgorithms
-
 matplotlib.use("TkAgg")
 from sockets import server
 import json
@@ -15,13 +12,14 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import time
 import numpy as np
+from .constants import *
+
 
 LARGE_FONT = ("Verdana", 12)
 MULTIPLICITY = 1
 COLOR_TIP = 'g'
 COLOR_ATOM = 'r'
-MAX_VALUE = 76
-SLEEP_BETWEEN_DRAW_GRAPH = 0.5
+
 
 class Graph(tk.Tk):
 
@@ -47,8 +45,9 @@ class GraphFrame(tk.Frame):
     def __init__(self, parent, **kw):
         super().__init__(parent, **kw)
         self.__scanAlgorithm = ScanAlgorithms()
-        self.is_it_surface = True
+        self.is_it_surface = True # todo выделить корневую логику по работе с атомами в класс
         self.is_it_atom = False  # TODO реализовать перемещение атома
+        self.is_atom_captured = False # todo сли True нужно рендерить вторую красную точку с наконечником снизу и удалять атом с поверхности
         self.atoms_set = set()
         self.atoms_list = []
         self.server = server.Server()
@@ -60,15 +59,15 @@ class GraphFrame(tk.Frame):
         self.__x_previous = 0
         self.__y_previous = 0
         self.__z_previous = 0
-        self.x_arr, self.y_arr = np.meshgrid(np.arange(0, MAX_VALUE, 1), np.arange(0, MAX_VALUE, 1))
-        self.data_arr_for_graph = np.zeros((MAX_VALUE, MAX_VALUE))
+        self.x_arr, self.y_arr = np.meshgrid(np.arange(0, MAX_FIELD_SIZE, 1), np.arange(0, MAX_FIELD_SIZE, 1))
+        self.data_arr_for_graph = np.zeros((MAX_FIELD_SIZE, MAX_FIELD_SIZE))
         self.surface = None
         self.dots_graph = None
         fig = plt.figure()
         self.ax = fig.add_subplot(111, projection='3d')
 
-        plt.xlim(0, MAX_VALUE + 2)
-        plt.ylim(0, MAX_VALUE + 2)
+        plt.xlim(0, MAX_FIELD_SIZE + 2)
+        plt.ylim(0, MAX_FIELD_SIZE + 2)
 
         self.canvas = FigureCanvasTkAgg(fig, self)
         self.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
@@ -101,7 +100,7 @@ class GraphFrame(tk.Frame):
             if self.condition_build_surface:
                 self.__build_surface()
 
-    def __add_unique_atom(self, x, y, z):
+    def __add_unique_atom(self, x: int, y: int, z: int):
         atom_len = len(self.atoms_set)
         self.atoms_set.add(f"{{'x':{x}, 'y':{y}, 'z':{z}}}")
         if len(self.atoms_set) > atom_len:
@@ -168,19 +167,16 @@ class GraphFrame(tk.Frame):
     def __set_command_to_microcontroller(self, x_dict, y_dict, z_dict, *args):
         if args[0] != self.__x_previous:
             x_data = x_dict.copy()
-            x_data = GraphFrame.__prepare_data(x_data)
             # print(x_data)
             self.server.send_data_to_all_clients(json.dumps(x_data))
             del x_data
         if args[1] != self.__y_previous:
             y_data = y_dict.copy()
-            y_data = GraphFrame.__prepare_data(y_data)
             # print(y_data)
             self.server.send_data_to_all_clients(json.dumps(y_data))
             del y_data
         if args[2] != self.__z_previous:
             z_data = z_dict.copy()
-            z_data = GraphFrame.__prepare_data(z_data)
             # print(z_data)
             self.server.send_data_to_all_clients(json.dumps(z_data))
             del z_data
@@ -192,9 +188,3 @@ class GraphFrame(tk.Frame):
                                             )
         self.canvas.draw_idle()
         self.ax.mouse_init()
-
-    @staticmethod
-    def __prepare_data(data: dict):
-        val = int(data['value'])
-        data['value'] = val + 40 # todo вынести логику косающуюся конкретных реализаций манипулятора в код для него
-        return data

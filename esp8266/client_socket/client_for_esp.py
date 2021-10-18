@@ -26,7 +26,7 @@ class Client(Socket):
                 self.data = self.recv(self.PACKAGE_SIZE).decode(self.CODING)
                 if self.data == self.CONNECTED:
                     self.status = self.CONNECTED
-                self.send_data('hi_esp8266')
+                self.__send_data('hi_esp8266')
                 if (self.data_prev != self.data) and (self.CONNECTED != self.data):
                     try:
                         parsed = ujson.loads(self.data)
@@ -40,7 +40,7 @@ class Client(Socket):
                 self.set_down()
                 break
 
-    def send_data(self, data: str):
+    def __send_data(self, data: str):
         try:
             self.send(data.encode(self.CODING))
         except:

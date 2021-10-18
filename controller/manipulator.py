@@ -6,16 +6,14 @@ from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as
 import tkinter as tk
 from .dto import Dto
 import threading
-
-SLEEP_BETWEEN_SCAN_ITERATION = 0.11
+from .constants import *
 
 
 RELWIDTH = 0.7
 CANVAS_SIZE = 1000
 WINDOW_SIZE = '800x600'
 FRAME_COLOR = '#3d3d42'
-MAX = 75
-MIN = 0
+
 LENGTH = 300
 
 
@@ -41,7 +39,7 @@ class Manipulator(tk.Tk):
                 self.constructorFrames.scale_dto_y.var,
                 self.constructorFrames.scale_dto_z.var,
             )
-            self.graph.after(50, lambda: self.update_graph())
+            self.graph.after(MS_TO_UPDATE_GRAPH, lambda: self.update_graph())
 
         except Exception as e:
             print(str(e))
@@ -85,10 +83,10 @@ class ConstructorFrames:
 
         self.__auto_on_off_btn = Button(self.__frame_bottom_1, text='go/stop auto_scan', bg='#595959', command=self.auto)
         self.__build_surface_btn = Button(self.__frame_bottom_1, text='on/off build surface',
-                                          command=self.__build_surface)
+                                          command=self.__build_surface)  # не строит поверхноть, но копит данные о ней
         self.__is_it_surface_btn = Button(self.__frame_bottom_1, text='is it surface',
                                   command=self.__is_it_surface)
-        self.__stop_render_btn = Button(self.__frame_bottom_1, text='stop/go render', command=self.__stop_go_render)
+        self.__stop_render_btn = Button(self.__frame_bottom_1, text='stop/go render', command=self.__stop_go_render) # stop/go __drow_graph: canvas.draw_idle()
         self.__snap_to_point_btn = Button(self.__frame_bottom_2, text='snap_to_point', command=self.__snap_to_point)
         self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
         self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
