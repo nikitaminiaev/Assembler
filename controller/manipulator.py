@@ -1,10 +1,10 @@
 import matplotlib as plt
 import time
-from controller.scanAlgorithms import ScanAlgorithms
+from controller.core_logic.scan_algorithms import ScanAlgorithms
 from .graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as c
 import tkinter as tk
-from .dto import Dto
+from controller.core_logic.dto import Dto
 import threading
 from .constants import *
 
@@ -71,13 +71,13 @@ class ConstructorFrames:
         self.__frame_debug = Frame(tk, bg=FRAME_COLOR, bd=2)
         self.__frame_debug.place(relx=0.15, rely=0.75, relwidth=RELWIDTH, relheight=0.05)
 
-        self.scale_dto_x = Dto(Dto.SERVO_X, self.__frame_debug, side=c.LEFT)
+        self.scale_dto_x = Dto(Dto.SERVO_X)
         self.__scale_x = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='x',
                                command=self.scale_dto_x.on_scale)
-        self.scale_dto_y = Dto(Dto.SERVO_Y, self.__frame_debug, side=c.RIGHT)
+        self.scale_dto_y = Dto(Dto.SERVO_Y)
         self.__scale_y = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='y',
                                command=self.scale_dto_y.on_scale)
-        self.scale_dto_z = Dto(Dto.SERVO_Z, self.__frame_debug, c.LEFT)
+        self.scale_dto_z = Dto(Dto.SERVO_Z)
         self.__scale_z = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='z',
                                command=self.scale_dto_z.on_scale)
 
@@ -118,13 +118,13 @@ class ConstructorFrames:
             self.tk.graph.frame.condition_build_surface = True
 
     def __is_it_surface(self):
-        if self.tk.graph.frame.is_it_surface:
-            self.tk.graph.frame.is_it_surface = False
+        if self.tk.graph.frame.AtomWork.is_it_surface:
+            self.tk.graph.frame.AtomWork.is_it_surface = False
         else:
-            self.tk.graph.frame.is_it_surface = True
+            self.tk.graph.frame.AtomWork.is_it_surface = True
 
     def __save_file(self):
-        GraphFrame.write_data_to_json_file(self.__file_name.get(), self.tk.graph.frame.data_arr_for_graph.tolist())
+        GraphFrame.write_data_to_json_file(self.__file_name.get(), self.tk.graph.frame.get_data())
 
     def __load_file(self):
         pass
@@ -196,7 +196,7 @@ class ConstructorFrames:
             'scanAlgorithm.stop': {'condition': not self.scanAlgorithm.stop, 'button': self.__auto_on_off_btn},
             'tk.graph.frame.quit': {'condition': not self.tk.graph.frame.quit, 'button': self.__stop_render_btn},
             'tk.graph.frame.condition_build_surface': {'condition': self.tk.graph.frame.condition_build_surface, 'button': self.__build_surface_btn},
-            'tk.graph.frame.condition_is_it_surface': {'condition': self.tk.graph.frame.is_it_surface, 'button': self.__is_it_surface_btn},
+            'tk.graph.frame.condition_is_it_surface': {'condition': self.tk.graph.frame.AtomWork.is_it_surface, 'button': self.__is_it_surface_btn},
         }.get(cause)
 
         self.cycle_change_bg(cause)

@@ -1,7 +1,6 @@
 import random
 import numpy as np
-from .constants import *
-# import constants
+from controller.constants import *
 
 FIELD_SIZE = MAX_FIELD_SIZE - 1
 

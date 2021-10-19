@@ -1,4 +1,3 @@
-from tkinter import Text, constants as c
 
 class Dto:
 
@@ -8,7 +7,7 @@ class Dto:
     HALL = 'hall'
     SENSOR = 'sensor'
 
-    def __init__(self, sensor_name: str = '', frame=None, side=c.TOP):
+    def __init__(self, sensor_name: str = ''):
         self.sensor_name = sensor_name
         self.var = {
             Dto.SENSOR: sensor_name,
@@ -16,5 +15,5 @@ class Dto:
         }
 
     def on_scale(self, val):
-        self.var['value'] = str(int((val)))
+        self.var['value'] = str(int(val))
 

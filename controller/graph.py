@@ -1,7 +1,9 @@
 import threading
 import matplotlib
 from matplotlib.collections import PathCollection
-from controller.scanAlgorithms import ScanAlgorithms
+from controller.core_logic.scan_algorithms import ScanAlgorithms
+from .core_logic.atom_work import AtomWork
+
 matplotlib.use("TkAgg")
 from sockets import server
 import json
@@ -13,7 +15,6 @@ from mpl_toolkits.mplot3d import Axes3D
 import time
 import numpy as np
 from .constants import *
-
 
 LARGE_FONT = ("Verdana", 12)
 MULTIPLICITY = 1
@@ -44,12 +45,8 @@ class GraphFrame(tk.Frame):
 
     def __init__(self, parent, **kw):
         super().__init__(parent, **kw)
+        self.AtomWork = AtomWork()
         self.__scanAlgorithm = ScanAlgorithms()
-        self.is_it_surface = True # todo выделить корневую логику по работе с атомами в класс
-        self.is_it_atom = False  # TODO реализовать перемещение атома
-        self.is_atom_captured = False # todo сли True нужно рендерить вторую красную точку с наконечником снизу и удалять атом с поверхности
-        self.atoms_set = set()
-        self.atoms_list = []
         self.server = server.Server()
         self.condition_build_surface = True
         label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
@@ -60,7 +57,7 @@ class GraphFrame(tk.Frame):
         self.__y_previous = 0
         self.__z_previous = 0
         self.x_arr, self.y_arr = np.meshgrid(np.arange(0, MAX_FIELD_SIZE, 1), np.arange(0, MAX_FIELD_SIZE, 1))
-        self.data_arr_for_graph = np.zeros((MAX_FIELD_SIZE, MAX_FIELD_SIZE))
+        self.__data_arr_for_graph = np.zeros((MAX_FIELD_SIZE, MAX_FIELD_SIZE))
         self.surface = None
         self.dots_graph = None
         fig = plt.figure()
@@ -92,25 +89,18 @@ class GraphFrame(tk.Frame):
             self.__x_previous = x
             self.__y_previous = y
             self.__z_previous = z
-            if self.is_it_surface:
-                self.data_arr_for_graph[y, x] = z
+            if self.AtomWork.is_it_surface:
+                self.__data_arr_for_graph[y, x] = z # todo озможно стоит перенести это поле с данными в AtomWork
                 # threading.Thread(target=self.__generate_surface).start() # независимая генерация данных для графика
-            if self.is_it_atom:
-                self.__add_unique_atom(x, y, z)
+            if self.AtomWork.is_it_atom and self.AtomWork.atom_is_unique(x, y, z):
+                self.ax.scatter(x, y, z, s=5, c=COLOR_ATOM, marker='8')
+            if self.AtomWork.is_atom_captured:
+                pass # todo если True нужно рендерить вторую красную точку с наконечником снизу и удалять атом с поверхности
             if self.condition_build_surface:
                 self.__build_surface()
 
-    def __add_unique_atom(self, x: int, y: int, z: int):
-        atom_len = len(self.atoms_set)
-        self.atoms_set.add(f"{{'x':{x}, 'y':{y}, 'z':{z}}}")
-        if len(self.atoms_set) > atom_len:
-            dot_atom = self.ax.scatter(x, y, z, s=5, c=COLOR_ATOM, marker='8')
-            dot_atom: PathCollection
-            # coordinate = self.__get_coordinates(dot_atom)
-            self.atoms_list.append(dot_atom)
-
-    def __get_coordinates(self, dot_atom: PathCollection) -> dict:
-        _offsets3d = dot_atom.__getattribute__('_offsets3d')
+    def get_coordinates(self, dot: PathCollection) -> dict:
+        _offsets3d = dot.__getattribute__('_offsets3d')
         return {
             'x': int(_offsets3d[0][0]),
             'y': int(_offsets3d[1][0]),
@@ -123,7 +113,7 @@ class GraphFrame(tk.Frame):
         while not self.__scanAlgorithm.stop:
             try:
                 x, y, z = next(gen)
-                self.data_arr_for_graph[y, x] = z
+                self.__data_arr_for_graph[y, x] = z
             except Exception as e:
                 print(str(e))
 
@@ -166,25 +156,22 @@ class GraphFrame(tk.Frame):
 
     def __set_command_to_microcontroller(self, x_dict, y_dict, z_dict, *args):
         if args[0] != self.__x_previous:
-            x_data = x_dict.copy()
             # print(x_data)
-            self.server.send_data_to_all_clients(json.dumps(x_data))
-            del x_data
+            self.server.send_data_to_all_clients(json.dumps(x_dict.copy()))
         if args[1] != self.__y_previous:
-            y_data = y_dict.copy()
             # print(y_data)
-            self.server.send_data_to_all_clients(json.dumps(y_data))
-            del y_data
+            self.server.send_data_to_all_clients(json.dumps(y_dict.copy()))
         if args[2] != self.__z_previous:
-            z_data = z_dict.copy()
             # print(z_data)
-            self.server.send_data_to_all_clients(json.dumps(z_data))
-            del z_data
+            self.server.send_data_to_all_clients(json.dumps(z_dict.copy()))
 
     def __build_surface(self):
         self.remove_surface()
-        self.surface = self.ax.plot_surface(self.x_arr, self.y_arr, self.data_arr_for_graph,
+        self.surface = self.ax.plot_surface(self.x_arr, self.y_arr, self.__data_arr_for_graph,
                                             rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues_r'),
                                             )
         self.canvas.draw_idle()
         self.ax.mouse_init()
+
+    def get_data(self) -> object:
+        return self.__data_arr_for_graph.tolist()
