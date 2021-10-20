@@ -1,13 +1,10 @@
 import threading
 import matplotlib
-from matplotlib.collections import PathCollection
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Path3DCollection
-
 from controller.core_logic.scan_algorithms import ScanAlgorithms
 from .core_logic.atom_logic import AtomsLogic
 
 matplotlib.use("TkAgg")
-from sockets import server
 import json
 import os
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -72,10 +69,10 @@ class GraphFrame(tk.Frame):
         toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-    def update_data(self, x_dict: dict, y_dict: dict, z_dict: dict):
-        x = int(x_dict['value'])
-        y = int(y_dict['value'])
-        z = int(z_dict['value'])
+    def update_data(self):
+        x = int(self.atoms_logic.dto_x.var['value'])
+        y = int(self.atoms_logic.dto_y.var['value'])
+        z = int(self.atoms_logic.dto_z.var['value'])
         if self.atoms_logic.is_new_point(x, y, z):
             try:
                 self.tool_tip.remove() if self.tool_tip is not None else None
@@ -83,7 +80,11 @@ class GraphFrame(tk.Frame):
             except Exception as e:
                 print(str(e))
             self.tool_tip = self.ax.scatter(x, y, z, s=5, c=COLOR_TIP, marker='8')
-            self.atoms_logic.update_tool_coordinate(x_dict, y_dict, z_dict)
+            self.atoms_logic.update_tool_coordinate(
+                self.atoms_logic.dto_x.var,
+                self.atoms_logic.dto_y.var,
+                self.atoms_logic.dto_z.var
+            )
             if self.atoms_logic.is_it_surface:
                 self.__data_arr_for_graph[y, x] = z  # todo озможно стоит перенести это поле с данными в atoms_logic
                 # threading.Thread(target=self.__generate_surface).start() # независимая генерация данных для графика

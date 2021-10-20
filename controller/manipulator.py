@@ -4,7 +4,6 @@ from controller.core_logic.scan_algorithms import ScanAlgorithms
 from .graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as c
 import tkinter as tk
-from controller.core_logic.dto import Dto
 import threading
 from .constants import *
 
@@ -27,18 +26,14 @@ class Manipulator(tk.Tk):
         self.title('Manipulator')
         self.wm_attributes('-alpha', 0.7)
         self.geometry(WINDOW_SIZE)
-        self.constructorFrames = ConstructorFrames(self)
         self.graph = Graph()
+        self.constructorFrames = ConstructorFrames(self)
         self.constructorFrames.pack()
         self.graph.after_idle(self.update_graph)
 
     def update_graph(self):
         try:
-            self.graph.frame.update_data(
-                self.constructorFrames.scale_dto_x.var,
-                self.constructorFrames.scale_dto_y.var,
-                self.constructorFrames.scale_dto_z.var,
-            )
+            self.graph.frame.update_data()
             self.graph.after(MS_TO_UPDATE_GRAPH, lambda: self.update_graph())
 
         except Exception as e:
@@ -71,15 +66,12 @@ class ConstructorFrames:
         self.__frame_debug = Frame(tk, bg=FRAME_COLOR, bd=2)
         self.__frame_debug.place(relx=0.15, rely=0.75, relwidth=RELWIDTH, relheight=0.05)
 
-        self.scale_dto_x = Dto(Dto.SERVO_X)
         self.__scale_x = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='x',
-                               command=self.scale_dto_x.on_scale)
-        self.scale_dto_y = Dto(Dto.SERVO_Y)
+                               command=self.tk.graph.frame.atoms_logic.dto_x.on_scale)
         self.__scale_y = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='y',
-                               command=self.scale_dto_y.on_scale)
-        self.scale_dto_z = Dto(Dto.SERVO_Z)
+                               command=self.tk.graph.frame.atoms_logic.dto_y.on_scale)
         self.__scale_z = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='z',
-                               command=self.scale_dto_z.on_scale)
+                               command=self.tk.graph.frame.atoms_logic.dto_z.on_scale)
 
         self.__auto_on_off_btn = Button(self.__frame_bottom_1, text='go/stop auto_scan', bg='#595959', command=self.auto)
         self.__build_surface_btn = Button(self.__frame_bottom_1, text='on/off build surface',
@@ -101,9 +93,9 @@ class ConstructorFrames:
         self.scanAlgorithm = ScanAlgorithms()
 
     def __snap_to_point(self):
-        self.__scale_x.set(self.scale_dto_x.var['value'])
-        self.__scale_y.set(self.scale_dto_y.var['value'])
-        self.__scale_z.set(self.scale_dto_z.var['value'])
+        self.__scale_x.set(self.tk.graph.frame.atoms_logic.dto_x.var['value'])
+        self.__scale_y.set(self.tk.graph.frame.atoms_logic.dto_y.var['value'])
+        self.__scale_z.set(self.tk.graph.frame.atoms_logic.dto_z.var['value'])
 
     def __remove_surface(self):
         self.tk.graph.frame.remove_surface()
@@ -142,9 +134,9 @@ class ConstructorFrames:
             time.sleep(SLEEP_BETWEEN_SCAN_ITERATION)
             try:
                 x, y, z = next(gen)
-                self.scale_dto_x.var['value'] = x
-                self.scale_dto_y.var['value'] = y
-                self.scale_dto_z.var['value'] = z
+                self.tk.graph.frame.atoms_logic.dto_x.var['value'] = x
+                self.tk.graph.frame.atoms_logic.dto_y.var['value'] = y
+                self.tk.graph.frame.atoms_logic.dto_z.var['value'] = z
             except Exception as e:
                 print(str(e))
 
