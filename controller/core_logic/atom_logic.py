@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 import json
 from controller.core_logic.atom import Atom
 from controller.core_logic.tool import Tool
@@ -47,3 +47,13 @@ class AtomsLogic:
         if z_dict['value'] != self.__tool.z:
             # print(z_dict)
             self.server.send_data_to_all_clients(json.dumps(z_dict.copy()))
+
+    def mark_atom_capture(self, *args) -> Tuple[int, ...]:
+        for atom in self.__atoms_list:
+            is_x_in = atom.coordinates[0] in range(args[0] - 1, args[0] + 2)
+            is_y_in = atom.coordinates[1] in range(args[1] - 1, args[1] + 2)
+            is_z_in = atom.coordinates[2] in range(args[2] - 3, args[2] + 1)
+            if is_x_in and is_y_in and is_z_in:
+                atom.is_captured = True
+                return atom.coordinates
+        return (0, 0, 0)

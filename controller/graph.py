@@ -1,6 +1,8 @@
 import threading
 import matplotlib
 from matplotlib.collections import PathCollection
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Path3DCollection
+
 from controller.core_logic.scan_algorithms import ScanAlgorithms
 from .core_logic.atom_logic import AtomsLogic
 
@@ -91,18 +93,28 @@ class GraphFrame(tk.Frame):
                 self.ax.scatter(x, y, z, s=5, c=COLOR_ATOM, marker='8')
             if self.atoms_logic.is_atom_captured():
                 self.captured_atom = self.ax.scatter(x, y, z - 1, s=5, c=COLOR_ATOM, marker='8')
-                # todo удалять атом с графика
+                atom_coordinates = self.atoms_logic.mark_atom_capture((x, y, z))
+                self.__remove_captured_atom(*atom_coordinates)
             if self.condition_build_surface:
                 self.__build_surface()
 
+
+    def __remove_captured_atom(self, *args):
+        for dot in self.ax.collections:
+            if isinstance(dot, Poly3DCollection):
+                continue
+            dot: Path3DCollection
+            if args == self.__get_dot_coordinates(dot):
+                dot.remove()
+
     @staticmethod
-    def __get_dot_coordinates(dot: PathCollection) -> dict:
+    def __get_dot_coordinates(dot: Path3DCollection) -> tuple:
         _offsets3d = dot.__getattribute__('_offsets3d')
-        return {
-            'x': int(_offsets3d[0][0]),
-            'y': int(_offsets3d[1][0]),
-            'z': int(_offsets3d[2][0]),
-        }
+        return (
+            int(_offsets3d[0][0]),
+            int(_offsets3d[1][0]),
+            int(_offsets3d[2][0]),
+        )
 
     def __generate_surface(self):
         gen = self.__scanAlgorithm.data_generator()
@@ -161,3 +173,7 @@ class GraphFrame(tk.Frame):
 
     def get_data(self) -> object:
         return self.__data_arr_for_graph.tolist()
+
+
+
+

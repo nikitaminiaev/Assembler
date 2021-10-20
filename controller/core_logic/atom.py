@@ -5,21 +5,15 @@ from matplotlib.collections import PathCollection
 
 class Atom:
 
-    def __init__(self, coordinates: tuple, type: str='carbon'):
-        self.coordinates: Tuple[int] = coordinates
+    def __init__(self, coordinates: tuple, type: str = 'carbon'):
+        self.coordinates: Tuple[int, ...] = coordinates
         self.type: str = type
         self.is_captured: bool = False
 
-    def __eq__(self, other):
+    def __eq__(self, other):  # todo добавить сюда сравнение на type
         if not hasattr(other, 'coordinates'):
             return False
         return self.coordinates == other.coordinates
-
-
-    #
-    # @staticmethod
-    # def set_coordinates(dot: PathCollection, x: int, y: int, z: int) -> None:
-    #     dot.__setattr__('_offsets3d', (x, y, z))
 
 
 if __name__ == '__main__':
