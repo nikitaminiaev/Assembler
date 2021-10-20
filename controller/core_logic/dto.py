@@ -8,7 +8,6 @@ class Dto:
     SENSOR = 'sensor'
 
     def __init__(self, sensor_name: str = ''):
-        self.sensor_name = sensor_name
         self.var = {
             Dto.SENSOR: sensor_name,
             'value': '0',

@@ -1,6 +1,7 @@
 from typing import List, Tuple
 import json
 from controller.core_logic.atom import Atom
+from controller.core_logic.dto import Dto
 from controller.core_logic.tool import Tool
 from sockets import server
 
@@ -10,6 +11,9 @@ MULTIPLICITY = 1
 class AtomsLogic:
 
     def __init__(self):
+        self.dto_x = Dto(Dto.SERVO_X)
+        self.dto_y = Dto(Dto.SERVO_Y)
+        self.dto_z = Dto(Dto.SERVO_Z)
         self.is_it_surface: bool = True
         self.is_it_atom: bool = False  # TODO реализовать перемещение атома
         self.server = server.Server()

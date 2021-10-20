@@ -1,7 +1,5 @@
 from typing import Tuple
 
-from matplotlib.collections import PathCollection
-
 
 class Atom:
 
