@@ -80,10 +80,10 @@ class GraphFrame(tk.Frame):
                 print(str(e))
             self.tool_tip = self.ax.scatter(x, y, z, s=5, c=COLOR_TIP, marker='8')
             self.atoms_logic.update_tool_coordinate()
-            if self.atoms_logic.is_it_surface:
+            if self.atoms_logic.is_it_surface():
                 self.atoms_logic.surface_data[y, x] = z
                 # threading.Thread(target=self.__generate_surface).start() # независимая генерация данных для графика
-            if self.atoms_logic.is_it_atom and \
+            if self.atoms_logic.is_it_atom() and \
                     self.atoms_logic.append_unique_atom(x, y, z) and \
                     not self.atoms_logic.is_atom_captured():
                 self.ax.scatter(x, y, z, s=5, c=COLOR_ATOM, marker='8')

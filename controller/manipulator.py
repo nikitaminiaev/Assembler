@@ -46,7 +46,7 @@ class Manipulator(tk.Tk):
     def custom_mainloop(self):
         try:
             threading.Thread(target=self.graph.frame.draw_graph).start()
-            self.graph.frame.atoms_logic.server.set_up()
+            # self.graph.frame.atoms_logic.server.set_up()
             self.graph.mainloop()
             self.mainloop()
         except Exception as e:
@@ -95,6 +95,7 @@ class ConstructorFrames:
         self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
         self.default_bg = self.__stop_render_btn.cget("background")
         self.scanAlgorithm = ScanAlgorithms()
+        self.__snap_to_point()
 
     def __transmitting_value_x(self, x: int):
         y = self.tk.graph.frame.atoms_logic.dto_y.get_val()
@@ -104,7 +105,7 @@ class ConstructorFrames:
     def __transmitting_value_y(self, y: int):
         x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
         z = self.tk.graph.frame.atoms_logic.dto_z.get_val()
-        self.tk.graph.frame.atoms_logic.dto_y.set_val((x, y, z))
+        self.tk.graph.frame.atoms_logic.dto_y.set_val((x, y, z)) # todo возможно тут ловить ошибку и привязывать к точке
 
     def __transmitting_value_z(self, z: int):
         x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
@@ -115,9 +116,9 @@ class ConstructorFrames:
         x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
         y = self.tk.graph.frame.atoms_logic.dto_y.get_val()
         z = self.tk.graph.frame.atoms_logic.dto_z.get_val()
-        self.__scale_x.set((x, y, z))
-        self.__scale_y.set((x, y, z))
-        self.__scale_z.set((x, y, z))
+        self.__scale_x.set(x)
+        self.__scale_y.set(y)
+        self.__scale_z.set(z)
 
     def __remove_surface(self):
         self.tk.graph.frame.remove_surface()
@@ -132,10 +133,10 @@ class ConstructorFrames:
             self.tk.graph.frame.condition_build_surface = True
 
     def __is_it_surface(self):
-        if self.tk.graph.frame.atoms_logic.is_it_surface:
-            self.tk.graph.frame.atoms_logic.is_it_surface = False
+        if self.tk.graph.frame.atoms_logic.is_it_surface():
+            self.tk.graph.frame.atoms_logic.set_is_it_surface(False)
         else:
-            self.tk.graph.frame.atoms_logic.is_it_surface = True
+            self.tk.graph.frame.atoms_logic.set_is_it_surface(True)
 
     def __save_file(self):
         GraphFrame.write_data_to_json_file(self.__file_name.get(), self.tk.graph.frame.get_data())
@@ -210,7 +211,7 @@ class ConstructorFrames:
             'scanAlgorithm.stop': {'condition': not self.scanAlgorithm.stop, 'button': self.__auto_on_off_btn},
             'tk.graph.frame.quit': {'condition': not self.tk.graph.frame.quit, 'button': self.__stop_render_btn},
             'tk.graph.frame.condition_build_surface': {'condition': self.tk.graph.frame.condition_build_surface, 'button': self.__build_surface_btn},
-            'tk.graph.frame.condition_is_it_surface': {'condition': self.tk.graph.frame.atoms_logic.is_it_surface, 'button': self.__is_it_surface_btn},
+            'tk.graph.frame.condition_is_it_surface': {'condition': self.tk.graph.frame.atoms_logic.is_it_surface(), 'button': self.__is_it_surface_btn},
         }.get(cause)
 
         self.cycle_change_bg(cause)
