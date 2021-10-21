@@ -1,3 +1,5 @@
+import traceback
+
 import matplotlib as plt
 import time
 from controller.core_logic.scan_algorithms import ScanAlgorithms
@@ -38,6 +40,7 @@ class Manipulator(tk.Tk):
 
         except Exception as e:
             print(str(e))
+            print(traceback.format_exc())
             exit(0)
 
     def custom_mainloop(self):
@@ -48,6 +51,7 @@ class Manipulator(tk.Tk):
             self.mainloop()
         except Exception as e:
             print(str(e))
+            print(traceback.format_exc())
             exit(0)
 
 
@@ -67,11 +71,11 @@ class ConstructorFrames:
         self.__frame_debug.place(relx=0.15, rely=0.75, relwidth=RELWIDTH, relheight=0.05)
 
         self.__scale_x = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='x',
-                               command=self.tk.graph.frame.atoms_logic.dto_x.on_scale)
+                               command=self.__transmitting_value_x)
         self.__scale_y = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='y',
-                               command=self.tk.graph.frame.atoms_logic.dto_y.on_scale)
+                               command=self.__transmitting_value_y)
         self.__scale_z = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='z',
-                               command=self.tk.graph.frame.atoms_logic.dto_z.on_scale)
+                               command=self.__transmitting_value_z)
 
         self.__auto_on_off_btn = Button(self.__frame_bottom_1, text='go/stop auto_scan', bg='#595959', command=self.auto)
         self.__build_surface_btn = Button(self.__frame_bottom_1, text='on/off build surface',
@@ -92,10 +96,28 @@ class ConstructorFrames:
         self.default_bg = self.__stop_render_btn.cget("background")
         self.scanAlgorithm = ScanAlgorithms()
 
+    def __transmitting_value_x(self, x: int):
+        y = self.tk.graph.frame.atoms_logic.dto_y.get_val()
+        z = self.tk.graph.frame.atoms_logic.dto_z.get_val()
+        self.tk.graph.frame.atoms_logic.dto_x.set_val((x, y, z))
+
+    def __transmitting_value_y(self, y: int):
+        x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
+        z = self.tk.graph.frame.atoms_logic.dto_z.get_val()
+        self.tk.graph.frame.atoms_logic.dto_y.set_val((x, y, z))
+
+    def __transmitting_value_z(self, z: int):
+        x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
+        y = self.tk.graph.frame.atoms_logic.dto_y.get_val()
+        self.tk.graph.frame.atoms_logic.dto_z.set_val((x, y, z))
+
     def __snap_to_point(self):
-        self.__scale_x.set(self.tk.graph.frame.atoms_logic.dto_x.var['value'])
-        self.__scale_y.set(self.tk.graph.frame.atoms_logic.dto_y.var['value'])
-        self.__scale_z.set(self.tk.graph.frame.atoms_logic.dto_z.var['value'])
+        x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
+        y = self.tk.graph.frame.atoms_logic.dto_y.get_val()
+        z = self.tk.graph.frame.atoms_logic.dto_z.get_val()
+        self.__scale_x.set((x, y, z))
+        self.__scale_y.set((x, y, z))
+        self.__scale_z.set((x, y, z))
 
     def __remove_surface(self):
         self.tk.graph.frame.remove_surface()
@@ -134,9 +156,9 @@ class ConstructorFrames:
             time.sleep(SLEEP_BETWEEN_SCAN_ITERATION)
             try:
                 x, y, z = next(gen)
-                self.tk.graph.frame.atoms_logic.dto_x.var['value'] = x
-                self.tk.graph.frame.atoms_logic.dto_y.var['value'] = y
-                self.tk.graph.frame.atoms_logic.dto_z.var['value'] = z
+                self.tk.graph.frame.atoms_logic.dto_x.set_val((x, y, z))
+                self.tk.graph.frame.atoms_logic.dto_y.set_val((x, y, z))
+                self.tk.graph.frame.atoms_logic.dto_z.set_val((x, y, z))
             except Exception as e:
                 print(str(e))
 
@@ -179,9 +201,9 @@ class ConstructorFrames:
         self.__load_data_btn.pack(side=c.LEFT)
 
     def scale_set(self, x, y, z):
-        self.__scale_x.set(x)
-        self.__scale_y.set(y)
-        self.__scale_z.set(z)
+        self.__scale_x.set((x, y, z))
+        self.__scale_y.set((x, y, z))
+        self.__scale_z.set((x, y, z))
 
     def change_button(self, event, cause):
         cause = {

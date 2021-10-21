@@ -16,7 +16,6 @@ import numpy as np
 from .constants import *
 
 LARGE_FONT = ("Verdana", 12)
-MULTIPLICITY = 1
 COLOR_TIP = 'g'
 COLOR_ATOM = 'r'
 
@@ -52,7 +51,7 @@ class GraphFrame(tk.Frame):
         self.is_new_point = False
         self.quit = False
         self.x_arr, self.y_arr = np.meshgrid(np.arange(0, MAX_FIELD_SIZE, 1), np.arange(0, MAX_FIELD_SIZE, 1))
-        self.__data_arr_for_graph = np.zeros((MAX_FIELD_SIZE, MAX_FIELD_SIZE))
+
         self.surface = None
         self.tool_tip = None
         self.captured_atom = None
@@ -70,9 +69,9 @@ class GraphFrame(tk.Frame):
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
     def update_data(self):
-        x = int(self.atoms_logic.dto_x.var['value'])
-        y = int(self.atoms_logic.dto_y.var['value'])
-        z = int(self.atoms_logic.dto_z.var['value'])
+        x = self.atoms_logic.dto_x.get_val()
+        y = self.atoms_logic.dto_y.get_val()
+        z = self.atoms_logic.dto_z.get_val()
         if self.atoms_logic.is_new_point(x, y, z):
             try:
                 self.tool_tip.remove() if self.tool_tip is not None else None
@@ -80,13 +79,9 @@ class GraphFrame(tk.Frame):
             except Exception as e:
                 print(str(e))
             self.tool_tip = self.ax.scatter(x, y, z, s=5, c=COLOR_TIP, marker='8')
-            self.atoms_logic.update_tool_coordinate(
-                self.atoms_logic.dto_x.var,
-                self.atoms_logic.dto_y.var,
-                self.atoms_logic.dto_z.var
-            )
+            self.atoms_logic.update_tool_coordinate()
             if self.atoms_logic.is_it_surface:
-                self.__data_arr_for_graph[y, x] = z  # todo озможно стоит перенести это поле с данными в atoms_logic
+                self.atoms_logic.surface_data[y, x] = z
                 # threading.Thread(target=self.__generate_surface).start() # независимая генерация данных для графика
             if self.atoms_logic.is_it_atom and \
                     self.atoms_logic.append_unique_atom(x, y, z) and \
@@ -122,7 +117,7 @@ class GraphFrame(tk.Frame):
         while not self.__scanAlgorithm.stop:
             try:
                 x, y, z = next(gen)
-                self.__data_arr_for_graph[y, x] = z
+                self.atoms_logic.surface_data[y, x] = z
             except Exception as e:
                 print(str(e))
 
@@ -165,11 +160,11 @@ class GraphFrame(tk.Frame):
 
     def __build_surface(self):
         self.remove_surface()
-        self.surface = self.ax.plot_surface(self.x_arr, self.y_arr, self.__data_arr_for_graph,
+        self.surface = self.ax.plot_surface(self.x_arr, self.y_arr, self.atoms_logic.surface_data,
                                             rstride=1, cstride=1, cmap=plt.cm.get_cmap('Blues_r'),
                                             )
         self.canvas.draw_idle()
         self.ax.mouse_init()
 
     def get_data(self) -> object:
-        return self.__data_arr_for_graph.tolist()
+        return self.atoms_logic.surface_data.tolist()

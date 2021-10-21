@@ -1,5 +1,7 @@
 from typing import List, Tuple
 import json
+import numpy as np
+from controller.constants import *
 from controller.core_logic.atom import Atom
 from controller.core_logic.dto import Dto
 from controller.core_logic.tool import Tool
@@ -11,9 +13,10 @@ MULTIPLICITY = 1
 class AtomsLogic:
 
     def __init__(self):
-        self.dto_x = Dto(Dto.SERVO_X)
-        self.dto_y = Dto(Dto.SERVO_Y)
-        self.dto_z = Dto(Dto.SERVO_Z)
+        self.surface_data = np.zeros((MAX_FIELD_SIZE, MAX_FIELD_SIZE))
+        self.dto_x = Dto(Dto.SERVO_X, self.surface_data)
+        self.dto_y = Dto(Dto.SERVO_Y, self.surface_data)
+        self.dto_z = Dto(Dto.SERVO_Z, self.surface_data)
         self.is_it_surface: bool = True
         self.is_it_atom: bool = False  # TODO реализовать перемещение атома
         self.server = server.Server()
@@ -35,22 +38,22 @@ class AtomsLogic:
         return (x != self.__tool.x or y != self.__tool.y or z != self.__tool.z) and \
                ((x % MULTIPLICITY == 0) or (y % MULTIPLICITY == 0) or (z % MULTIPLICITY == 0))
 
-    def update_tool_coordinate(self, x_dict: dict, y_dict: dict, z_dict: dict):
-        self.__set_command_to_microcontroller(x_dict, y_dict, z_dict)
-        self.__tool.x = x_dict['value']
-        self.__tool.y = y_dict['value']
-        self.__tool.z = z_dict['value']
+    def update_tool_coordinate(self):
+        self.__set_command_to_microcontroller()
+        self.__tool.x = self.dto_x.get_val()
+        self.__tool.y = self.dto_y.get_val()
+        self.__tool.z = self.dto_z.get_val()
 
-    def __set_command_to_microcontroller(self, x_dict, y_dict, z_dict):
-        if x_dict['value'] != self.__tool.x:
+    def __set_command_to_microcontroller(self):
+        if self.dto_x.get_val() != self.__tool.x:
             # print(x_dict)
-            self.server.send_data_to_all_clients(json.dumps(x_dict.copy()))
-        if y_dict['value'] != self.__tool.y:
+            self.server.send_data_to_all_clients(json.dumps(self.dto_x.get_copy_var()))
+        if self.dto_y.get_val() != self.__tool.y:
             # print(y_dict)
-            self.server.send_data_to_all_clients(json.dumps(y_dict.copy()))
-        if z_dict['value'] != self.__tool.z:
+            self.server.send_data_to_all_clients(json.dumps(self.dto_y.get_copy_var()))
+        if self.dto_z.get_val() != self.__tool.z:
             # print(z_dict)
-            self.server.send_data_to_all_clients(json.dumps(z_dict.copy()))
+            self.server.send_data_to_all_clients(json.dumps(self.dto_z.get_copy_var()))
 
     def mark_atom_capture(self, *args) -> Tuple[int, ...]:
         for atom in self.__atoms_list:
