@@ -19,28 +19,37 @@ class Dto:
     }
 
     def __init__(self, sensor_name: str, surface_data: ndarray, tool: Tool):
-        self.__var = {
-            Dto.SENSOR: sensor_name,
-            'value': '0',
-        }
+        self.sensor_name = sensor_name
+        self.__value: int = 0
         self.__surface_data = surface_data
         self.__tool = tool
 
     def get_copy_var(self):
-        return self.__var.copy()
+        return {
+            Dto.SENSOR: self.sensor_name,
+            'value': str(self.__value)
+        }
 
     def set_val(self, coordinates: Tuple[int, int, int]) -> None:
         try:
             self.__validate_val(coordinates)
-            self.__var['value'] = str(coordinates[Dto.COORDINATE_ORDER[self.__var[Dto.SENSOR]]])
+            self.__value = int(coordinates[Dto.COORDINATE_ORDER[self.sensor_name]])
         except TouchingSurface as e:
             print(traceback.format_exc())
             print(str(e))
 
     def get_val(self) -> int:
-        return int(self.__var['value'])
+        return self.__value
 
     def __validate_val(self, coordinates: tuple) -> None:
         coordinates = tuple(map(int, coordinates))
-        if coordinates[2] < int(self.__surface_data.item((coordinates[1], coordinates[0]))):
+        if (self.sensor_name == Dto.SERVO_X or self.sensor_name == Dto.SERVO_Y) \
+           and coordinates[2] < int(self.__surface_data.item((coordinates[1], coordinates[0]))):
             raise TouchingSurface()
+        if self.sensor_name == Dto.SERVO_Z and self.__tool.is_it_surface and coordinates[2] < self.__value:
+            raise TouchingSurface()
+        if self.sensor_name == Dto.SERVO_Z \
+           and not self.__tool.is_it_surface \
+           and coordinates[2] < self.__value \
+           and int(self.__surface_data.item((coordinates[1], coordinates[0]))) != 0:
+            self.__surface_data[coordinates[1], coordinates[0]] = coordinates[2]
