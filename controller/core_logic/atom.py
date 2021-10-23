@@ -13,6 +13,8 @@ class Atom:
             return False
         return self.coordinates == other.coordinates
 
+    def set_coordinates(self, *args):
+        self.coordinates = args
 
 if __name__ == '__main__':
     l = [Atom((1, 1, 1)), Atom((1, 2, 1))]

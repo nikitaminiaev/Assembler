@@ -1,7 +1,9 @@
 import threading
+import traceback
 import matplotlib
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Path3DCollection
 from controller.core_logic.scan_algorithms import ScanAlgorithms
+from .core_logic.atom import Atom
 from .core_logic.atom_logic import AtomsLogic
 
 matplotlib.use("TkAgg")
@@ -77,6 +79,8 @@ class GraphFrame(tk.Frame):
                 self.tool_tip.remove() if self.tool_tip is not None else None
                 self.captured_atom.remove() if self.captured_atom is not None else None
             except Exception as e:
+                self.captured_atom = None
+                print(traceback.format_exc())
                 print(str(e))
             self.tool_tip = self.ax.scatter(x, y, z, s=5, c=COLOR_TIP, marker='8')
             self.atoms_logic.update_tool_coordinate()
@@ -89,18 +93,28 @@ class GraphFrame(tk.Frame):
                 self.ax.scatter(x, y, z, s=5, c=COLOR_ATOM, marker='8')
             if self.atoms_logic.is_atom_captured():
                 self.captured_atom = self.ax.scatter(x, y, z - 1, s=5, c=COLOR_ATOM, marker='8')
-                atom_coordinates = self.atoms_logic.mark_atom_capture((x, y, z))
-                self.__remove_captured_atom(*atom_coordinates)
+            if self.atoms_logic.atom_captured_event:
+                self.__remove_captured_atom()
+                self.atoms_logic.atom_captured_event = False
+            if self.atoms_logic.atom_release_event:  # todo перенести всю эту логику в atom_logic
+                self.ax.scatter(x, y, z, s=5, c=COLOR_ATOM, marker='8')
+                self.atoms_logic.atom_release_event = False
             if self.condition_build_surface:
                 self.__build_surface()
 
-    def __remove_captured_atom(self, *args):
+    def __remove_captured_atom(self):
+        atom = self.__get_captured_atom()
         for dot in self.ax.collections:
             if isinstance(dot, Poly3DCollection):
                 continue
             dot: Path3DCollection
-            if args == self.__get_dot_coordinates(dot):
+            if atom.coordinates == self.__get_dot_coordinates(dot):
                 dot.remove()
+
+    def __get_captured_atom(self) -> Atom:
+        for atom in self.atoms_logic.atoms_list:
+            if atom.is_captured:
+                return atom
 
     @staticmethod
     def __get_dot_coordinates(dot: Path3DCollection) -> tuple:
@@ -119,6 +133,7 @@ class GraphFrame(tk.Frame):
                 x, y, z = next(gen)
                 self.atoms_logic.surface_data[y, x] = z
             except Exception as e:
+                print(traceback.format_exc())
                 print(str(e))
 
     def show_surface(self):
@@ -128,6 +143,7 @@ class GraphFrame(tk.Frame):
         try:
             self.surface.remove() if self.surface is not None else None
         except Exception as e:
+            print(traceback.format_exc())
             print(str(e))
 
     def draw_graph(self):
@@ -137,6 +153,7 @@ class GraphFrame(tk.Frame):
                 self.canvas.draw_idle()
             except Exception as e:
                 self.quit = True
+                print(traceback.format_exc())
                 print(str(e))
                 exit(0)
 
