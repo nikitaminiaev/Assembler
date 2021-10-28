@@ -23,7 +23,7 @@ class Socket(socket.socket):
         self._quit = False
         self.clients = []
         self.status = 'offline'
-        self.data = ''
+        self.data_from_client = ''
 
     def set_down(self):
         self.status = f"\n[ {self.type_object} stopped ]"

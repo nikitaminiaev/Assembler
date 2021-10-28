@@ -28,8 +28,8 @@ class Server(Socket):
                 client_socket, address = self.accept()
                 self.clients.append(client_socket)
                 client_socket.send(CONNECTED.encode(CODING))
-                self.data = client_socket.recv(PACKAGE_SIZE).decode(CODING)
-                print(self.data)
+                self.data_from_client = client_socket.recv(PACKAGE_SIZE).decode(CODING)
+                print(self.data_from_client)
             except:
                 self.set_down()
 

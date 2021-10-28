@@ -1,5 +1,7 @@
 import machine
 
+CORRECT_FOR_CARRENT_WORKE = 40
+
 
 class ServoController:
 
@@ -12,7 +14,7 @@ class ServoController:
 
     def process_data(self, data: dict):
         sensor = data['sensor']
-        value = data['value']
+        value = int(data['value']) + CORRECT_FOR_CARRENT_WORKE
         if -1 != (sensor.find('servo')):
             exec('self.%s.duty(%d)' % (sensor, value), {}, {'self': self})
         # if -1 != (sensor.find('')):

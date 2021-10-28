@@ -1,20 +1,20 @@
+import traceback
+
 import matplotlib as plt
 import time
-from esp8266.scanAlgorithms import ScanAlgorithms
+from controller.core_logic.scan_algorithms import ScanAlgorithms
 from .graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as c
 import tkinter as tk
-from .dto import Dto
 import threading
+from .constants import *
+
 
 RELWIDTH = 0.7
-
 CANVAS_SIZE = 1000
-
 WINDOW_SIZE = '800x600'
 FRAME_COLOR = '#3d3d42'
-MAX = 75
-MIN = 0
+
 LENGTH = 300
 
 
@@ -28,32 +28,30 @@ class Manipulator(tk.Tk):
         self.title('Manipulator')
         self.wm_attributes('-alpha', 0.7)
         self.geometry(WINDOW_SIZE)
-        self.constructorFrames = ConstructorFrames(self)
         self.graph = Graph()
+        self.constructorFrames = ConstructorFrames(self)
         self.constructorFrames.pack()
         self.graph.after_idle(self.update_graph)
 
     def update_graph(self):
         try:
-            self.graph.frame.update_data(
-                self.constructorFrames.scale_dto_x.var,
-                self.constructorFrames.scale_dto_y.var,
-                self.constructorFrames.scale_dto_z.var,
-            )
-            self.graph.after(50, lambda: self.update_graph())
+            self.graph.frame.update_data()
+            self.graph.after(MS_TO_UPDATE_GRAPH, lambda: self.update_graph())
 
         except Exception as e:
             print(str(e))
+            print(traceback.format_exc())
             exit(0)
 
     def custom_mainloop(self):
         try:
             threading.Thread(target=self.graph.frame.draw_graph).start()
-            self.graph.frame.server.set_up()
+            # self.graph.frame.atoms_logic.server.set_up()
             self.graph.mainloop()
             self.mainloop()
         except Exception as e:
             print(str(e))
+            print(traceback.format_exc())
             exit(0)
 
 
@@ -72,22 +70,19 @@ class ConstructorFrames:
         self.__frame_debug = Frame(tk, bg=FRAME_COLOR, bd=2)
         self.__frame_debug.place(relx=0.15, rely=0.75, relwidth=RELWIDTH, relheight=0.05)
 
-        self.scale_dto_x = Dto(Dto.SERVO_X, self.__frame_debug, side=c.LEFT)
         self.__scale_x = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='x',
-                               command=self.scale_dto_x.on_scale)
-        self.scale_dto_y = Dto(Dto.SERVO_Y, self.__frame_debug, side=c.RIGHT)
+                               command=self.__transmitting_value_x)
         self.__scale_y = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='y',
-                               command=self.scale_dto_y.on_scale)
-        self.scale_dto_z = Dto(Dto.SERVO_Z, self.__frame_debug, c.LEFT)
+                               command=self.__transmitting_value_y)
         self.__scale_z = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='z',
-                               command=self.scale_dto_z.on_scale)
+                               command=self.__transmitting_value_z)
 
         self.__auto_on_off_btn = Button(self.__frame_bottom_1, text='go/stop auto_scan', bg='#595959', command=self.auto)
         self.__build_surface_btn = Button(self.__frame_bottom_1, text='on/off build surface',
-                                          command=self.__build_surface)
+                                          command=self.__build_surface)  # не строит поверхноть, но копит данные о ней
         self.__is_it_surface_btn = Button(self.__frame_bottom_1, text='is it surface',
                                   command=self.__is_it_surface)
-        self.__stop_render_btn = Button(self.__frame_bottom_1, text='stop/go render', command=self.__stop_go_render)
+        self.__stop_render_btn = Button(self.__frame_bottom_1, text='stop/go render', command=self.__stop_go_render) # stop/go __drow_graph: canvas.draw_idle()
         self.__snap_to_point_btn = Button(self.__frame_bottom_2, text='snap_to_point', command=self.__snap_to_point)
         self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
         self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
@@ -100,11 +95,30 @@ class ConstructorFrames:
         self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
         self.default_bg = self.__stop_render_btn.cget("background")
         self.scanAlgorithm = ScanAlgorithms()
+        self.__snap_to_point()
+
+    def __transmitting_value_x(self, x: int):
+        y = self.tk.graph.frame.atoms_logic.dto_y.get_val()
+        z = self.tk.graph.frame.atoms_logic.dto_z.get_val()
+        self.tk.graph.frame.atoms_logic.dto_x.set_val((x, y, z))
+
+    def __transmitting_value_y(self, y: int):
+        x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
+        z = self.tk.graph.frame.atoms_logic.dto_z.get_val()
+        self.tk.graph.frame.atoms_logic.dto_y.set_val((x, y, z)) # todo возможно тут ловить ошибку и привязывать к точке
+
+    def __transmitting_value_z(self, z: int):
+        x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
+        y = self.tk.graph.frame.atoms_logic.dto_y.get_val()
+        self.tk.graph.frame.atoms_logic.dto_z.set_val((x, y, z))
 
     def __snap_to_point(self):
-        self.__scale_x.set(self.scale_dto_x.var['value'])
-        self.__scale_y.set(self.scale_dto_y.var['value'])
-        self.__scale_z.set(self.scale_dto_z.var['value'])
+        x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
+        y = self.tk.graph.frame.atoms_logic.dto_y.get_val()
+        z = self.tk.graph.frame.atoms_logic.dto_z.get_val()
+        self.__scale_x.set(x)
+        self.__scale_y.set(y)
+        self.__scale_z.set(z)
 
     def __remove_surface(self):
         self.tk.graph.frame.remove_surface()
@@ -119,13 +133,13 @@ class ConstructorFrames:
             self.tk.graph.frame.condition_build_surface = True
 
     def __is_it_surface(self):
-        if self.tk.graph.frame.condition_is_it_surface:
-            self.tk.graph.frame.condition_is_it_surface = False
+        if self.tk.graph.frame.atoms_logic.is_it_surface():
+            self.tk.graph.frame.atoms_logic.set_is_it_surface(False)
         else:
-            self.tk.graph.frame.condition_is_it_surface = True
+            self.tk.graph.frame.atoms_logic.set_is_it_surface(True)
 
     def __save_file(self):
-        GraphFrame.write_data_to_json_file(self.__file_name.get(), self.tk.graph.frame.data_arr.tolist())
+        GraphFrame.write_data_to_json_file(self.__file_name.get(), self.tk.graph.frame.get_data())
 
     def __load_file(self):
         pass
@@ -138,14 +152,14 @@ class ConstructorFrames:
             self.scanAlgorithm.stop = True
 
     def __go_auto(self):
-        self.gen = self.scanAlgorithm.data_generator()
+        gen = self.scanAlgorithm.data_generator()
         while not self.scanAlgorithm.stop:
-            time.sleep(0.11)
+            time.sleep(SLEEP_BETWEEN_SCAN_ITERATION)
             try:
-                x, y, z = next(self.gen)
-                self.scale_dto_x.var['value'] = x
-                self.scale_dto_y.var['value'] = y
-                self.scale_dto_z.var['value'] = z
+                x, y, z = next(gen)
+                self.tk.graph.frame.atoms_logic.dto_x.set_val((x, y, z))
+                self.tk.graph.frame.atoms_logic.dto_y.set_val((x, y, z))
+                self.tk.graph.frame.atoms_logic.dto_z.set_val((x, y, z))
             except Exception as e:
                 print(str(e))
 
@@ -188,16 +202,16 @@ class ConstructorFrames:
         self.__load_data_btn.pack(side=c.LEFT)
 
     def scale_set(self, x, y, z):
-        self.__scale_x.set(x)
-        self.__scale_y.set(y)
-        self.__scale_z.set(z)
+        self.__scale_x.set((x, y, z))
+        self.__scale_y.set((x, y, z))
+        self.__scale_z.set((x, y, z))
 
     def change_button(self, event, cause):
         cause = {
             'scanAlgorithm.stop': {'condition': not self.scanAlgorithm.stop, 'button': self.__auto_on_off_btn},
             'tk.graph.frame.quit': {'condition': not self.tk.graph.frame.quit, 'button': self.__stop_render_btn},
             'tk.graph.frame.condition_build_surface': {'condition': self.tk.graph.frame.condition_build_surface, 'button': self.__build_surface_btn},
-            'tk.graph.frame.condition_is_it_surface': {'condition': self.tk.graph.frame.condition_is_it_surface, 'button': self.__is_it_surface_btn},
+            'tk.graph.frame.condition_is_it_surface': {'condition': self.tk.graph.frame.atoms_logic.is_it_surface(), 'button': self.__is_it_surface_btn},
         }.get(cause)
 
         self.cycle_change_bg(cause)
@@ -211,3 +225,5 @@ class ConstructorFrames:
                 cause['button'].configure(bg='#595959')
         else:
             cause['button'].configure(bg=self.default_bg)
+
+
