@@ -24,7 +24,7 @@ class Dto:
         self.__surface_data = surface_data
         self.__tool = tool
 
-    def get_copy_var(self):
+    def to_dict(self):
         return {
             Dto.SENSOR: self.sensor_name,
             'value': str(self.__value)

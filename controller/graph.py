@@ -71,10 +71,7 @@ class GraphFrame(tk.Frame):
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
     def update_data(self):
-        x = self.atoms_logic.dto_x.get_val()
-        y = self.atoms_logic.dto_y.get_val()
-        z = self.atoms_logic.dto_z.get_val()
-        if self.atoms_logic.is_new_point(x, y, z):
+        if self.atoms_logic.is_new_point():
             try:
                 self.tool_tip.remove() if self.tool_tip is not None else None
                 self.captured_atom.remove() if self.captured_atom is not None else None
@@ -82,27 +79,37 @@ class GraphFrame(tk.Frame):
                 self.captured_atom = None
                 print(traceback.format_exc())
                 print(str(e))
-            self.tool_tip = self.ax.scatter(x, y, z, s=5, c=COLOR_TIP, marker='8')
             self.atoms_logic.update_tool_coordinate()
-            if self.atoms_logic.is_it_surface():
-                self.atoms_logic.surface_data[y, x] = z
+            self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
+            self.atoms_logic.update_surface()
                 # threading.Thread(target=self.__generate_surface).start() # независимая генерация данных для графика
-            if self.atoms_logic.is_it_atom() and \
-                    self.atoms_logic.append_unique_atom(x, y, z) and \
-                    not self.atoms_logic.is_atom_captured():
-                self.ax.scatter(x, y, z, s=5, c=COLOR_ATOM, marker='8')
+            if self.atoms_logic.is_it_atom() and self.atoms_logic.append_unique_atom():
+                self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
             if self.atoms_logic.is_atom_captured():
-                self.captured_atom = self.ax.scatter(x, y, z - 1, s=5, c=COLOR_ATOM, marker='8')
+                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
             if self.atoms_logic.atom_captured_event:
-                self.__remove_captured_atom()
+                self.__update_all_dots_on_graph()
                 self.atoms_logic.atom_captured_event = False
             if self.atoms_logic.atom_release_event:  # todo перенести всю эту логику в atom_logic
-                self.ax.scatter(x, y, z, s=5, c=COLOR_ATOM, marker='8')
+                self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
                 self.atoms_logic.atom_release_event = False
             if self.condition_build_surface:
                 self.__build_surface()
 
-    def __remove_captured_atom(self):
+    def __set_tool_tip_dot(self):
+        self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
+
+    def __update_all_dots_on_graph(self):
+        self.ax.collections = []
+        for atom in self.atoms_logic.atoms_list:
+            atom: Atom
+            if not atom.is_captured:
+                self.ax.scatter(*atom.coordinates, s=5, c=COLOR_ATOM, marker='8')
+            else:
+                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
+        self.__set_tool_tip_dot()
+
+    def __remove_captured_atom(self): # todo переписать это на перезапись всех точек
         atom = self.__get_captured_atom()
         for dot in self.ax.collections:
             if isinstance(dot, Poly3DCollection):
