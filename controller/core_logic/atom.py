@@ -9,7 +9,7 @@ class Atom:
         self.is_captured: bool = False
 
     def __eq__(self, other):  # todo добавить сюда сравнение на type
-        if not hasattr(other, 'coordinates'):
+        if not isinstance(other, Atom):
             return False
         return self.coordinates == other.coordinates
 

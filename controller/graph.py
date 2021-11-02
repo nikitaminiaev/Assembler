@@ -53,7 +53,7 @@ class GraphFrame(tk.Frame):
         self.is_new_point = False
         self.quit = False
         self.x_arr, self.y_arr = np.meshgrid(np.arange(0, MAX_FIELD_SIZE, 1), np.arange(0, MAX_FIELD_SIZE, 1))
-
+        #todo ернуть сервер сюда
         self.surface = None
         self.tool_tip = None
         self.captured_atom = None
@@ -70,7 +70,7 @@ class GraphFrame(tk.Frame):
         toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-    def update_data(self):
+    def update_graph_data_algorithm(self):
         if self.atoms_logic.is_new_point():
             try:
                 self.tool_tip.remove() if self.tool_tip is not None else None
@@ -108,29 +108,6 @@ class GraphFrame(tk.Frame):
             else:
                 self.captured_atom = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
         self.__set_tool_tip_dot()
-
-    def __remove_captured_atom(self): # todo переписать это на перезапись всех точек
-        atom = self.__get_captured_atom()
-        for dot in self.ax.collections:
-            if isinstance(dot, Poly3DCollection):
-                continue
-            dot: Path3DCollection
-            if atom.coordinates == self.__get_dot_coordinates(dot):
-                dot.remove()
-
-    def __get_captured_atom(self) -> Atom:
-        for atom in self.atoms_logic.atoms_list:
-            if atom.is_captured:
-                return atom
-
-    @staticmethod
-    def __get_dot_coordinates(dot: Path3DCollection) -> tuple:
-        _offsets3d = dot.__getattribute__('_offsets3d')
-        return (
-            int(_offsets3d[0][0]),
-            int(_offsets3d[1][0]),
-            int(_offsets3d[2][0]),
-        )
 
     def __generate_surface(self):
         gen = self.__scanAlgorithm.data_generator()

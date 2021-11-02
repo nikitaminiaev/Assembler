@@ -27,13 +27,13 @@ class AtomsLogic:
         self.atoms_list: List[Atom] = []
 
     def update_algorithm(self):
-        while True:
-            time.sleep(0.01)
-            if self.is_new_point():
-                self.update_tool_coordinate()
-                self.update_surface()
-                if self.is_it_atom():
-                    self.append_unique_atom_event = self.append_unique_atom()
+        # while True:
+        #     time.sleep(0.01)
+        if self.is_new_point():
+            self.update_tool_coordinate()
+            self.update_surface()
+            if self.is_it_atom():
+                self.append_unique_atom_event = self.append_unique_atom()
             # if self.atom_captured_event:
             #
             #     self.atom_captured_event = False
@@ -56,7 +56,7 @@ class AtomsLogic:
 
     def append_unique_atom(self) -> bool:
         atom = Atom(self.get_atom_detect_coordinate())
-        if not atom in self.atoms_list and not self.__tool.is_atom_captured:
+        if not self.__tool.is_atom_captured and not atom in self.atoms_list:
             self.atoms_list.append(atom)
             return True
 

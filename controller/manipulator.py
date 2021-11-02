@@ -37,7 +37,7 @@ class Manipulator(tk.Tk):
 
     def update_graph(self):
         try:
-            self.graph.frame.update_data()
+            self.graph.frame.update_graph_data_algorithm()
             self.graph.after(MS_TO_UPDATE_GRAPH, lambda: self.update_graph())
 
         except Exception as e:
