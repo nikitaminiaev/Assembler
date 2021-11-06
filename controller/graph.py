@@ -79,20 +79,20 @@ class GraphFrame(tk.Frame):
                 self.captured_atom = None
                 print(traceback.format_exc())
                 print(str(e))
-            self.atoms_logic.update_tool_coordinate()
-            self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
-            self.atoms_logic.update_surface()
-                # threading.Thread(target=self.__generate_surface).start() # независимая генерация данных для графика
-            if self.atoms_logic.is_it_atom() and self.atoms_logic.append_unique_atom():
-                self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
-            if self.atoms_logic.is_atom_captured():
-                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
-            if self.atoms_logic.atom_captured_event:
-                self.__update_all_dots_on_graph()
-                self.atoms_logic.atom_captured_event = False
             if self.atoms_logic.atom_release_event:  # todo перенести всю эту логику в atom_logic
                 self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
                 self.atoms_logic.atom_release_event = False
+            self.atoms_logic.update_tool_coordinate()
+            self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
+            self.atoms_logic.update_surface()
+            # threading.Thread(target=self.__generate_surface).start() # независимая генерация данных для графика
+            if self.atoms_logic.is_it_atom() and self.atoms_logic.append_unique_atom():
+                self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
+            if self.atoms_logic.atom_captured_event:
+                self.__update_all_dots_on_graph()
+                self.atoms_logic.atom_captured_event = False
+            if self.atoms_logic.is_atom_captured():
+                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
             if self.condition_build_surface:
                 self.__build_surface()
 
@@ -101,13 +101,13 @@ class GraphFrame(tk.Frame):
 
     def __update_all_dots_on_graph(self):
         self.ax.collections = []
+        self.__set_tool_tip_dot()
         for atom in self.atoms_logic.atoms_list:
             atom: Atom
             if not atom.is_captured:
                 self.ax.scatter(*atom.coordinates, s=5, c=COLOR_ATOM, marker='8')
             else:
-                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
-        self.__set_tool_tip_dot()
+                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
 
     def __generate_surface(self):
         gen = self.__scanAlgorithm.data_generator()

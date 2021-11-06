@@ -88,7 +88,7 @@ class AtomsLogic:
         return self.__tool.x, self.__tool.y, self.__tool.z
 
     def get_atom_detect_coordinate(self):
-        return self.__tool.x, self.__tool.y, self.__tool.z - 1
+        return self.__tool.x, self.__tool.y, self.__tool.z
 
     def __set_command_to_microcontroller(self):
         if self.dto_x.get_val() != self.__tool.x:
