@@ -1,7 +1,5 @@
-import threading
 import traceback
 import matplotlib
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Path3DCollection
 from controller.core_logic.scan_algorithms import ScanAlgorithms
 from .core_logic.atom import Atom
 from .core_logic.atom_logic import AtomsLogic
@@ -79,7 +77,7 @@ class GraphFrame(tk.Frame):
                 self.captured_atom = None
                 print(traceback.format_exc())
                 print(str(e))
-            if self.atoms_logic.atom_release_event:  # todo перенести всю эту логику в atom_logic
+            if self.atoms_logic.atom_release_event:
                 self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
                 self.atoms_logic.atom_release_event = False
             self.atoms_logic.update_tool_coordinate()

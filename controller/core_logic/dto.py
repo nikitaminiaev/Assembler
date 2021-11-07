@@ -31,12 +31,9 @@ class Dto:
         }
 
     def set_val(self, coordinates: Tuple[int, int, int]) -> None:
-        try:
-            self.__validate_val(coordinates)
-            self.__value = int(coordinates[Dto.COORDINATE_ORDER[self.sensor_name]])
-        except TouchingSurface as e:
-            print(traceback.format_exc())
-            print(str(e))
+        self.__validate_val(coordinates)
+        self.__value = int(coordinates[Dto.COORDINATE_ORDER[self.sensor_name]])
+
 
     def get_val(self) -> int:
         return self.__value

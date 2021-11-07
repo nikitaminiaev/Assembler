@@ -5,6 +5,7 @@ import traceback
 import matplotlib as plt
 import time
 from controller.core_logic.scan_algorithms import ScanAlgorithms, FIELD_SIZE
+from .core_logic.exceptions.touching_surface import TouchingSurface
 from .graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as c
 import tkinter as tk
@@ -107,25 +108,38 @@ class ConstructorFrames:
     def __transmitting_value_x(self, x: int):
         y = self.tk.graph.frame.atoms_logic.dto_y.get_val()
         z = self.tk.graph.frame.atoms_logic.dto_z.get_val()
-        self.tk.graph.frame.atoms_logic.dto_x.set_val((x, y, z))
+        try:
+            self.tk.graph.frame.atoms_logic.dto_x.set_val((x, y, z))
+        except TouchingSurface as e:
+            self.__snap_to_point()
+            print(traceback.format_exc())
+            print(str(e))
+
 
     def __transmitting_value_y(self, y: int):
         x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
         z = self.tk.graph.frame.atoms_logic.dto_z.get_val()
-        self.tk.graph.frame.atoms_logic.dto_y.set_val((x, y, z)) # todo возможно тут ловить ошибку и привязывать к точке
+        try:
+            self.tk.graph.frame.atoms_logic.dto_y.set_val((x, y, z))
+        except TouchingSurface as e:
+            self.__snap_to_point()
+            print(traceback.format_exc())
+            print(str(e))
 
     def __transmitting_value_z(self, z: int):
         x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
         y = self.tk.graph.frame.atoms_logic.dto_y.get_val()
-        self.tk.graph.frame.atoms_logic.dto_z.set_val((x, y, z))
+        try:
+            self.tk.graph.frame.atoms_logic.dto_z.set_val((x, y, z))
+        except TouchingSurface as e:
+            self.__snap_to_point()
+            print(traceback.format_exc())
+            print(str(e))
 
     def __snap_to_point(self):
-        x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
-        y = self.tk.graph.frame.atoms_logic.dto_y.get_val()
-        z = self.tk.graph.frame.atoms_logic.dto_z.get_val()
-        self.__scale_x.set(x)
-        self.__scale_y.set(y)
-        self.__scale_z.set(z)
+        self.__scale_x.set(self.tk.graph.frame.atoms_logic.dto_x.get_val())
+        self.__scale_y.set(self.tk.graph.frame.atoms_logic.dto_y.get_val())
+        self.__scale_z.set(self.tk.graph.frame.atoms_logic.dto_z.get_val())
 
     def __remove_surface(self):
         self.tk.graph.frame.remove_surface()
