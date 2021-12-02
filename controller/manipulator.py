@@ -49,7 +49,7 @@ class Manipulator(tk.Tk):
     def custom_mainloop(self):
         try:
             threading.Thread(target=self.graph.frame.draw_graph).start()
-            # self.graph.frame.atoms_logic.server.set_up()
+            self.graph.frame.atoms_logic.server.set_up()
             self.graph.mainloop()
             self.mainloop()
         except Exception as e:

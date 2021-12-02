@@ -22,14 +22,23 @@ class Server(Socket):
         for client in self.clients:
             client.send(data.encode(CODING))
 
+    def listen_client(self, client):
+        while not self._quit:
+            try:
+                data = client.recv(PACKAGE_SIZE).decode(CODING)
+                print(data)
+            except:
+                self.set_down()
+
     def accept_sockets(self):
         while not self._quit:
             try:
                 client_socket, address = self.accept()
                 self.clients.append(client_socket)
                 client_socket.send(CONNECTED.encode(CODING))
-                self.data_from_client = client_socket.recv(PACKAGE_SIZE).decode(CODING)
-                print(self.data_from_client)
+                data_from_client = client_socket.recv(PACKAGE_SIZE).decode(CODING)
+                print(data_from_client)
+                threading.Thread(target=self.listen_client, args=(client_socket,)).start()
             except:
                 self.set_down()
 

@@ -23,7 +23,7 @@ class AtomsLogic:
         self.atom_captured_event: bool = False
         self.atom_release_event: bool = False
         self.append_unique_atom_event: bool = False
-        # self.server = server.Server()
+        self.server = server.Server()
         self.atoms_list: List[Atom] = []
 
     def update_algorithm(self):
@@ -79,7 +79,7 @@ class AtomsLogic:
                ((self.dto_x.get_val() % MULTIPLICITY == 0) or (self.dto_y.get_val() % MULTIPLICITY == 0) or (self.dto_z.get_val() % MULTIPLICITY == 0))
 
     def update_tool_coordinate(self):
-        # self.__set_command_to_microcontroller()
+        self.__set_command_to_microcontroller()
         self.__tool.x = self.dto_x.get_val()
         self.__tool.y = self.dto_y.get_val()
         self.__tool.z = self.dto_z.get_val()
