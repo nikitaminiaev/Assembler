@@ -185,7 +185,7 @@ class ConstructorFrames:
         else:
             self.scanAlgorithm.stop = True
 
-    def __go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE): # todo перевести на *args
+    def __go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE): # todo перевести на *kargs
         gen = self.scanAlgorithm.data_generator(x_min, y_min, x_max, y_max)
         while not self.scanAlgorithm.stop:
             time.sleep(SLEEP_BETWEEN_SCAN_ITERATION)

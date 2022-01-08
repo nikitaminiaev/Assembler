@@ -38,7 +38,7 @@ class Dto:
     def get_val(self) -> int:
         return self.__value
 
-    def __validate_val(self, coordinates: tuple) -> None:
+    def __validate_val(self, coordinates: tuple) -> None: #todo избавиться от tool.is_it_surface
         coordinates = tuple(map(int, coordinates))
         if (self.sensor_name == Dto.SERVO_X or self.sensor_name == Dto.SERVO_Y) \
            and coordinates[2] < int(self.__surface_data.item((coordinates[1], coordinates[0]))):

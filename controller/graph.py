@@ -51,7 +51,6 @@ class GraphFrame(tk.Frame):
         self.is_new_point = False
         self.quit = False
         self.x_arr, self.y_arr = np.meshgrid(np.arange(0, MAX_FIELD_SIZE, 1), np.arange(0, MAX_FIELD_SIZE, 1))
-        #todo ернуть сервер сюда
         self.surface = None
         self.tool_tip = None
         self.captured_atom = None
@@ -82,7 +81,6 @@ class GraphFrame(tk.Frame):
                 self.atoms_logic.atom_release_event = False
             self.atoms_logic.update_tool_coordinate()
             self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
-            self.atoms_logic.update_surface()
             # threading.Thread(target=self.__generate_surface).start() # независимая генерация данных для графика
             if self.atoms_logic.is_it_atom() and self.atoms_logic.append_unique_atom():
                 self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')

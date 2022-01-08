@@ -9,7 +9,7 @@ class Client(Socket):
         super(Client, self).__init__()
         self.data_prev = ''
         self.type_object = 'Client'
-        self.servoController = ServoController()
+        self.servoController = ServoController(self.send_data)
 
     def set_up(self):
         try:
@@ -27,13 +27,7 @@ class Client(Socket):
                 if data == self.CONNECTED:
                     self.status = self.CONNECTED
                     self.send_data('hi_esp8266')
-                if self.servoController.is_atom:
-                    self.send_data('{"is_atom": 1}')
-                    self.servoController.is_atom = False
-                if self.servoController.is_surface:
-                    self.send_data('{"is_surface": 1}')
-                    self.servoController.is_surface = False
-                if (self.data_prev != data) and (self.CONNECTED != data):
+                if self.data_prev != data and self.CONNECTED != data:
                     try:
                         parsed = ujson.loads(data)
                         self.servoController.process_data(parsed)

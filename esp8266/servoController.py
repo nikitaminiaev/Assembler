@@ -7,13 +7,12 @@ class ServoController:
 
     def __callback(self, arg):
         if str(arg) == 'Pin(0)':
-            self.is_atom = True
+            self.external_send_func('{"sensor": "atom", "val": 1}')
         if str(arg) == 'Pin(2)':
-            self.is_surface = True
+            self.external_send_func('{"sensor": "surface", "val": 1}')
 
-    def __init__(self):
-        self.is_atom = False
-        self.is_surface = False
+    def __init__(self, external_send_func):
+        self.external_send_func = external_send_func
         self.servo_x = machine.PWM(machine.Pin(13), freq=50)
         self.servo_y = machine.PWM(machine.Pin(12), freq=50)
         self.servo_z = machine.PWM(machine.Pin(5), freq=50)

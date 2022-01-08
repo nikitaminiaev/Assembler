@@ -7,9 +7,10 @@ COUNT_CONNECTIONS = 1
 
 class Server(Socket):
 
-    def __init__(self):
+    def __init__(self, external_handle_func):
         super(Server, self).__init__()
         self.type_object = 'Server'
+        self.external_handle_func = external_handle_func
 
     def set_up(self):
         self.bind((IP, PORT))
@@ -26,9 +27,13 @@ class Server(Socket):
         while not self._quit:
             try:
                 data = client.recv(PACKAGE_SIZE).decode(CODING)
-                print(data)
+                self.handle_data_from_client(data)
             except:
                 self.set_down()
+
+    def handle_data_from_client(self, data: str):
+        self.external_handle_func(data)
+        print(data)
 
     def accept_sockets(self):
         while not self._quit:

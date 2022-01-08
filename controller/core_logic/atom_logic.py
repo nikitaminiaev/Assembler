@@ -23,20 +23,32 @@ class AtomsLogic:
         self.atom_captured_event: bool = False
         self.atom_release_event: bool = False
         self.append_unique_atom_event: bool = False
-        self.server = server.Server()
+        self.server = server.Server(self.handle_server_data)
         self.atoms_list: List[Atom] = []
 
-    def update_algorithm(self):
-        # while True:
-        #     time.sleep(0.01)
-        if self.is_new_point():
-            self.update_tool_coordinate()
+    # def update_algorithm(self):
+    #     # while True:
+    #     #     time.sleep(0.01)
+    #     if self.is_new_point():
+    #         self.update_tool_coordinate()
+    #         self.update_surface()
+    #         if self.is_it_atom():
+    #             self.append_unique_atom_event = self.append_unique_atom()
+    #         # if self.atom_captured_event:
+    #         #
+    #         #     self.atom_captured_event = False
+
+    def handle_server_data(self, data: str):
+        data_dict = json.loads(data)
+        if data_dict['sensor'] == 'surface':
+            self.set_is_it_surface(data_dict['val'])
             self.update_surface()
-            if self.is_it_atom():
-                self.append_unique_atom_event = self.append_unique_atom()
-            # if self.atom_captured_event:
-            #
-            #     self.atom_captured_event = False
+            return
+        if data_dict['sensor'] == 'atom':
+            self.set_is_it_atom(data_dict['val'])
+            return
+        self.set_is_it_surface(False) # todo проверить дебагером
+        self.set_is_it_atom(False)
 
     def update_surface(self):
         if self.is_it_surface():
