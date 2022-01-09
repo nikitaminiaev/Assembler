@@ -12,11 +12,6 @@ def do_connect():
             pass
     print('network config:', sta_if.ifconfig())
 
-def create_access_point():
-    ap = network.WLAN(network.AP_IF)
-    ap.active(True)
-    ap.config(essid='ESP-AP', password=PASS_ESP)
-
 if __name__ == '__main__':
     import network
     sta_if = network.WLAN(network.STA_IF)
