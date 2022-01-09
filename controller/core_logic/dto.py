@@ -24,24 +24,21 @@ class Dto:
         self.__surface_data = surface_data
         self.__tool = tool
 
-    def get_copy_var(self):
+    def to_dict(self):
         return {
             Dto.SENSOR: self.sensor_name,
             'value': str(self.__value)
         }
 
     def set_val(self, coordinates: Tuple[int, int, int]) -> None:
-        try:
-            self.__validate_val(coordinates)
-            self.__value = int(coordinates[Dto.COORDINATE_ORDER[self.sensor_name]])
-        except TouchingSurface as e:
-            print(traceback.format_exc())
-            print(str(e))
+        self.__validate_val(coordinates)
+        self.__value = int(coordinates[Dto.COORDINATE_ORDER[self.sensor_name]])
+
 
     def get_val(self) -> int:
         return self.__value
 
-    def __validate_val(self, coordinates: tuple) -> None:
+    def __validate_val(self, coordinates: tuple) -> None: #todo избавиться от tool.is_it_surface
         coordinates = tuple(map(int, coordinates))
         if (self.sensor_name == Dto.SERVO_X or self.sensor_name == Dto.SERVO_Y) \
            and coordinates[2] < int(self.__surface_data.item((coordinates[1], coordinates[0]))):
