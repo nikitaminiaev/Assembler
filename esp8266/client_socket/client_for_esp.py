@@ -9,7 +9,7 @@ class Client(Socket):
         super(Client, self).__init__()
         self.data_prev = ''
         self.type_object = 'Client'
-        self.servoController = ServoController()
+        self.servoController = ServoController(self.send_data)
 
     def set_up(self):
         try:
@@ -23,24 +23,24 @@ class Client(Socket):
     def listen_server(self):
         while not self._quit:
             try:
-                self.data = self.recv(self.PACKAGE_SIZE).decode(self.CODING)
-                if self.data == self.CONNECTED:
+                data = self.recv(self.PACKAGE_SIZE).decode(self.CODING)
+                if data == self.CONNECTED:
                     self.status = self.CONNECTED
-                self.__send_data('hi_esp8266')
-                if (self.data_prev != self.data) and (self.CONNECTED != self.data):
+                    self.send_data('hi_esp8266')
+                if self.data_prev != data and self.CONNECTED != data:
                     try:
-                        parsed = ujson.loads(self.data)
+                        parsed = ujson.loads(data)
                         self.servoController.process_data(parsed)
                     except ValueError as e:
-                        print(str(e))
+                        self.send_data(str(e))
                     finally:
-                        self.data_prev = self.data
+                        self.data_prev = data
             except Exception as e:
-                print(str(e))
+                self.send_data(str(e))
                 self.set_down()
                 break
 
-    def __send_data(self, data: str):
+    def send_data(self, data: str):
         try:
             self.send(data.encode(self.CODING))
         except:

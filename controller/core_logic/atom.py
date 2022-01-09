@@ -4,14 +4,18 @@ from typing import Tuple
 class Atom:
 
     def __init__(self, coordinates: tuple, type: str = 'carbon'):
-        self.coordinates: Tuple[int, ...] = coordinates
+        self.coordinates: Tuple[int, int, int] = coordinates #todo сдулать поле приватным
         self.type: str = type
         self.is_captured: bool = False
 
     def __eq__(self, other):  # todo добавить сюда сравнение на type
-        if not hasattr(other, 'coordinates'):
+        if not isinstance(other, Atom):
             return False
         return self.coordinates == other.coordinates
+
+    def set_coordinates(self, *args):
+        self.coordinates = args
+
 
 
 if __name__ == '__main__':
