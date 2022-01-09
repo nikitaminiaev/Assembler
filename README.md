@@ -12,10 +12,11 @@
 - Переместить атом (магнитик) в заданное место и распознать отсоединение от наконечника 
 
 ## Installation
-
+    conda env create -f environment.yml
 
 ## Usage
-
+    python main.py     
+    
 
 ## Roadmap
 
