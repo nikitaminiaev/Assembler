@@ -34,19 +34,18 @@ class Dto:
         self.__validate_val(coordinates)
         self.__value = int(coordinates[Dto.COORDINATE_ORDER[self.sensor_name]])
 
-
     def get_val(self) -> int:
         return self.__value
 
-    def __validate_val(self, coordinates: tuple) -> None: #todo избавиться от tool.is_it_surface
+    def __validate_val(self, coordinates: tuple) -> None:  # todo избавиться от tool.is_it_surface
         coordinates = tuple(map(int, coordinates))
         if (self.sensor_name == Dto.SERVO_X or self.sensor_name == Dto.SERVO_Y) \
-           and coordinates[2] < int(self.__surface_data.item((coordinates[1], coordinates[0]))):
+                and coordinates[2] < int(self.__surface_data.item((coordinates[1], coordinates[0]))):
             raise TouchingSurface()
         if self.sensor_name == Dto.SERVO_Z and self.__tool.is_it_surface and coordinates[2] < self.__value:
             raise TouchingSurface()
         if self.sensor_name == Dto.SERVO_Z \
-           and not self.__tool.is_it_surface \
-           and coordinates[2] < self.__value \
-           and int(self.__surface_data.item((coordinates[1], coordinates[0]))) != 0:
+                and not self.__tool.is_it_surface \
+                and coordinates[2] < self.__value \
+                and int(self.__surface_data.item((coordinates[1], coordinates[0]))) > coordinates[2]:
             self.__surface_data[coordinates[1], coordinates[0]] = coordinates[2]

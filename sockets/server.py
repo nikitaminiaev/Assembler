@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import threading
+import traceback
+
 from sockets.mySocket import *
 
 COUNT_CONNECTIONS = 1
@@ -28,7 +30,9 @@ class Server(Socket):
             try:
                 data = client.recv(PACKAGE_SIZE).decode(CODING)
                 self.handle_data_from_client(data)
-            except:
+            except Exception as e:
+                print(traceback.format_exc())
+                print(str(e))
                 self.set_down()
 
     def handle_data_from_client(self, data: str):
@@ -44,7 +48,9 @@ class Server(Socket):
                 data_from_client = client_socket.recv(PACKAGE_SIZE).decode(CODING)
                 print(data_from_client)
                 threading.Thread(target=self.listen_client, args=(client_socket,)).start()
-            except:
+            except Exception as e:
+                print(traceback.format_exc())
+                print(str(e))
                 self.set_down()
 
 

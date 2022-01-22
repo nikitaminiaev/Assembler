@@ -1,3 +1,4 @@
+import traceback
 from typing import List, Tuple
 import json
 import numpy as np
@@ -23,6 +24,7 @@ class AtomsLogic:
         self.atom_captured_event: bool = False
         self.atom_release_event: bool = False
         self.append_unique_atom_event: bool = False
+        self.tool_is_coming_down: bool = False
         self.server = server.Server(self.handle_server_data)
         self.atoms_list: List[Atom] = []
 
@@ -39,16 +41,18 @@ class AtomsLogic:
     #         #     self.atom_captured_event = False
 
     def handle_server_data(self, data: str):
-        data_dict = json.loads(data)
+        try:
+            data_dict = json.loads(data)
+        except Exception as e:
+            print(str(e))
+            json_str = f"{data.split('}')[0]}}}" # todo возможность невалидного json
+            print(json_str)
+            data_dict = json.loads(json_str)
         if data_dict['sensor'] == 'surface':
-            self.set_is_it_surface(data_dict['val'])
+            self.set_is_it_surface(bool(data_dict['val']))
             self.update_surface()
-            return
         if data_dict['sensor'] == 'atom':
-            self.set_is_it_atom(data_dict['val'])
-            return
-        self.set_is_it_surface(False) # todo проверить дебагером
-        self.set_is_it_atom(False)
+            self.set_is_it_atom(bool(data_dict['val']))
 
     def update_surface(self):
         if self.is_it_surface():
@@ -91,7 +95,11 @@ class AtomsLogic:
                ((self.dto_x.get_val() % MULTIPLICITY == 0) or (self.dto_y.get_val() % MULTIPLICITY == 0) or (self.dto_z.get_val() % MULTIPLICITY == 0))
 
     def update_tool_coordinate(self):
-        self.__set_command_to_microcontroller()
+        changing_coordinate = self.__set_command_to_microcontroller()
+        if changing_coordinate == 'z' and self.__tool.z > self.dto_z.get_val():
+            self.tool_is_coming_down = True
+        else:
+            self.tool_is_coming_down = False
         self.__tool.x = self.dto_x.get_val()
         self.__tool.y = self.dto_y.get_val()
         self.__tool.z = self.dto_z.get_val()
@@ -102,16 +110,25 @@ class AtomsLogic:
     def get_atom_detect_coordinate(self):
         return self.__tool.x, self.__tool.y, self.__tool.z
 
-    def __set_command_to_microcontroller(self):
+    def __set_command_to_microcontroller(self) -> str:
         if self.dto_x.get_val() != self.__tool.x:
             # print(x_dict)
             self.server.send_data_to_all_clients(json.dumps(self.dto_x.to_dict()))
+            return 'x'
         if self.dto_y.get_val() != self.__tool.y:
-            # print(y_dict)
+            # print(self.dto_y.to_dict())
             self.server.send_data_to_all_clients(json.dumps(self.dto_y.to_dict()))
+            return 'y'
         if self.dto_z.get_val() != self.__tool.z:
-            # print(z_dict)
-            self.server.send_data_to_all_clients(json.dumps(self.dto_z.to_dict()))
+            data = self.__invert_data(self.dto_z.to_dict())
+            # print(data)
+            self.server.send_data_to_all_clients(json.dumps(data))
+            return 'z'
+
+    @staticmethod
+    def __invert_data(data: dict):
+        data['value'] = str(MAX - int(data['value']))
+        return data
 
     def mark_atom_capture(self) -> None:
         for atom in self.atoms_list:
