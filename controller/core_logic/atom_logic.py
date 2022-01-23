@@ -28,31 +28,27 @@ class AtomsLogic:
         self.server = server.Server(self.handle_server_data)
         self.atoms_list: List[Atom] = []
 
-    # def update_algorithm(self):
-    #     # while True:
-    #     #     time.sleep(0.01)
-    #     if self.is_new_point():
-    #         self.update_tool_coordinate()
-    #         self.update_surface()
-    #         if self.is_it_atom():
-    #             self.append_unique_atom_event = self.append_unique_atom()
-    #         # if self.atom_captured_event:
-    #         #
-    #         #     self.atom_captured_event = False
-
     def handle_server_data(self, data: str):
-        try:
-            data_dict = json.loads(data)
-        except Exception as e:
-            print(str(e))
-            json_str = f"{data.split('}')[0]}}}" # todo возможность невалидного json
-            print(json_str)
-            data_dict = json.loads(json_str)
+        data_dict = self.parse_server_data(data, 0)
+        if data_dict == False:
+            return
         if data_dict['sensor'] == 'surface':
             self.set_is_it_surface(bool(data_dict['val']))
             self.update_surface()
         if data_dict['sensor'] == 'atom':
             self.set_is_it_atom(bool(data_dict['val']))
+
+    def parse_server_data(self, data: str, i: int):
+        print(data)
+        try:
+            data_dict = json.loads(data)
+        except Exception:
+            json_str = f"{data.split('}')[i]}}}"
+            i += 1
+            if i > 1:
+                return False
+            data_dict = self.parse_server_data(json_str, i) # todo передавать сюда data.split('}')[i]
+        return data_dict
 
     def update_surface(self):
         if self.is_it_surface():
@@ -91,8 +87,10 @@ class AtomsLogic:
         self.__tool.is_atom_captured = pred
 
     def is_new_point(self) -> bool:
-        return (self.dto_x.get_val() != self.__tool.x or self.dto_y.get_val() != self.__tool.y or self.dto_z.get_val() != self.__tool.z) and \
-               ((self.dto_x.get_val() % MULTIPLICITY == 0) or (self.dto_y.get_val() % MULTIPLICITY == 0) or (self.dto_z.get_val() % MULTIPLICITY == 0))
+        return (
+                           self.dto_x.get_val() != self.__tool.x or self.dto_y.get_val() != self.__tool.y or self.dto_z.get_val() != self.__tool.z) and \
+               ((self.dto_x.get_val() % MULTIPLICITY == 0) or (self.dto_y.get_val() % MULTIPLICITY == 0) or (
+                           self.dto_z.get_val() % MULTIPLICITY == 0))
 
     def update_tool_coordinate(self):
         changing_coordinate = self.__set_command_to_microcontroller()
@@ -112,16 +110,13 @@ class AtomsLogic:
 
     def __set_command_to_microcontroller(self) -> str:
         if self.dto_x.get_val() != self.__tool.x:
-            # print(x_dict)
             self.server.send_data_to_all_clients(json.dumps(self.dto_x.to_dict()))
             return 'x'
         if self.dto_y.get_val() != self.__tool.y:
-            # print(self.dto_y.to_dict())
             self.server.send_data_to_all_clients(json.dumps(self.dto_y.to_dict()))
             return 'y'
         if self.dto_z.get_val() != self.__tool.z:
             data = self.__invert_data(self.dto_z.to_dict())
-            # print(data)
             self.server.send_data_to_all_clients(json.dumps(data))
             return 'z'
 
