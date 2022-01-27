@@ -10,3 +10,5 @@ class Tool:
         self.is_it_surface: bool = False
         self.is_it_atom: bool = False  # TODO реализовать перемещение атома
         self.is_atom_captured: bool = False
+        self.scan_mode: bool = True
+        self.is_coming_down: bool = False

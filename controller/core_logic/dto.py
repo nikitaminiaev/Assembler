@@ -1,6 +1,6 @@
-import traceback
 from typing import Tuple
 from numpy import ndarray
+
 from controller.core_logic.exceptions.touching_surface import TouchingSurface
 from controller.core_logic.tool import Tool
 
@@ -30,22 +30,26 @@ class Dto:
             'value': str(self.__value)
         }
 
-    def set_val(self, coordinates: Tuple[int, int, int]) -> None:
+    def set_val(self, coordinates: Tuple[int, ...]) -> None:
         self.__validate_val(coordinates)
         self.__value = int(coordinates[Dto.COORDINATE_ORDER[self.sensor_name]])
 
     def get_val(self) -> int:
         return self.__value
 
-    def __validate_val(self, coordinates: tuple) -> None:  # todo избавиться от tool.is_it_surface
-        coordinates = tuple(map(int, coordinates))
+    def __validate_val(self, coordinates: tuple) -> None:
+        self.__validate_x_y(coordinates)
+        self.__validate_z(coordinates)
+
+    def __validate_x_y(self, coordinates):
         if (self.sensor_name == Dto.SERVO_X or self.sensor_name == Dto.SERVO_Y) \
                 and coordinates[2] < int(self.__surface_data.item((coordinates[1], coordinates[0]))):
             raise TouchingSurface()
-        if self.sensor_name == Dto.SERVO_Z and self.__tool.is_it_surface and coordinates[2] < self.__value:
-            raise TouchingSurface()
-        if self.sensor_name == Dto.SERVO_Z \
-                and not self.__tool.is_it_surface \
-                and coordinates[2] < self.__value \
-                and int(self.__surface_data.item((coordinates[1], coordinates[0]))) > coordinates[2]:
-            self.__surface_data[coordinates[1], coordinates[0]] = coordinates[2]
+
+    def __validate_z(self, coordinates):
+        self.__tool.is_coming_down = False
+        if self.sensor_name == Dto.SERVO_Z and coordinates[2] < self.__value:
+            self.__tool.is_coming_down = True
+            if (self.__tool.scan_mode and self.__tool.is_it_surface) \
+                    or coordinates[2] < int(self.__surface_data.item((coordinates[1], coordinates[0]))):
+                raise TouchingSurface()

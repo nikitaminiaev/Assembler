@@ -5,6 +5,7 @@ import traceback
 import matplotlib as plt
 import time
 from controller.core_logic.scan_algorithms import ScanAlgorithms, FIELD_SIZE
+from .core_logic.atom_logic import SERVO_X, SERVO_Y, SERVO_Z
 from .core_logic.exceptions.touching_surface import TouchingSurface
 from .graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as c
@@ -88,6 +89,8 @@ class ConstructorFrames:
                                           command=self.__build_surface)  # не строит поверхноть, но копит данные о ней
         self.__is_it_surface_btn = Button(self.__frame_bottom_1, text='is it surface', bg='#595959',
                                           command=self.__is_it_surface)
+        self.__scan_mode = Button(self.__frame_bottom_1, text='on/off scan mode',
+                                          command=self.__scan_mode)
         self.__stop_render_btn = Button(self.__frame_bottom_1, text='stop/go render', command=self.__stop_go_render) # stop/go __drow_graph: canvas.draw_idle()
         self.__snap_to_point_btn = Button(self.__frame_bottom_2, text='snap_to_point', command=self.__snap_to_point)
         self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
@@ -109,7 +112,7 @@ class ConstructorFrames:
         y = self.tk.graph.frame.atoms_logic.dto_y.get_val()
         z = self.tk.graph.frame.atoms_logic.dto_z.get_val()
         try:
-            self.tk.graph.frame.atoms_logic.dto_x.set_val((x, y, z))
+            self.tk.graph.frame.atoms_logic.set_val_to_dto(DTO_X, (x, y, z))
         except TouchingSurface as e:
             self.__snap_to_point()
             print(traceback.format_exc())
@@ -120,7 +123,7 @@ class ConstructorFrames:
         x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
         z = self.tk.graph.frame.atoms_logic.dto_z.get_val()
         try:
-            self.tk.graph.frame.atoms_logic.dto_y.set_val((x, y, z))
+            self.tk.graph.frame.atoms_logic.set_val_to_dto(DTO_Y, (x, y, z))
         except TouchingSurface as e:
             self.__snap_to_point()
             print(traceback.format_exc())
@@ -130,7 +133,7 @@ class ConstructorFrames:
         x = self.tk.graph.frame.atoms_logic.dto_x.get_val()
         y = self.tk.graph.frame.atoms_logic.dto_y.get_val()
         try:
-            self.tk.graph.frame.atoms_logic.dto_z.set_val((x, y, z))
+            self.tk.graph.frame.atoms_logic.set_val_to_dto(DTO_Z, (x, y, z))
         except TouchingSurface as e:
             self.__snap_to_point()
             print(traceback.format_exc())
@@ -171,6 +174,12 @@ class ConstructorFrames:
         else:
             self.tk.graph.frame.atoms_logic.set_is_it_surface(True)
 
+    def __scan_mode(self):
+        if self.tk.graph.frame.atoms_logic.is_scan_mode():
+            self.tk.graph.frame.atoms_logic.set_scan_mode(False)
+        else:
+            self.tk.graph.frame.atoms_logic.set_scan_mode(True)
+
     def __save_file(self):
         GraphFrame.write_data_to_json_file(self.__file_name.get(), self.tk.graph.frame.get_data())
 
@@ -208,6 +217,8 @@ class ConstructorFrames:
     def pack(self):
         self.__build_surface_btn.bind('<Button-1>',
                                       lambda e, cause='tk.graph.frame.condition_build_surface': self.change_button(e, cause))
+        self.__scan_mode.bind('<Button-1>',
+                                      lambda e, cause='tk.graph.frame.condition_scan_mode': self.change_button(e, cause))
         self.__is_it_surface_btn.bind('<Button-1>',
                                       lambda e, cause='tk.graph.frame.condition_is_it_surface': self.change_button(e, cause))
 
@@ -225,6 +236,7 @@ class ConstructorFrames:
         self.__scan_vars_entry.pack(side=c.LEFT)
         self.__auto_on_off_btn.pack(side=c.LEFT)
         self.__build_surface_btn.pack(side=c.LEFT, padx=5)
+        self.__scan_mode.pack(side=c.LEFT, padx=5)
         self.__is_it_surface_btn.pack(side=c.LEFT, padx=5)
         self.__stop_render_btn.pack(side=c.LEFT)
 
@@ -249,6 +261,7 @@ class ConstructorFrames:
             'scanAlgorithm.stop': {'condition': not self.scanAlgorithm.stop, 'button': self.__auto_on_off_btn},
             'tk.graph.frame.quit': {'condition': not self.tk.graph.frame.quit, 'button': self.__stop_render_btn},
             'tk.graph.frame.condition_build_surface': {'condition': self.tk.graph.frame.condition_build_surface, 'button': self.__build_surface_btn},
+            'tk.graph.frame.condition_scan_mode': {'condition': self.tk.graph.frame.atoms_logic.is_scan_mode(), 'button': self.__scan_mode},
             'tk.graph.frame.condition_is_it_surface': {'condition': self.tk.graph.frame.atoms_logic.is_it_surface(), 'button': self.__is_it_surface_btn},
         }.get(cause)
 

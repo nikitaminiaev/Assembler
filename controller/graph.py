@@ -94,7 +94,7 @@ class GraphFrame(tk.Frame):
             self.__reset_sensor()
 
     def __reset_sensor(self):
-        if self.atoms_logic.tool_is_coming_down:
+        if self.atoms_logic.tool_is_coming_down():
             return
         self.atoms_logic.set_is_it_surface(False)
         self.atoms_logic.set_is_it_atom(False)

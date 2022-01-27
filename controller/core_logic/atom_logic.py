@@ -9,32 +9,54 @@ from controller.core_logic.tool import Tool
 from sockets import server
 import time
 
-MULTIPLICITY = 1
-
 
 class AtomsLogic:
 
     def __init__(self):
         self.surface_data = np.zeros((MAX_FIELD_SIZE, MAX_FIELD_SIZE))
+        self.atom_captured_event: bool = False
+        self.atom_release_event: bool = False
+        self.append_unique_atom_event: bool = False
         self.__tool = Tool()
         self.dto_x = Dto(Dto.SERVO_X, self.surface_data, self.__tool)
         self.dto_y = Dto(Dto.SERVO_Y, self.surface_data, self.__tool)
         self.dto_z = Dto(Dto.SERVO_Z, self.surface_data, self.__tool)
         self.dto_z.set_val((0, 0, MAX))
-        self.atom_captured_event: bool = False
-        self.atom_release_event: bool = False
-        self.append_unique_atom_event: bool = False
-        self.tool_is_coming_down: bool = False
         self.server = server.Server(self.handle_server_data)
         self.atoms_list: List[Atom] = []
+
+    def tool_is_coming_down(self):
+        return self.__tool.is_coming_down
+
+    def is_scan_mode(self):
+        return self.__tool.scan_mode
+
+    def set_scan_mode(self, pred: bool) -> None:
+        self.__tool.scan_mode = pred
+
+    def set_val_to_dto(self, dto_str: str, coordinates: Tuple[int, int, int]):
+        coordinates_int = tuple(map(int, coordinates))
+        dto_name = 'dto_' + dto_str
+        dto = getattr(self, dto_name, "Invalid dto")
+        if dto == "Invalid dto":
+            raise ValueError(dto)
+        dto.set_val(coordinates_int)
+        if self.__tool.scan_mode and dto_name == DTO_Z:
+            self.__update_existing_surface(coordinates_int)
+
+    def __update_existing_surface(self, coordinates: Tuple[int, ...]) -> None:
+        if not self.__tool.is_it_surface \
+                and coordinates[2] < self.dto_z.get_val() \
+                and int(self.surface_data.item((coordinates[1], coordinates[0]))) > coordinates[2]:
+            self.surface_data[coordinates[1], coordinates[0]] = coordinates[2] - CORRECTION_Z
 
     def handle_server_data(self, data: str):
         data_dict = self.parse_server_data(data, 0)
         if data_dict == False:
             return
-        if data_dict['sensor'] == 'surface':
+        if self.__tool.scan_mode and data_dict['sensor'] == 'surface':
             self.set_is_it_surface(bool(data_dict['val']))
-            self.update_surface()
+            self.build_new_surface()
         if data_dict['sensor'] == 'atom':
             self.set_is_it_atom(bool(data_dict['val']))
 
@@ -47,12 +69,12 @@ class AtomsLogic:
             i += 1
             if i > 1:
                 return False
-            data_dict = self.parse_server_data(json_str, i) # todo передавать сюда data.split('}')[i]
+            data_dict = self.parse_server_data(json_str, i)  # todo передавать сюда data.split('}')[i]
         return data_dict
 
-    def update_surface(self):
+    def build_new_surface(self):
         if self.is_it_surface():
-            self.surface_data[self.dto_y.get_val(), self.dto_x.get_val()] = self.dto_z.get_val()
+            self.surface_data[self.dto_y.get_val(), self.dto_x.get_val()] = self.dto_z.get_val() - CORRECTION_Z
 
     def is_it_surface(self) -> bool:
         return self.__tool.is_it_surface
@@ -87,17 +109,15 @@ class AtomsLogic:
         self.__tool.is_atom_captured = pred
 
     def is_new_point(self) -> bool:
-        return (
-                           self.dto_x.get_val() != self.__tool.x or self.dto_y.get_val() != self.__tool.y or self.dto_z.get_val() != self.__tool.z) and \
-               ((self.dto_x.get_val() % MULTIPLICITY == 0) or (self.dto_y.get_val() % MULTIPLICITY == 0) or (
-                           self.dto_z.get_val() % MULTIPLICITY == 0))
+        return (self.dto_x.get_val() != self.__tool.x or self.dto_y.get_val() != self.__tool.y or self.dto_z.get_val() != self.__tool.z) and \
+               ((self.dto_x.get_val() % MULTIPLICITY == 0) or (self.dto_y.get_val() % MULTIPLICITY == 0) or (self.dto_z.get_val() % MULTIPLICITY == 0))
 
     def update_tool_coordinate(self):
-        changing_coordinate = self.__set_command_to_microcontroller()
-        if changing_coordinate == 'z' and self.__tool.z > self.dto_z.get_val():
-            self.tool_is_coming_down = True
-        else:
-            self.tool_is_coming_down = False
+        self.__set_command_to_microcontroller()
+        # if changing_coordinate == 'z' and self.__tool.z > self.dto_z.get_val():
+        #     self.__tool.is_coming_down = True
+        # else:
+        #     self.__tool.is_coming_down = False
         self.__tool.x = self.dto_x.get_val()
         self.__tool.y = self.dto_y.get_val()
         self.__tool.z = self.dto_z.get_val()
@@ -108,17 +128,17 @@ class AtomsLogic:
     def get_atom_detect_coordinate(self):
         return self.__tool.x, self.__tool.y, self.__tool.z
 
-    def __set_command_to_microcontroller(self) -> str:
+    def __set_command_to_microcontroller(self):
         if self.dto_x.get_val() != self.__tool.x:
             self.server.send_data_to_all_clients(json.dumps(self.dto_x.to_dict()))
-            return 'x'
+            return
         if self.dto_y.get_val() != self.__tool.y:
             self.server.send_data_to_all_clients(json.dumps(self.dto_y.to_dict()))
-            return 'y'
+            return
         if self.dto_z.get_val() != self.__tool.z:
             data = self.__invert_data(self.dto_z.to_dict())
             self.server.send_data_to_all_clients(json.dumps(data))
-            return 'z'
+            return
 
     @staticmethod
     def __invert_data(data: dict):
