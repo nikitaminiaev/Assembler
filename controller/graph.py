@@ -81,7 +81,6 @@ class GraphFrame(tk.Frame):
                 self.atoms_logic.atom_release_event = False
             self.atoms_logic.update_tool_coordinate()
             self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
-            # threading.Thread(target=self.__generate_surface).start() # независимая генерация данных для графика
             if self.atoms_logic.is_it_atom() and self.atoms_logic.append_unique_atom():
                 self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
             if self.atoms_logic.atom_captured_event:
@@ -111,17 +110,6 @@ class GraphFrame(tk.Frame):
                 self.ax.scatter(*atom.coordinates, s=5, c=COLOR_ATOM, marker='8')
             else:
                 self.captured_atom = self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
-
-    def __generate_surface(self):
-        gen = self.__scanAlgorithm.data_generator()
-        self.__scanAlgorithm.stop = False
-        while not self.__scanAlgorithm.stop:
-            try:
-                x, y, z = next(gen)
-                self.atoms_logic.surface_data[y, x] = z
-            except Exception as e:
-                print(traceback.format_exc())
-                print(str(e))
 
     def show_surface(self):
         self.__build_surface()

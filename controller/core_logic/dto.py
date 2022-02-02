@@ -31,17 +31,17 @@ class Dto:
         }
 
     def set_val(self, coordinates: Tuple[int, ...]) -> None:
-        self.__validate_val(coordinates)
         self.__value = int(coordinates[Dto.COORDINATE_ORDER[self.sensor_name]])
 
     def get_val(self) -> int:
         return self.__value
 
-    def __validate_val(self, coordinates: tuple) -> None:
+    def validate_val(self, coordinates: tuple) -> None:
         self.__validate_x_y(coordinates)
         self.__validate_z(coordinates)
 
     def __validate_x_y(self, coordinates):
+        self.__tool.is_coming_down = False
         if (self.sensor_name == Dto.SERVO_X or self.sensor_name == Dto.SERVO_Y) \
                 and coordinates[2] < int(self.__surface_data.item((coordinates[1], coordinates[0]))):
             raise TouchingSurface()
@@ -50,6 +50,9 @@ class Dto:
         self.__tool.is_coming_down = False
         if self.sensor_name == Dto.SERVO_Z and coordinates[2] < self.__value:
             self.__tool.is_coming_down = True
-            if (self.__tool.scan_mode and self.__tool.is_it_surface) \
-                    or coordinates[2] < int(self.__surface_data.item((coordinates[1], coordinates[0]))):
-                raise TouchingSurface()
+            if self.__tool.scan_mode:
+                if self.__tool.is_it_surface:
+                    raise TouchingSurface()
+            else:
+                if coordinates[2] < int(self.__surface_data.item((coordinates[1], coordinates[0]))):
+                    raise TouchingSurface()

@@ -9,6 +9,8 @@ from controller.core_logic.tool import Tool
 from sockets import server
 import time
 
+INVALID_DTO = "Invalid dto"
+
 
 class AtomsLogic:
 
@@ -37,12 +39,13 @@ class AtomsLogic:
     def set_val_to_dto(self, dto_str: str, coordinates: Tuple[int, int, int]):
         coordinates_int = tuple(map(int, coordinates))
         dto_name = 'dto_' + dto_str
-        dto = getattr(self, dto_name, "Invalid dto")
-        if dto == "Invalid dto":
+        dto = getattr(self, dto_name, INVALID_DTO)
+        if dto == INVALID_DTO:
             raise ValueError(dto)
-        dto.set_val(coordinates_int)
-        if self.__tool.scan_mode and dto_name == DTO_Z:
+        dto.validate_val(coordinates_int)
+        if self.__tool.scan_mode and dto_str == DTO_Z:
             self.__update_existing_surface(coordinates_int)
+        dto.set_val(coordinates_int)
 
     def __update_existing_surface(self, coordinates: Tuple[int, ...]) -> None:
         if not self.__tool.is_it_surface \
@@ -54,14 +57,13 @@ class AtomsLogic:
         data_dict = self.parse_server_data(data, 0)
         if data_dict == False:
             return
-        if self.__tool.scan_mode and data_dict['sensor'] == 'surface':
+        if self.__tool.scan_mode and data_dict['sensor'] == 'surface': # проблема - наконечник при быстром подъеме сильно поднимает поверхность, сигнал запаздывает
             self.set_is_it_surface(bool(data_dict['val']))
             self.build_new_surface()
         if data_dict['sensor'] == 'atom':
             self.set_is_it_atom(bool(data_dict['val']))
 
     def parse_server_data(self, data: str, i: int):
-        print(data)
         try:
             data_dict = json.loads(data)
         except Exception:
@@ -114,10 +116,6 @@ class AtomsLogic:
 
     def update_tool_coordinate(self):
         self.__set_command_to_microcontroller()
-        # if changing_coordinate == 'z' and self.__tool.z > self.dto_z.get_val():
-        #     self.__tool.is_coming_down = True
-        # else:
-        #     self.__tool.is_coming_down = False
         self.__tool.x = self.dto_x.get_val()
         self.__tool.y = self.dto_y.get_val()
         self.__tool.z = self.dto_z.get_val()
@@ -160,3 +158,15 @@ class AtomsLogic:
                 atom.set_coordinates(self.__tool.x, self.__tool.y, self.__tool.z)
                 atom.is_captured = False
                 return
+
+    def get_dto_val(self, dto_str: str) -> int:
+        dto_name = 'dto_' + dto_str
+        dto = getattr(self, dto_name, INVALID_DTO)
+        if dto == INVALID_DTO:
+            raise ValueError(dto)
+        return dto.get_val()
+
+    def set_val_dto_curried(self, dto_str: str):
+        def wrap(coordinates: Tuple[int, int, int]):
+            self.set_val_to_dto(dto_str, coordinates)
+        return wrap

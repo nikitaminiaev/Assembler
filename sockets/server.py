@@ -37,7 +37,6 @@ class Server(Socket):
 
     def handle_data_from_client(self, data: str):
         self.external_handle_func(data)
-        print(data)
 
     def accept_sockets(self):
         while not self._quit:
