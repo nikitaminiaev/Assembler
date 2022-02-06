@@ -1,8 +1,7 @@
-import random
-import numpy as np
-from controller.constants import *
-from typing import Tuple
 import time
+from typing import Tuple
+
+from controller.constants import *
 from controller.core_logic.exceptions.touching_surface import TouchingSurface
 
 FIELD_SIZE = MAX_FIELD_SIZE - 1
@@ -45,12 +44,14 @@ class ScanAlgorithms:
 
     def set_algorithm_z(self, coordinates: Tuple[int, int, int], set_z_func):
         for z in range(coordinates[2], 0, -1):
+            if self.stop:
+                break
+            time.sleep(SLEEP_BETWEEN_SCAN_ITERATION)
             try:
-                time.sleep(SLEEP_BETWEEN_SCAN_ITERATION)
                 set_z_func((coordinates[0], coordinates[1], z))
             except TouchingSurface as e:
                 print(str(e))
-                z_ = z + 15
+                z_ = z + 10
                 if z_ > FIELD_SIZE:
                     z_ = FIELD_SIZE
                 time.sleep(SLEEP_BETWEEN_SCAN_ITERATION)

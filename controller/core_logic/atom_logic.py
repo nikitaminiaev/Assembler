@@ -25,7 +25,7 @@ class AtomsLogic:
         self.dto_z = Dto(Dto.SERVO_Z, self.surface_data, self.__tool)
         self.dto_z.set_val((0, 0, MAX))
         self.server = server.Server(self.handle_server_data)
-        self.atoms_list: List[Atom] = []
+        self.atoms_list: List[Atom] = [] # todo вынести это и все связанный методы в одельный класс AtomCollection
 
     def tool_is_coming_down(self):
         return self.__tool.is_coming_down
@@ -47,7 +47,7 @@ class AtomsLogic:
             self.__update_existing_surface(coordinates_int)
         dto.set_val(coordinates_int)
 
-    def __update_existing_surface(self, coordinates: Tuple[int, ...]) -> None:
+    def __update_existing_surface(self, coordinates: Tuple[int, ...]) -> None: # todo заменить второе условие на self.__tool.is_coming_down после тостов
         if not self.__tool.is_it_surface \
                 and coordinates[2] < self.dto_z.get_val() \
                 and int(self.surface_data.item((coordinates[1], coordinates[0]))) > coordinates[2]:
@@ -57,10 +57,11 @@ class AtomsLogic:
         data_dict = self.parse_server_data(data, 0)
         if data_dict == False:
             return
-        if self.__tool.scan_mode and data_dict['sensor'] == 'surface': # проблема - наконечник при быстром подъеме сильно поднимает поверхность, сигнал запаздывает
+        if self.__tool.scan_mode and self.__tool.is_coming_down and data_dict['sensor'] == 'surface': # проблема - наконечник при быстром подъеме сильно поднимает поверхность, сигнал запаздывает
             self.set_is_it_surface(bool(data_dict['val']))
             self.build_new_surface()
-        if data_dict['sensor'] == 'atom':
+        if data_dict['sensor'] == 'atom':  #todo это будет событие atom_captured
+            print('atom')
             self.set_is_it_atom(bool(data_dict['val']))
 
     def parse_server_data(self, data: str, i: int):
