@@ -77,17 +77,17 @@ class GraphFrame(tk.Frame):
                 print(traceback.format_exc())
                 print(str(e))
             if self.atoms_logic.atom_release_event:
-                self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
+                self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
                 self.atoms_logic.atom_release_event = False
             self.atoms_logic.update_tool_coordinate()
             self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
             if self.atoms_logic.is_it_atom() and self.atoms_logic.append_unique_atom():
-                self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
+                self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
             if self.atoms_logic.atom_captured_event:
                 self.__update_all_dots_on_graph()
                 self.atoms_logic.atom_captured_event = False
             if self.atoms_logic.is_atom_captured():
-                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
+                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
             if self.condition_build_surface:
                 self.__build_surface()
             self.__reset_sensor()
@@ -109,7 +109,7 @@ class GraphFrame(tk.Frame):
             if not atom.is_captured:
                 self.ax.scatter(*atom.coordinates, s=5, c=COLOR_ATOM, marker='8')
             else:
-                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
+                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
 
     def show_surface(self):
         self.__build_surface()

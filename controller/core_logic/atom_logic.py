@@ -95,7 +95,7 @@ class AtomsLogic:
         self.__tool.is_it_atom = pred
 
     def append_unique_atom(self) -> bool:
-        atom = Atom(self.get_atom_detect_coordinate())
+        atom = Atom(self.get_tool_coordinate())
         if not self.__tool.is_atom_captured and not atom in self.atoms_list:
             self.atoms_list.append(atom)
             return True
@@ -125,9 +125,6 @@ class AtomsLogic:
         self.__tool.z = self.dto_z.get_val()
 
     def get_tool_coordinate(self):
-        return self.__tool.x, self.__tool.y, self.__tool.z
-
-    def get_atom_detect_coordinate(self):
         return self.__tool.x, self.__tool.y, self.__tool.z
 
     def __set_command_to_microcontroller(self):
