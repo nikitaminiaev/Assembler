@@ -1,4 +1,3 @@
-import traceback
 from typing import List, Tuple
 import json
 import numpy as np
@@ -51,8 +50,7 @@ class AtomsLogic:
             self.__update_existing_surface(coordinates_int)
         dto.set_val(coordinates_int)
 
-    def __update_existing_surface(self, coordinates: Tuple[
-        int, ...]) -> None:  # todo заменить второе условие на self.__tool.is_coming_down после тостов
+    def __update_existing_surface(self, coordinates: Tuple[int, ...]) -> None:  # todo заменить второе условие на self.__tool.is_coming_down после тостов
         if not self.__tool.is_it_surface \
                 and coordinates[2] < self.dto_z.get_val() \
                 and int(self.surface_data.item((coordinates[1], coordinates[0]))) > coordinates[2]:
@@ -62,8 +60,7 @@ class AtomsLogic:
         data_dict = self.parse_server_data(data, 0)
         if data_dict == False:
             return
-        if self.__tool.scan_mode and self.__tool.is_coming_down and data_dict[
-            'sensor'] == 'surface':  # проблема - наконечник при быстром подъеме сильно поднимает поверхность, сигнал запаздывает
+        if self.__tool.scan_mode and self.__tool.is_coming_down and data_dict['sensor'] == 'surface':
             self.set_is_it_surface(bool(data_dict['val']))
             self.build_new_surface()
         if data_dict['sensor'] == 'atom':  # todo это будет событие atom_captured
@@ -118,10 +115,8 @@ class AtomsLogic:
         self.__tool.is_atom_captured = pred
 
     def is_new_point(self) -> bool:
-        return (
-                           self.dto_x.get_val() != self.__tool.x or self.dto_y.get_val() != self.__tool.y or self.dto_z.get_val() != self.__tool.z) and \
-               ((self.dto_x.get_val() % MULTIPLICITY == 0) or (self.dto_y.get_val() % MULTIPLICITY == 0) or (
-                           self.dto_z.get_val() % MULTIPLICITY == 0))
+        return (self.dto_x.get_val() != self.__tool.x or self.dto_y.get_val() != self.__tool.y or self.dto_z.get_val() != self.__tool.z) and \
+               ((self.dto_x.get_val() % MULTIPLICITY == 0) or (self.dto_y.get_val() % MULTIPLICITY == 0) or (self.dto_z.get_val() % MULTIPLICITY == 0))
 
     def update_tool_coordinate(self):
         self.__set_command_to_microcontroller()
@@ -178,5 +173,4 @@ class AtomsLogic:
     def set_val_dto_curried(self, dto_str: str):
         def wrap(coordinates: Tuple[int, int, int]):
             self.set_val_to_dto(dto_str, coordinates)
-
         return wrap
