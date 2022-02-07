@@ -60,18 +60,20 @@ class AtomsLogic:
         data_dict = self.parse_server_data(data, 0)
         if data_dict == False:
             return
-        if self.__tool.scan_mode and self.__tool.is_coming_down and data_dict['sensor'] == 'surface':
-            self.set_is_it_surface(bool(data_dict['val']))
-            self.build_new_surface()
-        if data_dict['sensor'] == 'atom':  # todo это будет событие atom_captured
-            print('atom')
-            self.set_is_it_atom(bool(data_dict['val']))
+        try:
+            if self.__tool.scan_mode and self.__tool.is_coming_down and data_dict['sensor'] == 'surface':
+                self.set_is_it_surface(bool(data_dict['val']))
+                self.build_new_surface()
+            if data_dict['sensor'] == 'atom':  # todo это будет событие atom_captured
+                self.set_is_it_atom(bool(data_dict['val']))
+        except Exception:
+            return
 
     def parse_server_data(self, data: str, i: int):
         try:
             data_dict = json.loads(data)
         except Exception:
-            json_str = f"{data.split('}')[i]}}}"
+            json_str = f"{data.split('}')[1]}}}"
             i += 1
             if i > 1:
                 return False
