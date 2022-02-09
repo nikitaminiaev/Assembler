@@ -3,6 +3,7 @@ import json
 import numpy as np
 from controller.constants import *
 from controller.core_logic.atom import Atom
+from controller.core_logic.atoms_collection import AtomCollection
 from controller.core_logic.dto import Dto
 from controller.core_logic.tool import Tool
 from sockets.server import Server
@@ -28,8 +29,8 @@ class AtomsLogic:
         self.dto_z = Dto(Dto.SERVO_Z, self.surface_data, self.__tool)
         self.dto_z.set_val((0, 0, MAX))
         self.server = server(self.handle_server_data)
-        self.atoms_list: List[Atom] = []  # todo вынести это и все связанный методы в одельный класс AtomCollection
-
+        self.atom_collection = AtomCollection(self.__tool)
+        
     def tool_is_coming_down(self):
         return self.__tool.is_coming_down
 
@@ -96,10 +97,10 @@ class AtomsLogic:
     def set_is_it_atom(self, pred: bool):
         self.__tool.is_it_atom = pred
 
-    def append_unique_atom(self) -> bool:
+    def append_unique_atom(self) -> bool: # todo перенести в AtomCollection после тестов на graph
         atom = Atom(self.get_tool_coordinate())
-        if not self.__tool.is_atom_captured and not atom in self.atoms_list:
-            self.atoms_list.append(atom)
+        if not self.__tool.is_atom_captured and not atom in self.atom_collection.atoms_list:
+            self.atom_collection.atoms_list.append(atom)
             return True
 
         return False
@@ -109,10 +110,10 @@ class AtomsLogic:
 
     def set_is_atom_captured(self, pred: bool):
         if pred and not self.__tool.is_atom_captured:
-            self.mark_atom_capture()
+            self.atom_collection.mark_atom_capture()
             self.atom_captured_event = True
         if self.__tool.is_atom_captured and not pred:
-            self.mark_atom_release()
+            self.atom_collection.mark_atom_release()
             self.atom_release_event = True
         self.__tool.is_atom_captured = pred
 
@@ -145,22 +146,6 @@ class AtomsLogic:
     def __invert_data(data: dict):
         data['value'] = str(MAX - int(data['value']))
         return data
-
-    def mark_atom_capture(self) -> None:
-        for atom in self.atoms_list:
-            is_x_in = atom.coordinates[0] in range(self.__tool.x - 1, self.__tool.x + 2)
-            is_y_in = atom.coordinates[1] in range(self.__tool.y - 1, self.__tool.y + 2)
-            is_z_in = atom.coordinates[2] in range(self.__tool.z - 3, self.__tool.z + 1)
-            if is_x_in and is_y_in and is_z_in:
-                atom.is_captured = True
-                break
-
-    def mark_atom_release(self):
-        for atom in self.atoms_list:
-            if atom.is_captured:
-                atom.set_coordinates(self.__tool.x, self.__tool.y, self.__tool.z)
-                atom.is_captured = False
-                return
 
     def get_dto_val(self, dto_str: str) -> int:
         dto_name = 'dto_' + dto_str

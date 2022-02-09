@@ -29,14 +29,14 @@ class Server(Socket):
         while not self._quit:
             try:
                 data = client.recv(PACKAGE_SIZE).decode(CODING)
-                self.handle_data_from_client(data)
+                self.external_handle_func(data)
             except Exception as e:
                 print(traceback.format_exc())
                 print(str(e))
                 self.set_down()
 
-    def handle_data_from_client(self, data: str):
-        self.external_handle_func(data)
+    # def handle_data_from_client(self, data: str):
+    #     self.external_handle_func(data)
 
     def accept_sockets(self):
         while not self._quit:

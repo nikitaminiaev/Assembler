@@ -44,7 +44,6 @@ class GraphFrame(tk.Frame):
     def __init__(self, parent, **kw):
         super().__init__(parent, **kw)
         self.atoms_logic = AtomsLogic()
-        self.__scanAlgorithm = ScanAlgorithms()
         self.condition_build_surface = True
         label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
@@ -104,7 +103,7 @@ class GraphFrame(tk.Frame):
     def __update_all_dots_on_graph(self):
         self.ax.collections = []
         self.__set_tool_tip_dot()
-        for atom in self.atoms_logic.atoms_list:
+        for atom in self.atoms_logic.atom_collection.atoms_list:
             atom: Atom
             if not atom.is_captured:
                 self.ax.scatter(*atom.coordinates, s=5, c=COLOR_ATOM, marker='8')

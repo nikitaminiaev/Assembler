@@ -1,11 +1,9 @@
 import unittest
 from unittest import TestCase
-from unittest.mock import Mock, MagicMock
-import json
+from unittest.mock import Mock
+
 from controller.constants import *
-from controller.core_logic.atom_logic import AtomsLogic, INVALID_DTO
-from controller.core_logic.dto import Dto
-from controller.core_logic.exceptions.touching_surface import TouchingSurface
+from controller.core_logic.atom_logic import AtomsLogic
 
 
 class TestSetAndValidateCoordinate(TestCase):
