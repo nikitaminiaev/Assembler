@@ -80,7 +80,7 @@ class GraphFrame(tk.Frame):
                 self.atoms_logic.atom_release_event = False
             self.atoms_logic.update_tool_coordinate()
             self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
-            if self.atoms_logic.is_it_atom() and self.atoms_logic.append_unique_atom():
+            if self.atoms_logic.append_unique_atom():
                 self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
             if self.atoms_logic.atom_captured_event:
                 self.__update_all_dots_on_graph()
@@ -115,7 +115,7 @@ class GraphFrame(tk.Frame):
 
     def remove_surface(self):
         try:
-            self.surface.remove() if self.surface is not None else None
+            if self.surface is not None: self.surface.remove()
         except Exception as e:
             print(traceback.format_exc())
             print(str(e))

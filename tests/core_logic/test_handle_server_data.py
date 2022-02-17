@@ -6,7 +6,7 @@ from controller.constants import *
 from controller.core_logic.atom_logic import AtomsLogic
 
 
-class TestSetAndValidateCoordinate(TestCase):
+class TestHandleServerData(TestCase):
     server_mock = None
 
     @classmethod

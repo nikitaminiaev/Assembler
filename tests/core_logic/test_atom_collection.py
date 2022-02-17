@@ -6,7 +6,7 @@ from controller.constants import *
 from controller.core_logic.atom_logic import AtomsLogic
 
 
-class TestSetAndValidateCoordinate(TestCase):
+class TestAtomCollection(TestCase):
     server_mock = None
 
     @classmethod
@@ -28,6 +28,7 @@ class TestSetAndValidateCoordinate(TestCase):
         self.atom_logic.server.send_data_to_all_clients = MagicMock()
         assert self.atom_logic.is_scan_mode()
         assert not self.atom_logic.is_it_surface()
+        self.atom_logic.set_is_it_atom(True)
         atom_coord = (1, 3, 40)
         self.atom_logic.set_val_to_dto(DTO_X, atom_coord)
         self.atom_logic.set_val_to_dto(DTO_Y, atom_coord)

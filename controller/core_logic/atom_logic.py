@@ -98,6 +98,8 @@ class AtomsLogic:
         self.__tool.is_it_atom = pred
 
     def append_unique_atom(self) -> bool: # todo перенести в AtomCollection после тестов на graph
+        if not self.__tool.is_it_atom:
+            return False
         atom = Atom(self.get_tool_coordinate())
         if not self.__tool.is_atom_captured and not atom in self.atom_collection.atoms_list:
             self.atom_collection.atoms_list.append(atom)
