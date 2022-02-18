@@ -41,18 +41,18 @@ class TestAtomCollection(TestCase):
     def test_append_unique_atom(self):
         self.assertEqual(0, len(self.atom_logic.atom_collection.atoms_list))
 
-        is_append = self.atom_logic.append_unique_atom()
+        is_append = self.atom_logic.atom_collection.append_unique_atom()
         self.assertTrue(is_append)
         self.assertEqual(1, len(self.atom_logic.atom_collection.atoms_list))
 
-        is_append = self.atom_logic.append_unique_atom()
+        is_append = self.atom_logic.atom_collection.append_unique_atom()
         self.assertFalse(is_append)
         self.assertEqual(1, len(self.atom_logic.atom_collection.atoms_list))
 
     def test_set_atom_captured(self):
         self.assertEqual(0, len(self.atom_logic.atom_collection.atoms_list))
 
-        is_append = self.atom_logic.append_unique_atom()
+        is_append = self.atom_logic.atom_collection.append_unique_atom()
         self.assertTrue(is_append)
         self.assertEqual(1, len(self.atom_logic.atom_collection.atoms_list))
         x, y, z = self.atom_logic.get_tool_coordinate()

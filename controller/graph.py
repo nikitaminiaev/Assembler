@@ -80,7 +80,7 @@ class GraphFrame(tk.Frame):
                 self.atoms_logic.atom_release_event = False
             self.atoms_logic.update_tool_coordinate()
             self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
-            if self.atoms_logic.append_unique_atom():
+            if self.atoms_logic.atom_collection.append_unique_atom():
                 self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
             if self.atoms_logic.atom_captured_event:
                 self.__update_all_dots_on_graph()

@@ -9,6 +9,16 @@ class AtomCollection:
         self.__tool = tool
         self.atoms_list: List[Atom] = []
 
+    def append_unique_atom(self) -> bool:
+        if not self.__tool.is_it_atom:
+            return False
+        atom = Atom(self.__tool.get_coordinate())
+        if not self.__tool.is_atom_captured and not atom in self.atoms_list:
+            self.atoms_list.append(atom)
+            return True
+
+        return False
+
     def mark_atom_capture(self) -> None:
         for atom in self.atoms_list:
             is_x_in = atom.coordinates[0] in range(self.__tool.x - 1, self.__tool.x + 2)

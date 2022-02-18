@@ -1,8 +1,7 @@
-from typing import List, Tuple
+from typing import Tuple
 import json
 import numpy as np
 from controller.constants import *
-from controller.core_logic.atom import Atom
 from controller.core_logic.atoms_collection import AtomCollection
 from controller.core_logic.dto import Dto
 from controller.core_logic.tool import Tool
@@ -97,16 +96,6 @@ class AtomsLogic:
     def set_is_it_atom(self, pred: bool):
         self.__tool.is_it_atom = pred
 
-    def append_unique_atom(self) -> bool: # todo перенести в AtomCollection после тестов на graph
-        if not self.__tool.is_it_atom:
-            return False
-        atom = Atom(self.get_tool_coordinate())
-        if not self.__tool.is_atom_captured and not atom in self.atom_collection.atoms_list:
-            self.atom_collection.atoms_list.append(atom)
-            return True
-
-        return False
-
     def is_atom_captured(self) -> bool:
         return self.__tool.is_atom_captured
 
@@ -130,7 +119,7 @@ class AtomsLogic:
         self.__tool.z = self.dto_z.get_val()
 
     def get_tool_coordinate(self):
-        return self.__tool.x, self.__tool.y, self.__tool.z
+        return self.__tool.get_coordinate()
 
     def __set_command_to_microcontroller(self):
         if self.dto_x.get_val() != self.__tool.x:

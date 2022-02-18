@@ -12,3 +12,6 @@ class Tool:
         self.is_atom_captured: bool = False
         self.scan_mode: bool = True
         self.is_coming_down: bool = False
+
+    def get_coordinate(self):
+        return self.x, self.y, self.z
