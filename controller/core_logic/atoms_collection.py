@@ -10,7 +10,7 @@ class AtomCollection:
         self.atoms_list: List[Atom] = []
 
     def append_unique_atom(self) -> bool:
-        if not self.__tool.is_it_atom:
+        if not self.__tool.is_atom:
             return False
         atom = Atom(self.__tool.get_coordinate())
         if not self.__tool.is_atom_captured and not atom in self.atoms_list:

@@ -94,8 +94,8 @@ class GraphFrame(tk.Frame):
     def __reset_sensor(self):
         if self.atoms_logic.tool_is_coming_down():
             return
-        self.atoms_logic.set_is_it_surface(False)
-        self.atoms_logic.set_is_it_atom(False)
+        self.atoms_logic.set_is_surface(False)
+        self.atoms_logic.set_is_atom(False)
 
     def __set_tool_tip_dot(self):
         self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')

@@ -51,7 +51,7 @@ class AtomsLogic:
         dto.set_val(coordinates_int)
 
     def __update_existing_surface(self, coordinates: Tuple[int, ...]) -> None:  # todo заменить второе условие на self.__tool.is_coming_down после тостов
-        if not self.__tool.is_it_surface \
+        if not self.__tool.is_surface \
                 and coordinates[2] < self.dto_z.get_val() \
                 and int(self.surface_data.item((coordinates[1], coordinates[0]))) > coordinates[2]:
             self.surface_data[coordinates[1], coordinates[0]] = coordinates[2] - CORRECTION_Z
@@ -62,10 +62,10 @@ class AtomsLogic:
             return
         try:
             if self.__tool.scan_mode and self.__tool.is_coming_down and data_dict['sensor'] == 'surface':
-                self.set_is_it_surface(bool(data_dict['val']))
+                self.set_is_surface(bool(data_dict['val']))
                 self.build_new_surface()
             if data_dict['sensor'] == 'atom':  # todo это будет событие atom_captured
-                self.set_is_it_atom(bool(data_dict['val']))
+                self.set_is_atom(bool(data_dict['val']))
         except Exception:
             return
 
@@ -81,20 +81,20 @@ class AtomsLogic:
         return data_dict
 
     def build_new_surface(self):
-        if self.is_it_surface():
+        if self.is_surface():
             self.surface_data[self.dto_y.get_val(), self.dto_x.get_val()] = self.dto_z.get_val() - CORRECTION_Z
 
-    def is_it_surface(self) -> bool:
-        return self.__tool.is_it_surface
+    def is_surface(self) -> bool:
+        return self.__tool.is_surface
 
-    def set_is_it_surface(self, pred: bool):
-        self.__tool.is_it_surface = pred
+    def set_is_surface(self, pred: bool):
+        self.__tool.is_surface = pred
 
-    def is_it_atom(self) -> bool:
-        return self.__tool.is_it_atom
+    def is_atom(self) -> bool:
+        return self.__tool.is_atom
 
-    def set_is_it_atom(self, pred: bool):
-        self.__tool.is_it_atom = pred
+    def set_is_atom(self, pred: bool):
+        self.__tool.is_atom = pred
 
     def is_atom_captured(self) -> bool:
         return self.__tool.is_atom_captured

@@ -51,7 +51,7 @@ class Dto:
         if self.sensor_name == Dto.SERVO_Z and coordinates[2] < self.__value:
             self.__tool.is_coming_down = True
             if self.__tool.scan_mode:
-                if self.__tool.is_it_surface:
+                if self.__tool.is_surface:
                     raise TouchingSurface()
             else:
                 if coordinates[2] < int(self.__surface_data.item((coordinates[1], coordinates[0]))):

@@ -25,8 +25,8 @@ class TestGraphWithRealAtomLogic(TestCase):
     def test_update_graph_data_algorithm(self):
         self.atoms_logic.atom_release_event = True
         self.atoms_logic.atom_captured_event = True
-        self.atoms_logic.set_is_it_atom(True)
-        self.atoms_logic.set_is_it_surface(True)
+        self.atoms_logic.set_is_atom(True)
+        self.atoms_logic.set_is_surface(True)
         graph = self.__get_graph_obj()
         graph.update_graph_data_algorithm()
 
@@ -42,14 +42,14 @@ class TestGraphWithRealAtomLogic(TestCase):
         self.assertFalse(self.atoms_logic.atom_release_event)
         self.assertFalse(self.atoms_logic.atom_captured_event)
         self.assertEqual(1, len(self.atoms_logic.atom_collection.atoms_list))
-        self.assertFalse(self.atoms_logic.is_it_atom())
-        self.assertFalse(self.atoms_logic.is_it_atom())
+        self.assertFalse(self.atoms_logic.is_atom())
+        self.assertFalse(self.atoms_logic.is_atom())
 
     def test_update_graph_another_data_algorithm(self):
         self.atoms_logic.atom_release_event = True
         self.atoms_logic.atom_captured_event = True
-        self.atoms_logic.set_is_it_surface(True)
-        self.atoms_logic.set_is_it_atom(False)
+        self.atoms_logic.set_is_surface(True)
+        self.atoms_logic.set_is_atom(False)
         graph = self.__get_graph_obj()
         graph.update_graph_data_algorithm()
 
@@ -65,8 +65,8 @@ class TestGraphWithRealAtomLogic(TestCase):
         self.assertEqual(0, len(self.atoms_logic.atom_collection.atoms_list))
         self.assertFalse(self.atoms_logic.atom_release_event)
         self.assertFalse(self.atoms_logic.atom_captured_event)
-        self.assertFalse(self.atoms_logic.is_it_atom())
-        self.assertFalse(self.atoms_logic.is_it_atom())
+        self.assertFalse(self.atoms_logic.is_atom())
+        self.assertFalse(self.atoms_logic.is_atom())
 
     def __get_graph_obj(self):
         ax = Mock()

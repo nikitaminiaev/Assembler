@@ -147,10 +147,10 @@ class ConstructorFrames:
         self.tk.graph.frame.show_surface()
 
     def __is_atom(self):
-        if self.tk.graph.frame.atoms_logic.is_it_atom():
-            self.tk.graph.frame.atoms_logic.set_is_it_atom(False)
+        if self.tk.graph.frame.atoms_logic.is_atom():
+            self.tk.graph.frame.atoms_logic.set_is_atom(False)
         else:
-            self.tk.graph.frame.atoms_logic.set_is_it_atom(True)
+            self.tk.graph.frame.atoms_logic.set_is_atom(True)
 
     def __is_atom_captured(self):
         if self.tk.graph.frame.atoms_logic.is_atom_captured():
@@ -165,10 +165,10 @@ class ConstructorFrames:
             self.tk.graph.frame.condition_build_surface = True
 
     def __is_it_surface(self):
-        if self.tk.graph.frame.atoms_logic.is_it_surface():
-            self.tk.graph.frame.atoms_logic.set_is_it_surface(False)
+        if self.tk.graph.frame.atoms_logic.is_surface():
+            self.tk.graph.frame.atoms_logic.set_is_surface(False)
         else:
-            self.tk.graph.frame.atoms_logic.set_is_it_surface(True)
+            self.tk.graph.frame.atoms_logic.set_is_surface(True)
 
     def __scan_mode(self):
         if self.tk.graph.frame.atoms_logic.is_scan_mode():

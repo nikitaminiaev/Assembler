@@ -35,9 +35,9 @@ class TestSetAndValidateCoordinate(TestCase):
 
     def test_z_touch_surface_with_scan_mode(self):
         atom_logic = AtomsLogic(10, 10, self.__class__.server_mock)
-        atom_logic.set_is_it_surface(True)
+        atom_logic.set_is_surface(True)
         assert atom_logic.is_scan_mode()
-        assert atom_logic.is_it_surface()
+        assert atom_logic.is_surface()
         z = 70
         with self.assertRaises(TouchingSurface) as e:
             atom_logic.set_val_to_dto(DTO_Z, (1, 3, z))
@@ -47,7 +47,7 @@ class TestSetAndValidateCoordinate(TestCase):
 
     def test_z_touch_surface_without_scan_mode(self):
         atom_logic = AtomsLogic(10, 10, self.__class__.server_mock)
-        atom_logic.set_is_it_surface(False)
+        atom_logic.set_is_surface(False)
         atom_logic.set_scan_mode(False)
         atom_logic.surface_data[3, 1] = 71
         z = 70
@@ -59,7 +59,7 @@ class TestSetAndValidateCoordinate(TestCase):
 
     def test_z_not_touch_surface_with_scan_mode(self, ):
         atom_logic = AtomsLogic(10, 10, self.__class__.server_mock)
-        atom_logic.set_is_it_surface(False)
+        atom_logic.set_is_surface(False)
         z = 70
         set_z_func = atom_logic.set_val_dto_curried(DTO_Z)
         set_z_func((1, 3, z))
@@ -73,7 +73,7 @@ class TestSetAndValidateCoordinate(TestCase):
 
     def test_update_surface_with_scan_mode(self):
         atom_logic = AtomsLogic(10, 10, self.__class__.server_mock)
-        atom_logic.set_is_it_surface(False)
+        atom_logic.set_is_surface(False)
         atom_logic.surface_data[3, 1] = 71
         z = 70
         atom_logic.set_val_to_dto(DTO_Z, (1, 3, z))
@@ -83,10 +83,10 @@ class TestSetAndValidateCoordinate(TestCase):
 
     def test_x_touch_side_surface_with_scan_mode(self):
         atom_logic = AtomsLogic(10, 10, self.__class__.server_mock)
-        atom_logic.set_is_it_surface(False)
+        atom_logic.set_is_surface(False)
         atom_logic.server.send_data_to_all_clients = MagicMock()
         assert atom_logic.is_scan_mode()
-        assert not atom_logic.is_it_surface()
+        assert not atom_logic.is_surface()
         x = 1
         y = 3
         z = 40
