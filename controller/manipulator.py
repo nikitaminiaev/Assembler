@@ -101,7 +101,7 @@ class ConstructorFrames:
         self.__load_data_entry.place(width=20, height=5)
         self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
         self.default_bg = self.__stop_render_btn.cget("background")
-        self.scanAlgorithm = ScanAlgorithms()
+        self.scanAlgorithm = ScanAlgorithms(SLEEP_BETWEEN_SCAN_ITERATION)
         self.__snap_to_point()
 
     def __transmitting_value_x(self, x: int):
@@ -146,11 +146,11 @@ class ConstructorFrames:
     def __show_surface(self):
         self.tk.graph.frame.show_surface()
 
-    def __is_atom(self):
-        if self.tk.graph.frame.atoms_logic.is_atom():
-            self.tk.graph.frame.atoms_logic.set_is_atom(False)
-        else:
-            self.tk.graph.frame.atoms_logic.set_is_atom(True)
+    # def __is_atom(self):
+        # if self.tk.graph.frame.atoms_logic.is_atom():
+        #     self.tk.graph.frame.atoms_logic.set_is_atom(False)
+        # else:
+        #     self.tk.graph.frame.atoms_logic.set_is_atom(True)
 
     def __is_atom_captured(self):
         if self.tk.graph.frame.atoms_logic.is_atom_captured():

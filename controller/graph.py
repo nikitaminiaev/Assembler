@@ -1,6 +1,5 @@
 import traceback
 import matplotlib
-from controller.core_logic.scan_algorithms import ScanAlgorithms
 from .core_logic.atom import Atom
 from .core_logic.atom_logic import AtomsLogic
 

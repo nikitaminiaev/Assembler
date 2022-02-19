@@ -9,8 +9,9 @@ FIELD_SIZE = MAX_FIELD_SIZE - 1
 
 class ScanAlgorithms:
 
-    def __init__(self):
+    def __init__(self, sleep_between_scan_iteration: int):
         self.stop = True
+        self.sleep_between_scan_iteration = sleep_between_scan_iteration
 
     def data_generator_x_y(
             self,
@@ -33,7 +34,7 @@ class ScanAlgorithms:
 
     def set_algorithm_x_or_y(self, coordinates: Tuple[int, int, int], set_x_or_y_func, set_z_func):
         assert coordinates[2] < MAX_FIELD_SIZE
-        time.sleep(SLEEP_BETWEEN_SCAN_ITERATION)
+        time.sleep(self.sleep_between_scan_iteration)
         try:
             set_x_or_y_func((coordinates[0], coordinates[1], coordinates[2]))
         except TouchingSurface as e:
@@ -46,7 +47,7 @@ class ScanAlgorithms:
         for z in range(coordinates[2], 0, -1):
             if self.stop:
                 break
-            time.sleep(SLEEP_BETWEEN_SCAN_ITERATION)
+            time.sleep(self.sleep_between_scan_iteration)
             try:
                 set_z_func((coordinates[0], coordinates[1], z))
             except TouchingSurface as e:
@@ -54,6 +55,6 @@ class ScanAlgorithms:
                 z_ = z + 10
                 if z_ > FIELD_SIZE:
                     z_ = FIELD_SIZE
-                time.sleep(SLEEP_BETWEEN_SCAN_ITERATION)
+                time.sleep(self.sleep_between_scan_iteration)
                 set_z_func((coordinates[0], coordinates[1], z_))
                 break
