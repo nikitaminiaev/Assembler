@@ -89,8 +89,8 @@ class ConstructorFrames:
                                           command=self.__scan_mode)
         self.__stop_render_btn = Button(self.__frame_bottom_1, text='stop/go render', command=self.__stop_go_render) # stop/go __drow_graph: canvas.draw_idle()
         self.__snap_to_point_btn = Button(self.__frame_bottom_2, text='snap_to_point', command=self.__snap_to_point)
-        self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
-        self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
+        # self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
+        # self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
         # self.__is_atom_btn = Button(self.__frame_bottom_2, text='is_atom', command=self.__is_atom) # кнопка для дебага
         self.__is_atom_captured_btn = Button(self.__frame_bottom_2, text='is_atom_captured', command=self.__is_atom_captured)
         self.__file_name = StringVar()
@@ -161,8 +161,10 @@ class ConstructorFrames:
     def __build_surface(self):
         if self.tk.graph.frame.condition_build_surface:
             self.tk.graph.frame.condition_build_surface = False
+            self.__remove_surface()
         else:
             self.tk.graph.frame.condition_build_surface = True
+            self.__show_surface()
 
     def __is_it_surface(self):
         if self.tk.graph.frame.atoms_logic.is_surface():
@@ -253,8 +255,8 @@ class ConstructorFrames:
         self.__stop_render_btn.pack(side=c.LEFT)
 
         self.__snap_to_point_btn.pack(side=c.LEFT)
-        self.__remove_surface_btn.pack(side=c.LEFT, padx=50)
-        self.__show_surface_btn.pack(side=c.LEFT)
+        # self.__remove_surface_btn.pack(side=c.LEFT, padx=50)
+        # self.__show_surface_btn.pack(side=c.LEFT)
         # self.__is_atom_btn.pack(side=c.LEFT, padx=5)
         self.__is_atom_captured_btn.pack(side=c.LEFT, padx=5)
 
