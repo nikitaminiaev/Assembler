@@ -9,7 +9,7 @@ FIELD_SIZE = MAX_FIELD_SIZE - 1
 
 class ScanAlgorithms:
 
-    def __init__(self, sleep_between_scan_iteration: int):
+    def __init__(self, sleep_between_scan_iteration: float):
         self.stop = True
         self.sleep_between_scan_iteration = sleep_between_scan_iteration
 

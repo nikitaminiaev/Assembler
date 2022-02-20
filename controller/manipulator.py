@@ -190,9 +190,9 @@ class ConstructorFrames:
         else:
             self.scanAlgorithm.stop = True
         vars = tuple(map(int, self.__scan_vars.get().split(' ')))
-        threading.Thread(target=self.__go_auto, args=vars).start()
+        threading.Thread(target=self.go_auto, args=vars).start()
 
-    def __go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE): # todo перевести на **kargs
+    def go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None: # todo перевести на **kargs
         gen_x_y = self.scanAlgorithm.data_generator_x_y(x_min, y_min, x_max, y_max)
         self.tk.graph.frame.atoms_logic.set_val_to_dto(
             DTO_X,
