@@ -192,12 +192,12 @@ class ConstructorFrames:
         vars = tuple(map(int, self.__scan_vars.get().split(' ')))
         threading.Thread(target=self._go_auto, args=vars).start()
 
-    def _go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None: # todo перевести на **kargs
+    def _go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None:
         gen_x_y = self.scanAlgorithm.data_generator_x_y(x_min, y_min, x_max, y_max)
         self.tk.graph.frame.atoms_logic.set_val_to_dto(
             DTO_X,
             (
-                x_min,
+                x_max,
                 self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Y),
                 self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Z)
             )
