@@ -13,6 +13,25 @@ class ScanAlgorithms:
         self.stop = True
         self.sleep_between_scan_iteration = sleep_between_scan_iteration
 
+    def scan(self, get_val_func, set_x_func, set_y_func, set_z_func, **kwargs):
+        gen_x_y = self.data_generator_x_y(kwargs['x_min'], kwargs['y_min'], kwargs['x_max'], kwargs['y_max'])
+
+        while not self.stop:
+            try:
+                next_coordinate = next(gen_x_y)
+                z = get_val_func(DTO_Z)
+                x = get_val_func(DTO_X)
+                y = get_val_func(DTO_Y)
+                if DTO_X in next_coordinate:
+                    self.set_algorithm_x_or_y((next_coordinate[DTO_X], y, z), set_x_func, set_z_func)
+                    self.set_algorithm_z((next_coordinate[DTO_X], y, z), set_z_func)
+                if DTO_Y in next_coordinate:
+                    self.set_algorithm_x_or_y((x, next_coordinate[DTO_Y], z), set_y_func, set_z_func)
+                    self.set_algorithm_z((x, next_coordinate[DTO_Y], z), set_z_func)
+            except Exception as e:
+                print(str(e))
+                break
+
     def data_generator_x_y(
             self,
             x_min: int = 0,

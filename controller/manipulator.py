@@ -193,33 +193,29 @@ class ConstructorFrames:
         threading.Thread(target=self._go_auto, args=vars).start()
 
     def _go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None:
-        gen_x_y = self.scanAlgorithm.data_generator_x_y(x_min, y_min, x_max, y_max)
+        get_val_func = self.tk.graph.frame.atoms_logic.get_dto_val
         self.tk.graph.frame.atoms_logic.set_val_to_dto(
             DTO_X,
             (
                 x_max,
-                self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Y),
-                self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Z)
+                get_val_func(DTO_Y),
+                get_val_func(DTO_Z)
             )
                                                       )
         set_x_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_X)
         set_y_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_Y)
         set_z_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_Z)
-        while not self.scanAlgorithm.stop:
-            try:
-                next_coordinate = next(gen_x_y)
-                z = self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Z)
-                x = self.tk.graph.frame.atoms_logic.get_dto_val(DTO_X)
-                y = self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Y)
-                if DTO_X in next_coordinate:
-                    self.scanAlgorithm.set_algorithm_x_or_y((next_coordinate[DTO_X], y, z), set_x_func, set_z_func)
-                    self.scanAlgorithm.set_algorithm_z((next_coordinate[DTO_X], y, z), set_z_func)
-                if DTO_Y in next_coordinate:
-                    self.scanAlgorithm.set_algorithm_x_or_y((x, next_coordinate[DTO_Y], z), set_y_func, set_z_func)
-                    self.scanAlgorithm.set_algorithm_z((x, next_coordinate[DTO_Y], z), set_z_func)
-            except Exception as e:
-                print(str(e))
-                break
+
+        self.scanAlgorithm.scan(
+            get_val_func,
+            set_x_func,
+            set_y_func,
+            set_z_func,
+            x_min=x_min,
+            y_min=y_min,
+            x_max=x_max,
+            y_max=y_max,
+        )
 
     def __stop_go_render(self):
         if self.tk.graph.frame.quit:
