@@ -39,7 +39,7 @@ class AtomsLogic:
     def set_scan_mode(self, pred: bool) -> None:
         self.__tool.scan_mode = pred
 
-    def set_val_to_dto(self, dto_str: str, coordinates: Tuple[int, int, int]):
+    def set_val_to_dto(self, dto_str: str, coordinates: Tuple[int, int, int]) -> None:
         coordinates_int = tuple(map(int, coordinates))
         dto_name = 'dto_' + dto_str
         dto = getattr(self, dto_name, INVALID_DTO)
