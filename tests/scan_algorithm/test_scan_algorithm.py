@@ -2,7 +2,7 @@ import unittest
 from typing import Tuple
 from unittest.mock import Mock, MagicMock
 
-from controller.constants import MAX, DTO_Z
+from controller.constants import MAX, DTO_Z, DTO_X, DTO_Y
 from controller.core_logic.atom_logic import AtomsLogic
 from controller.core_logic.dto import Dto
 from controller.core_logic.exceptions.touching_surface import TouchingSurface
@@ -37,6 +37,10 @@ class FakeDto(Dto):
 class FakeAtomsLogic(AtomsLogic):
     def set_val_to_dto(self, dto_str: str, coordinates: Tuple[int, int, int]) -> None:
         if dto_str == DTO_Z and coordinates[2] == 20:
+            raise TouchingSurface()
+        if dto_str == DTO_X and coordinates[0] == 4 and coordinates[2] == 30:
+            raise TouchingSurface()
+        if dto_str == DTO_Y and coordinates[0] == 4 and coordinates[2] == 30:
             raise TouchingSurface()
         super().set_val_to_dto(dto_str, coordinates)
 
