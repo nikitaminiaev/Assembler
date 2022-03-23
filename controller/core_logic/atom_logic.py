@@ -50,9 +50,9 @@ class AtomsLogic:
             self.__update_existing_surface(coordinates_int)
         dto.set_val(coordinates_int)
 
-    def __update_existing_surface(self, coordinates: Tuple[int, ...]) -> None:  # todo заменить второе условие на self.__tool.is_coming_down после тостов
+    def __update_existing_surface(self, coordinates: Tuple[int, ...]) -> None:
         if not self.__tool.is_surface \
-                and coordinates[2] < self.dto_z.get_val() \
+                and self.__tool.is_coming_down \
                 and int(self.surface_data.item((coordinates[1], coordinates[0]))) > coordinates[2]:
             self.surface_data[coordinates[1], coordinates[0]] = coordinates[2] - CORRECTION_Z
 

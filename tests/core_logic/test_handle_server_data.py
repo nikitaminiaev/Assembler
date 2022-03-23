@@ -54,15 +54,15 @@ class TestHandleServerData(TestCase):
         ('{"sensor": "atom", "any": 1}', 'invalid'),
     ]
 
-    def test_handle_atom_data(self):
-        for data, validated in self.atom_data:
-            atom_logic = AtomsLogic(10, 10, self.__class__.server_mock)
-            if validated == 'valid':
-                atom_logic.handle_server_data(data)
-                self.assertTrue(atom_logic.is_atom())
-            else:
-                atom_logic.handle_server_data(data)
-                self.assertFalse(atom_logic.is_atom())
+    # def test_handle_atom_data(self):
+    #     for data, validated in self.atom_data:
+    #         atom_logic = AtomsLogic(10, 10, self.__class__.server_mock)
+    #         if validated == 'valid':
+    #             atom_logic.handle_server_data(data)
+    #             self.assertTrue(atom_logic.is_atom())
+    #         else:
+    #             atom_logic.handle_server_data(data)
+    #             self.assertFalse(atom_logic.is_atom())
 
     def __set_tool_is_coming_down(self, atom_logic, z):
         atom_logic.surface_data[3, 1] = z + 1
