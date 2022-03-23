@@ -96,9 +96,6 @@ class GraphFrame(tk.Frame):
         self.atoms_logic.set_is_surface(False)
         self.atoms_logic.set_is_atom(False)
 
-    def __set_tool_tip_dot(self):
-        self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
-
     def __update_all_dots_on_graph(self):
         self.ax.collections = []
         self.__set_tool_tip_dot()
@@ -108,6 +105,9 @@ class GraphFrame(tk.Frame):
                 self.ax.scatter(*atom.coordinates, s=5, c=COLOR_ATOM, marker='8')
             else:
                 self.captured_atom = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
+
+    def __set_tool_tip_dot(self):
+        self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
 
     def show_surface(self):
         self.__build_surface()

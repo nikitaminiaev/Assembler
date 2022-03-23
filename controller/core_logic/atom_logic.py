@@ -64,8 +64,8 @@ class AtomsLogic:
             if self.__tool.scan_mode and self.__tool.is_coming_down and data_dict['sensor'] == 'surface':
                 self.set_is_surface(bool(data_dict['val']))
                 self.build_new_surface()
-            if data_dict['sensor'] == 'atom':  # todo это будет событие atom_captured
-                self.set_is_atom(bool(data_dict['val']))
+            # if data_dict['sensor'] == 'atom':  # todo это будет событие atom_captured
+            #     self.set_is_atom_captured(bool(data_dict['val']))
         except Exception:
             return
 
