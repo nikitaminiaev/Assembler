@@ -1,5 +1,4 @@
 from unittest.mock import call
-
 from controller.constants import MAX
 
 x_min = 1
