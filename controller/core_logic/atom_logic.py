@@ -69,11 +69,14 @@ class AtomsLogic:
         except Exception:
             return
 
-    def parse_server_data(self, data: str, i: int):
+    def parse_server_data(self, data: str, i: int = 0):
         try:
             data_dict = json.loads(data)
         except Exception:
-            json_str = f"{data.split('}')[1]}}}"
+            try:
+                json_str = f"{data.split('}')[1]}}}"
+            except:
+                return False
             i += 1
             if i > 1:
                 return False

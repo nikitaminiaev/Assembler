@@ -4,7 +4,7 @@ import matplotlib as plt
 from controller.core_logic.scan_algorithms import ScanAlgorithms, FIELD_SIZE
 from .core_logic.exceptions.touching_surface import TouchingSurface
 from .graph import Graph, GraphFrame
-from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, constants as c
+from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, Label, constants as c
 import tkinter as tk
 import threading
 from .constants import *
@@ -12,7 +12,7 @@ from .constants import *
 
 RELWIDTH = 0.7
 CANVAS_SIZE = 1000
-WINDOW_SIZE = '800x600'
+WINDOW_SIZE = '900x600'
 FRAME_COLOR = '#3d3d42'
 
 LENGTH = 300
@@ -67,8 +67,16 @@ class ConstructorFrames:
         self.__frame_bottom_1.place(relx=0.15, rely=0.60, relwidth=RELWIDTH, relheight=0.05)
         self.__frame_bottom_2 = Frame(tk, bg=FRAME_COLOR, bd=2)
         self.__frame_bottom_2.place(relx=0.15, rely=0.65, relwidth=RELWIDTH, relheight=0.05)
+        self.__frame_bottom_3 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__frame_bottom_3.place(relx=0.15, rely=0.70, relwidth=RELWIDTH, relheight=0.05)
+        self.__frame_bottom_3 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__frame_bottom_3.place(relx=0.15, rely=0.75, relwidth=RELWIDTH, relheight=0.05)
+        self.__frame_bottom_4 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__frame_bottom_4.place(relx=0.15, rely=0.80, relwidth=RELWIDTH, relheight=0.05)
+        self.__frame_bottom_5 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__frame_bottom_5.place(relx=0.15, rely=0.85, relwidth=RELWIDTH, relheight=0.05)
         self.__frame_debug = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__frame_debug.place(relx=0.15, rely=0.75, relwidth=RELWIDTH, relheight=0.05)
+        self.__frame_debug.place(relx=0.15, rely=0.90, relwidth=RELWIDTH, relheight=0.05)
 
         self.__scale_x = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='x',
                                command=self.__transmitting_value_x)
@@ -76,23 +84,40 @@ class ConstructorFrames:
                                command=self.__transmitting_value_y)
         self.__scale_z = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='z',
                                command=self.__transmitting_value_z)
-        self.__scan_vars = StringVar()
-        self.__scan_vars_entry = Entry(self.__frame_bottom_1, textvariable=self.__scan_vars)
-        self.__scan_vars_entry.place(width=10, height=5)
+        self.__scan_vars_x_min = StringVar()
+        self.__scan_vars_x_max = StringVar()
+        self.__scan_vars_y_min = StringVar()
+        self.__scan_vars_y_max = StringVar()
+        self.__label_x_min = Label(self.__frame_bottom_1, text="x_min")
+        self.__label_y_min = Label(self.__frame_bottom_2, text="y_min")
+        self.__label_x_max = Label(self.__frame_bottom_3, text="x_max")
+        self.__label_y_max = Label(self.__frame_bottom_4, text="y_max")
+        self.__scan_vars_entry_x_min = Entry(self.__frame_bottom_1, textvariable=self.__scan_vars_x_min)
+        self.__scan_vars_entry_y_min = Entry(self.__frame_bottom_2, textvariable=self.__scan_vars_y_min)
+        self.__scan_vars_entry_x_max = Entry(self.__frame_bottom_3, textvariable=self.__scan_vars_x_max)
+        self.__scan_vars_entry_y_max = Entry(self.__frame_bottom_4, textvariable=self.__scan_vars_y_max)
+        self.__scan_vars_entry_x_min.place(width=5, height=5)
+        self.__scan_vars_entry_x_max.place(width=5, height=5)
+        self.__scan_vars_entry_y_min.place(width=5, height=5)
+        self.__scan_vars_entry_y_max.place(width=5, height=5)
+        self.__label_x_min.place(width=5, height=5)
+        self.__label_x_max.place(width=5, height=5)
+        self.__label_y_min.place(width=5, height=5)
+        self.__label_y_max.place(width=5, height=5)
 
-        self.__auto_on_off_btn = Button(self.__frame_bottom_1, text='go/stop auto_scan', bg='#595959', command=self.auto)
+        self.__auto_on_off_btn = Button(self.__frame_bottom_4, text='go/stop auto_scan', bg='#595959', command=self.auto)
         self.__build_surface_btn = Button(self.__frame_bottom_1, text='on/off build surface',
                                           command=self.__build_surface)  # не строит поверхноть, но копит данные о ней
         # self.__is_it_surface_btn = Button(self.__frame_bottom_1, text='is it surface', bg='#595959',
-                                          # command=self.__is_it_surface)   # кнопка для дебага
+        # command=self.__is_it_surface)   # кнопка для дебага
         self.__scan_mode = Button(self.__frame_bottom_1, text='on/off scan mode',
-                                          command=self.__scan_mode)
+                                  command=self.__scan_mode)
         self.__stop_render_btn = Button(self.__frame_bottom_1, text='stop/go render', command=self.__stop_go_render) # stop/go __drow_graph: canvas.draw_idle()
-        self.__snap_to_point_btn = Button(self.__frame_bottom_2, text='snap_to_point', command=self.__snap_to_point)
+        self.__snap_to_point_btn = Button(self.__frame_bottom_5, text='snap_to_point', command=self.__snap_to_point)
         # self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
         # self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
         # self.__is_atom_btn = Button(self.__frame_bottom_2, text='is_atom', command=self.__is_atom) # кнопка для дебага
-        self.__is_atom_captured_btn = Button(self.__frame_bottom_2, text='is_atom_captured', command=self.__is_atom_captured)
+        self.__is_atom_captured_btn = Button(self.__frame_bottom_5, text='is_atom_captured', command=self.__is_atom_captured)
         self.__file_name = StringVar()
         self.__save_data_entry = Entry(self.__frame_debug, textvariable=self.__file_name)
         self.__save_data_entry.place(width=20, height=5)
@@ -147,10 +172,10 @@ class ConstructorFrames:
         self.tk.graph.frame.show_surface()
 
     # def __is_atom(self):
-        # if self.tk.graph.frame.atoms_logic.is_atom():
-        #     self.tk.graph.frame.atoms_logic.set_is_atom(False)
-        # else:
-        #     self.tk.graph.frame.atoms_logic.set_is_atom(True)
+    # if self.tk.graph.frame.atoms_logic.is_atom():
+    #     self.tk.graph.frame.atoms_logic.set_is_atom(False)
+    # else:
+    #     self.tk.graph.frame.atoms_logic.set_is_atom(True)
 
     def __is_atom_captured(self):
         if self.tk.graph.frame.atoms_logic.is_atom_captured():
@@ -189,8 +214,16 @@ class ConstructorFrames:
             self.scanAlgorithm.stop = False
         else:
             self.scanAlgorithm.stop = True
-        vars = tuple(map(int, self.__scan_vars.get().split(' ')))
+        vars = self.__get_vars()
         threading.Thread(target=self._go_auto, args=vars).start()
+
+    def __get_vars(self) -> tuple:
+        return (
+            int(self.__scan_vars_x_min.get().strip()),
+            int(self.__scan_vars_y_min.get().strip()),
+            int(self.__scan_vars_x_max.get().strip()),
+            int(self.__scan_vars_y_max.get().strip()),
+        )
 
     def _go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None:
         get_val_func = self.tk.graph.frame.atoms_logic.get_dto_val
@@ -201,7 +234,7 @@ class ConstructorFrames:
                 get_val_func(DTO_Y),
                 get_val_func(DTO_Z)
             )
-                                                      )
+        )
         set_x_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_X)
         set_y_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_Y)
         set_z_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_Z)
@@ -228,14 +261,14 @@ class ConstructorFrames:
         self.__build_surface_btn.bind('<Button-1>',
                                       lambda e, cause='tk.graph.frame.condition_build_surface': self.change_button(e, cause))
         self.__scan_mode.bind('<Button-1>',
-                                      lambda e, cause='tk.graph.frame.condition_scan_mode': self.change_button(e, cause))
+                              lambda e, cause='tk.graph.frame.condition_scan_mode': self.change_button(e, cause))
         # self.__is_it_surface_btn.bind('<Button-1>',
         #                               lambda e, cause='tk.graph.frame.condition_is_it_surface': self.change_button(e, cause))
 
         self.__stop_render_btn.bind('<Button-1>',
-                                      lambda e, cause='tk.graph.frame.quit': self.change_button(e, cause))
+                                    lambda e, cause='tk.graph.frame.quit': self.change_button(e, cause))
         self.__auto_on_off_btn.bind('<Button-1>',
-                                      lambda e, cause='scanAlgorithm.stop': self.change_button(e, cause))
+                                    lambda e, cause='scanAlgorithm.stop': self.change_button(e, cause))
 
         self.__canvas.pack()
 
@@ -243,7 +276,14 @@ class ConstructorFrames:
         self.__scale_y.pack(side=c.LEFT, padx=10)
         self.__scale_z.pack(side=c.BOTTOM, pady=5)
 
-        self.__scan_vars_entry.pack(side=c.LEFT)
+        self.__label_x_min.pack(side=c.LEFT)
+        self.__label_x_max.pack(side=c.LEFT)
+        self.__label_y_min.pack(side=c.LEFT)
+        self.__label_y_max.pack(side=c.LEFT)
+        self.__scan_vars_entry_x_min.pack(side=c.LEFT)
+        self.__scan_vars_entry_y_min.pack(side=c.LEFT)
+        self.__scan_vars_entry_x_max.pack(side=c.LEFT)
+        self.__scan_vars_entry_y_max.pack(side=c.LEFT)
         self.__auto_on_off_btn.pack(side=c.LEFT)
         self.__build_surface_btn.pack(side=c.LEFT, padx=5)
         self.__scan_mode.pack(side=c.LEFT, padx=5)
