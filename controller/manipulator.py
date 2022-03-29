@@ -12,7 +12,7 @@ from .constants import *
 
 RELWIDTH = 0.7
 CANVAS_SIZE = 1000
-WINDOW_SIZE = '900x600'
+WINDOW_SIZE = '800x600'
 FRAME_COLOR = '#3d3d42'
 
 LENGTH = 300
@@ -110,9 +110,9 @@ class ConstructorFrames:
                                           command=self.__build_surface)  # не строит поверхноть, но копит данные о ней
         # self.__is_it_surface_btn = Button(self.__frame_bottom_1, text='is it surface', bg='#595959',
         # command=self.__is_it_surface)   # кнопка для дебага
-        self.__scan_mode = Button(self.__frame_bottom_1, text='on/off scan mode',
+        self.__scan_mode = Button(self.__frame_bottom_2, text='on/off scan mode',
                                   command=self.__scan_mode)
-        self.__stop_render_btn = Button(self.__frame_bottom_1, text='stop/go render', command=self.__stop_go_render) # stop/go __drow_graph: canvas.draw_idle()
+        self.__stop_render_btn = Button(self.__frame_bottom_3, text='stop/go render', command=self.__stop_go_render) # stop/go __drow_graph: canvas.draw_idle()
         self.__snap_to_point_btn = Button(self.__frame_bottom_5, text='snap_to_point', command=self.__snap_to_point)
         # self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
         # self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
@@ -219,10 +219,10 @@ class ConstructorFrames:
 
     def __get_vars(self) -> tuple:
         return (
-            int(self.__scan_vars_x_min.get().strip()),
-            int(self.__scan_vars_y_min.get().strip()),
-            int(self.__scan_vars_x_max.get().strip()),
-            int(self.__scan_vars_y_max.get().strip()),
+            int(self.__scan_vars_x_min.get().strip() if self.__scan_vars_x_min.get().strip() != '' else 0),
+            int(self.__scan_vars_y_min.get().strip() if self.__scan_vars_x_min.get().strip() != '' else 0),
+            int(self.__scan_vars_x_max.get().strip() if self.__scan_vars_x_min.get().strip() != '' else 0),
+            int(self.__scan_vars_y_max.get().strip() if self.__scan_vars_x_min.get().strip() != '' else 0),
         )
 
     def _go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None:
@@ -285,16 +285,16 @@ class ConstructorFrames:
         self.__scan_vars_entry_x_max.pack(side=c.LEFT)
         self.__scan_vars_entry_y_max.pack(side=c.LEFT)
         self.__auto_on_off_btn.pack(side=c.LEFT)
-        self.__build_surface_btn.pack(side=c.LEFT, padx=5)
-        self.__scan_mode.pack(side=c.LEFT, padx=5)
+        self.__stop_render_btn.pack(side=c.RIGHT, padx=5)
+        self.__scan_mode.pack(side=c.RIGHT, padx=5)
+        self.__build_surface_btn.pack(side=c.RIGHT, padx=5)
         # self.__is_it_surface_btn.pack(side=c.LEFT, padx=5)
-        self.__stop_render_btn.pack(side=c.LEFT)
 
-        self.__snap_to_point_btn.pack(side=c.LEFT)
+        self.__is_atom_captured_btn.pack(side=c.RIGHT)
+        self.__snap_to_point_btn.pack(side=c.RIGHT, padx=5)
         # self.__remove_surface_btn.pack(side=c.LEFT, padx=50)
         # self.__show_surface_btn.pack(side=c.LEFT)
         # self.__is_atom_btn.pack(side=c.LEFT, padx=5)
-        self.__is_atom_captured_btn.pack(side=c.LEFT, padx=5)
 
         self.__save_data_entry.pack(side=c.LEFT)
         self.__save_data_btn.pack(side=c.LEFT, padx=5)
