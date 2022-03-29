@@ -1,29 +1,79 @@
-import random
-import numpy as np
+import time
+from typing import Tuple
+
 from controller.constants import *
+from controller.core_logic.exceptions.touching_surface import TouchingSurface
 
 FIELD_SIZE = MAX_FIELD_SIZE - 1
 
 
 class ScanAlgorithms:
 
-    def __init__(self):
+    def __init__(self, sleep_between_scan_iteration: float):
         self.stop = True
-        self.__data_arr = np.zeros((FIELD_SIZE + 1, FIELD_SIZE + 1))
+        self.sleep_between_scan_iteration = sleep_between_scan_iteration
 
-    def data_generator(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE):
+    def scan(self, get_val_func, set_x_func, set_y_func, set_z_func, **kwargs):
+        gen_x_y = self.data_generator_x_y(kwargs['x_min'], kwargs['y_min'], kwargs['x_max'], kwargs['y_max'])
+
+        while not self.stop:
+            try:
+                next_coordinate = next(gen_x_y)
+                z = get_val_func(DTO_Z)
+                x = get_val_func(DTO_X)
+                y = get_val_func(DTO_Y)
+                if DTO_X in next_coordinate:
+                    self.set_algorithm_x_or_y((next_coordinate[DTO_X], y, z), set_x_func, set_z_func)
+                    self.set_algorithm_z((next_coordinate[DTO_X], y, z), set_z_func)
+                if DTO_Y in next_coordinate:
+                    self.set_algorithm_x_or_y((x, next_coordinate[DTO_Y], z), set_y_func, set_z_func)
+                    self.set_algorithm_z((x, next_coordinate[DTO_Y], z), set_z_func)
+            except Exception as e:
+                print(str(e))
+                break
+
+    def data_generator_x_y(
+            self,
+            x_min: int = 0,
+            y_min: int = 0,
+            x_max: int = FIELD_SIZE,
+            y_max: int = FIELD_SIZE
+    ):
         assert x_max <= FIELD_SIZE and y_max <= FIELD_SIZE
         for y in range(y_min, y_max):
+            yield {DTO_Y: y}
             if y % 2 == 0:
                 print(f'{int(y*100/y_max)}%')
                 for x in range(x_min, x_max):
-                    z = random.randint(50, 50)
-                    self.__data_arr[y, x] = z
-                    yield x, y, z
+                    yield {DTO_X: x}
             else:
                 for x in range(x_max, x_min - 1, -1):
-                    z = random.randint(50, 50)
-                    self.__data_arr[y, x] = z
-                    yield x, y, z
+                    yield {DTO_X: x}
         print('100%')
-        self.stop = True
+
+    def set_algorithm_x_or_y(self, coordinates: Tuple[int, int, int], set_x_or_y_func, set_z_func):
+        assert coordinates[2] < MAX_FIELD_SIZE
+        time.sleep(self.sleep_between_scan_iteration)
+        try:
+            set_x_or_y_func((coordinates[0], coordinates[1], coordinates[2]))
+        except TouchingSurface as e:
+            print(str(e))
+            new_coordinates = (coordinates[0], coordinates[1], coordinates[2] + 2)
+            set_z_func(new_coordinates)
+            self.set_algorithm_x_or_y(new_coordinates, set_x_or_y_func, set_z_func)
+
+    def set_algorithm_z(self, coordinates: Tuple[int, int, int], set_z_func):
+        for z in range(coordinates[2], 0, -1):
+            if self.stop:
+                break
+            time.sleep(self.sleep_between_scan_iteration)
+            try:
+                set_z_func((coordinates[0], coordinates[1], z))
+            except TouchingSurface as e:
+                print(str(e))
+                z_ = z + 10
+                if z_ > FIELD_SIZE:
+                    z_ = FIELD_SIZE
+                time.sleep(self.sleep_between_scan_iteration)
+                set_z_func((coordinates[0], coordinates[1], z_))
+                break
