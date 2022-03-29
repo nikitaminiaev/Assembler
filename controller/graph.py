@@ -1,6 +1,5 @@
 import traceback
 import matplotlib
-from controller.core_logic.scan_algorithms import ScanAlgorithms
 from .core_logic.atom import Atom
 from .core_logic.atom_logic import AtomsLogic
 
@@ -10,7 +9,7 @@ import os
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as tk
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import Axes3D   # не удалять, используется
 import time
 import numpy as np
 from .constants import *
@@ -44,7 +43,6 @@ class GraphFrame(tk.Frame):
     def __init__(self, parent, **kw):
         super().__init__(parent, **kw)
         self.atoms_logic = AtomsLogic()
-        self.__scanAlgorithm = ScanAlgorithms()
         self.condition_build_surface = True
         label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
@@ -77,51 +75,46 @@ class GraphFrame(tk.Frame):
                 print(traceback.format_exc())
                 print(str(e))
             if self.atoms_logic.atom_release_event:
-                self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
+                self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
                 self.atoms_logic.atom_release_event = False
             self.atoms_logic.update_tool_coordinate()
             self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
-            # threading.Thread(target=self.__generate_surface).start() # независимая генерация данных для графика
-            if self.atoms_logic.is_it_atom() and self.atoms_logic.append_unique_atom():
-                self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
+            if self.atoms_logic.atom_collection.append_unique_atom():
+                self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
             if self.atoms_logic.atom_captured_event:
                 self.__update_all_dots_on_graph()
                 self.atoms_logic.atom_captured_event = False
             if self.atoms_logic.is_atom_captured():
-                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
+                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
             if self.condition_build_surface:
                 self.__build_surface()
+            self.__reset_sensor()
 
-    def __set_tool_tip_dot(self):
-        self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
+    def __reset_sensor(self):
+        if self.atoms_logic.tool_is_coming_down():
+            return
+        self.atoms_logic.set_is_surface(False)
+        self.atoms_logic.set_is_atom(False)
 
     def __update_all_dots_on_graph(self):
         self.ax.collections = []
         self.__set_tool_tip_dot()
-        for atom in self.atoms_logic.atoms_list:
+        for atom in self.atoms_logic.atom_collection.atoms_list:
             atom: Atom
             if not atom.is_captured:
                 self.ax.scatter(*atom.coordinates, s=5, c=COLOR_ATOM, marker='8')
             else:
-                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_atom_detect_coordinate(), s=5, c=COLOR_ATOM, marker='8')
+                self.captured_atom = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
 
-    def __generate_surface(self):
-        gen = self.__scanAlgorithm.data_generator()
-        self.__scanAlgorithm.stop = False
-        while not self.__scanAlgorithm.stop:
-            try:
-                x, y, z = next(gen)
-                self.atoms_logic.surface_data[y, x] = z
-            except Exception as e:
-                print(traceback.format_exc())
-                print(str(e))
+    def __set_tool_tip_dot(self):
+        self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
 
     def show_surface(self):
         self.__build_surface()
 
     def remove_surface(self):
         try:
-            self.surface.remove() if self.surface is not None else None
+            if self.surface is not None: self.surface.remove()
         except Exception as e:
             print(traceback.format_exc())
             print(str(e))
