@@ -65,6 +65,7 @@ class GraphFrame(tk.Frame):
         toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
+    # главный алгоритм обновления данных при ручном управлении
     def update_graph_data_algorithm(self):
         if self.atoms_logic.is_new_point():
             try:
@@ -86,8 +87,9 @@ class GraphFrame(tk.Frame):
                 self.atoms_logic.atom_captured_event = False
             if self.atoms_logic.is_atom_captured():
                 self.captured_atom = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
-            if self.condition_build_surface:
+            if self.condition_build_surface and self.atoms_logic.is_surface_changed_event:
                 self.__build_surface()
+                self.atoms_logic.is_surface_changed_event = False
             self.__reset_sensor()
 
     def __reset_sensor(self):
