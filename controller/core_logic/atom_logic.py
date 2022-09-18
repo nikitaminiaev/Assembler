@@ -51,6 +51,7 @@ class AtomsLogic:
             self.__update_existing_surface(coordinates_int)
         dto.set_val(coordinates_int)
 
+
     def __update_existing_surface(self, coordinates: Tuple[int, ...]) -> None:
         if not self.__tool.is_surface \
                 and self.__tool.is_coming_down \
