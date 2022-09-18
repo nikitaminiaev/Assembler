@@ -1,7 +1,7 @@
 import traceback
 import matplotlib
-from .core_logic.atom import Atom
-from .core_logic.atom_logic import AtomsLogic
+from controller.core_logic.atom import Atom
+from controller.core_logic.atom_logic import AtomsLogic
 
 matplotlib.use("TkAgg")
 import json
@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D   # не удалять, используется
 import time
 import numpy as np
-from .constants import *
+from controller.constants import *
 
 LARGE_FONT = ("Verdana", 12)
 COLOR_TIP = 'g'
@@ -124,12 +124,13 @@ class GraphFrame(tk.Frame):
     def draw_graph(self):
         while not self.quit:
             try:
-                time.sleep(SLEEP_BETWEEN_DRAW_GRAPH)
+                time.sleep(SLEEP_BETWEEN_DRAW_GRAPH_FRAME)
                 self.canvas.draw_idle()
             except Exception as e:
                 self.quit = True
                 print(traceback.format_exc())
                 print(str(e))
+                self.destroy()
                 exit(0)
 
     @staticmethod

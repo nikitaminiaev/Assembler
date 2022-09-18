@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, Mock
 
-from controller.graph import GraphFrame
+from controller.frontend.graph import GraphFrame
 
 
 class FakeGraphFrame(GraphFrame):
