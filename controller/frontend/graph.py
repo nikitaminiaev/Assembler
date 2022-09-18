@@ -1,7 +1,7 @@
 import traceback
 import matplotlib
-from .core_logic.atom import Atom
-from .core_logic.atom_logic import AtomsLogic
+from controller.core_logic.atom import Atom
+from controller.core_logic.atom_logic import AtomsLogic
 
 matplotlib.use("TkAgg")
 import json
@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D   # не удалять, используется
 import time
 import numpy as np
-from .constants import *
+from controller.constants import *
 
 LARGE_FONT = ("Verdana", 12)
 COLOR_TIP = 'g'
@@ -65,6 +65,7 @@ class GraphFrame(tk.Frame):
         toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
+    # главный алгоритм обновления данных при ручном управлении
     def update_graph_data_algorithm(self):
         if self.atoms_logic.is_new_point():
             try:
@@ -86,8 +87,9 @@ class GraphFrame(tk.Frame):
                 self.atoms_logic.atom_captured_event = False
             if self.atoms_logic.is_atom_captured():
                 self.captured_atom = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
-            if self.condition_build_surface:
+            if self.condition_build_surface and self.atoms_logic.is_surface_changed_event:
                 self.__build_surface()
+                self.atoms_logic.is_surface_changed_event = False
             self.__reset_sensor()
 
     def __reset_sensor(self):
@@ -122,12 +124,13 @@ class GraphFrame(tk.Frame):
     def draw_graph(self):
         while not self.quit:
             try:
-                time.sleep(SLEEP_BETWEEN_DRAW_GRAPH)
+                time.sleep(SLEEP_BETWEEN_DRAW_GRAPH_FRAME)
                 self.canvas.draw_idle()
             except Exception as e:
                 self.quit = True
                 print(traceback.format_exc())
                 print(str(e))
+                self.destroy()
                 exit(0)
 
     @staticmethod

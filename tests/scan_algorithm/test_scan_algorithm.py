@@ -7,7 +7,7 @@ from controller.core_logic.atom_logic import AtomsLogic
 from controller.core_logic.dto import Dto
 from controller.core_logic.exceptions.touching_surface import TouchingSurface
 from controller.core_logic.scan_algorithms import ScanAlgorithms
-from controller.manipulator import ConstructorFrames
+from controller.frontend.manipulator import ConstructorFrames
 from tests.scan_algorithm.fixture_scan_algo import INITIAL_DATA, X_DATA_WITHOUT_SURFACE, \
     Y_DATA_WITHOUT_SURFACE, Z_DATA_WITHOUT_SURFACE, X_DATA_WITH_SURFACE, Y_DATA_WITH_SURFACE, Z_DATA_WITH_SURFACE
 

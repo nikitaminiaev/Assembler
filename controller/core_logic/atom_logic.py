@@ -20,6 +20,7 @@ class AtomsLogic:
     ):
         self.surface_data = np.zeros((x_field_size, y_field_size))
         self.atom_captured_event: bool = False
+        self.is_surface_changed_event: bool = True    # это событие оптимизирует нагрузку на процессор
         self.atom_release_event: bool = False
         self.append_unique_atom_event: bool = False
         self.__tool = Tool()
@@ -55,21 +56,23 @@ class AtomsLogic:
                 and self.__tool.is_coming_down \
                 and int(self.surface_data.item((coordinates[1], coordinates[0]))) > coordinates[2]:
             self.surface_data[coordinates[1], coordinates[0]] = coordinates[2] - CORRECTION_Z
+            self.is_surface_changed_event = True
 
     def handle_server_data(self, data: str):
-        data_dict = self.parse_server_data(data, 0)
+        data_dict = self.remove_noise_and_parse_server_data(data, 0)
         if data_dict == False:
             return
         try:
-            if self.__tool.scan_mode and self.__tool.is_coming_down and data_dict['sensor'] == 'surface':
+            is_surface_ = self.__tool.scan_mode and self.__tool.is_coming_down and data_dict['sensor'] == 'surface'
+            if is_surface_:
                 self.set_is_surface(bool(data_dict['val']))
-                self.build_new_surface()
+                self.__build_new_surface()
             # if data_dict['sensor'] == 'atom':  # todo это будет событие atom_captured
             #     self.set_is_atom_captured(bool(data_dict['val']))
         except Exception:
             return
 
-    def parse_server_data(self, data: str, i: int = 0):
+    def remove_noise_and_parse_server_data(self, data: str, i: int = 0):
         try:
             data_dict = json.loads(data)
         except Exception:
@@ -80,12 +83,13 @@ class AtomsLogic:
             i += 1
             if i > 1:
                 return False
-            data_dict = self.parse_server_data(json_str, i)  # todo передавать сюда data.split('}')[i]
+            data_dict = self.remove_noise_and_parse_server_data(json_str, i)  # todo возможно лучше передавать сюда data.split('}')[i]
         return data_dict
 
-    def build_new_surface(self):
+    def __build_new_surface(self):
         if self.is_surface():
             self.surface_data[self.dto_y.get_val(), self.dto_x.get_val()] = self.dto_z.get_val() - CORRECTION_Z
+            self.is_surface_changed_event = True
 
     def is_surface(self) -> bool:
         return self.__tool.is_surface
