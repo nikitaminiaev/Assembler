@@ -3,7 +3,7 @@ from unittest import TestCase
 from unittest.mock import Mock, MagicMock, call
 
 from controller.core_logic.atom import Atom
-from controller.graph import COLOR_ATOM, COLOR_TIP
+from controller.frontend.graph import COLOR_ATOM, COLOR_TIP
 from tests.fake_graph_frame import FakeGraphFrame
 
 
