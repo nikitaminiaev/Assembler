@@ -2,12 +2,12 @@ import traceback
 
 import matplotlib as plt
 from controller.core_logic.scan_algorithms import ScanAlgorithms, FIELD_SIZE
-from .core_logic.exceptions.touching_surface import TouchingSurface
-from .graph import Graph, GraphFrame
+from controller.core_logic.exceptions.touching_surface import TouchingSurface
+from controller.frontend.graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, Label, constants as c
 import tkinter as tk
 import threading
-from .constants import *
+from controller.constants import *
 
 
 RELWIDTH = 0.7
@@ -41,6 +41,8 @@ class Manipulator(tk.Tk):
         except Exception as e:
             print(str(e))
             print(traceback.format_exc())
+            self.graph.destroy()
+            self.destroy()
             exit(0)
 
     def custom_mainloop(self):
@@ -52,6 +54,8 @@ class Manipulator(tk.Tk):
         except Exception as e:
             print(str(e))
             print(traceback.format_exc())
+            self.graph.destroy()
+            self.destroy()
             exit(0)
 
 
@@ -63,39 +67,39 @@ class ConstructorFrames:
 
         self.__frame_top = Frame(tk, bg=FRAME_COLOR, bd=2)
         self.__frame_top.place(relx=0.15, rely=0.05, relwidth=RELWIDTH, relheight=0.50)
-        self.__frame_bottom_1 = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__frame_bottom_1.place(relx=0.15, rely=0.60, relwidth=RELWIDTH, relheight=0.05)
-        self.__frame_bottom_2 = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__frame_bottom_2.place(relx=0.15, rely=0.65, relwidth=RELWIDTH, relheight=0.05)
-        self.__frame_bottom_3 = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__frame_bottom_3.place(relx=0.15, rely=0.70, relwidth=RELWIDTH, relheight=0.05)
-        self.__frame_bottom_3 = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__frame_bottom_3.place(relx=0.15, rely=0.75, relwidth=RELWIDTH, relheight=0.05)
-        self.__frame_bottom_4 = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__frame_bottom_4.place(relx=0.15, rely=0.80, relwidth=RELWIDTH, relheight=0.05)
-        self.__frame_bottom_5 = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__frame_bottom_5.place(relx=0.15, rely=0.85, relwidth=RELWIDTH, relheight=0.05)
+        self.__bottom_area_1 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__bottom_area_1.place(relx=0.15, rely=0.60, relwidth=RELWIDTH, relheight=0.05)
+        self.__bottom_area_2 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__bottom_area_2.place(relx=0.15, rely=0.65, relwidth=RELWIDTH, relheight=0.05)
+        self.__bottom_area_3 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__bottom_area_3.place(relx=0.15, rely=0.70, relwidth=RELWIDTH, relheight=0.05)
+        self.__bottom_area_3 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__bottom_area_3.place(relx=0.15, rely=0.75, relwidth=RELWIDTH, relheight=0.05)
+        self.__bottom_area_4 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__bottom_area_4.place(relx=0.15, rely=0.80, relwidth=RELWIDTH, relheight=0.05)
+        self.__bottom_area_5 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__bottom_area_5.place(relx=0.15, rely=0.85, relwidth=RELWIDTH, relheight=0.05)
         self.__frame_debug = Frame(tk, bg=FRAME_COLOR, bd=2)
         self.__frame_debug.place(relx=0.15, rely=0.90, relwidth=RELWIDTH, relheight=0.05)
 
-        self.__scale_x = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='x',
-                               command=self.__transmitting_value_x)
-        self.__scale_y = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='y',
-                               command=self.__transmitting_value_y)
-        self.__scale_z = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='z',
+        self.__scale_z = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='z',
                                command=self.__transmitting_value_z)
+        self.__scale_x = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='x',
+                               command=self.__transmitting_value_x)
+        self.__scale_y = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='y',
+                               command=self.__transmitting_value_y)
         self.__scan_vars_x_min = StringVar()
         self.__scan_vars_x_max = StringVar()
         self.__scan_vars_y_min = StringVar()
         self.__scan_vars_y_max = StringVar()
-        self.__label_x_min = Label(self.__frame_bottom_1, text="x_min")
-        self.__label_y_min = Label(self.__frame_bottom_2, text="y_min")
-        self.__label_x_max = Label(self.__frame_bottom_3, text="x_max")
-        self.__label_y_max = Label(self.__frame_bottom_4, text="y_max")
-        self.__scan_vars_entry_x_min = Entry(self.__frame_bottom_1, textvariable=self.__scan_vars_x_min)
-        self.__scan_vars_entry_y_min = Entry(self.__frame_bottom_2, textvariable=self.__scan_vars_y_min)
-        self.__scan_vars_entry_x_max = Entry(self.__frame_bottom_3, textvariable=self.__scan_vars_x_max)
-        self.__scan_vars_entry_y_max = Entry(self.__frame_bottom_4, textvariable=self.__scan_vars_y_max)
+        self.__label_x_min = Label(self.__bottom_area_1, text="x_min")
+        self.__label_y_min = Label(self.__bottom_area_2, text="y_min")
+        self.__label_x_max = Label(self.__bottom_area_3, text="x_max")
+        self.__label_y_max = Label(self.__bottom_area_4, text="y_max")
+        self.__scan_vars_entry_x_min = Entry(self.__bottom_area_1, textvariable=self.__scan_vars_x_min)
+        self.__scan_vars_entry_y_min = Entry(self.__bottom_area_2, textvariable=self.__scan_vars_y_min)
+        self.__scan_vars_entry_x_max = Entry(self.__bottom_area_3, textvariable=self.__scan_vars_x_max)
+        self.__scan_vars_entry_y_max = Entry(self.__bottom_area_4, textvariable=self.__scan_vars_y_max)
         self.__scan_vars_entry_x_min.place(width=5, height=5)
         self.__scan_vars_entry_x_max.place(width=5, height=5)
         self.__scan_vars_entry_y_min.place(width=5, height=5)
@@ -105,19 +109,19 @@ class ConstructorFrames:
         self.__label_y_min.place(width=5, height=5)
         self.__label_y_max.place(width=5, height=5)
 
-        self.__auto_on_off_btn = Button(self.__frame_bottom_4, text='go/stop auto_scan', bg='#595959', command=self.auto)
-        self.__build_surface_btn = Button(self.__frame_bottom_1, text='on/off build surface',
+        self.__auto_on_off_btn = Button(self.__bottom_area_4, text='go/stop auto_scan', bg='#595959', command=self.auto)
+        self.__build_surface_btn = Button(self.__bottom_area_1, text='on/off build surface',
                                           command=self.__build_surface)  # не строит поверхноть, но копит данные о ней
         # self.__is_it_surface_btn = Button(self.__frame_bottom_1, text='is it surface', bg='#595959',
         # command=self.__is_it_surface)   # кнопка для дебага
-        self.__scan_mode = Button(self.__frame_bottom_2, text='on/off scan mode',
+        self.__scan_mode = Button(self.__bottom_area_2, text='on/off scan mode',
                                   command=self.__scan_mode)
-        self.__stop_render_btn = Button(self.__frame_bottom_3, text='stop/go render', command=self.__stop_go_render) # stop/go __drow_graph: canvas.draw_idle()
-        self.__snap_to_point_btn = Button(self.__frame_bottom_5, text='snap_to_point', command=self.__snap_to_point)
+        self.__stop_render_btn = Button(self.__bottom_area_3, text='stop/go render', command=self.__stop_go_render) # stop/go __drow_graph: canvas.draw_idle()
+        self.__snap_to_point_btn = Button(self.__bottom_area_5, text='snap_to_point', command=self.__snap_to_point)
         # self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
         # self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
         # self.__is_atom_btn = Button(self.__frame_bottom_2, text='is_atom', command=self.__is_atom) # кнопка для дебага
-        self.__is_atom_captured_btn = Button(self.__frame_bottom_5, text='is_atom_captured', command=self.__is_atom_captured)
+        self.__is_atom_captured_btn = Button(self.__bottom_area_5, text='is_atom_captured', command=self.__is_atom_captured)
         self.__file_name = StringVar()
         self.__save_data_entry = Entry(self.__frame_debug, textvariable=self.__file_name)
         self.__save_data_entry.place(width=20, height=5)
@@ -272,9 +276,9 @@ class ConstructorFrames:
 
         self.__canvas.pack()
 
-        self.__scale_x.pack(side=c.LEFT, padx=10)
-        self.__scale_y.pack(side=c.LEFT, padx=10)
-        self.__scale_z.pack(side=c.BOTTOM, pady=5)
+        self.__scale_z.pack(side=c.LEFT, pady=5)
+        self.__scale_y.pack(side=c.BOTTOM, padx=10)
+        self.__scale_x.pack(side=c.BOTTOM, padx=10)
 
         self.__label_x_min.pack(side=c.LEFT)
         self.__label_x_max.pack(side=c.LEFT)
