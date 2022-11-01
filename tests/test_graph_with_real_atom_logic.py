@@ -3,7 +3,7 @@ from unittest import TestCase
 from unittest.mock import Mock, MagicMock, call
 
 from controller.core_logic.atom_logic import AtomsLogic
-from controller.frontend.graph import COLOR_ATOM, COLOR_TIP
+from controller.frontend.graph import COLOR_ATOM, COLOR_TIP, COLOR_ORIGIN
 from tests.test_graph_with_fake_atom_logic import FakeGraphFrame
 
 
@@ -32,6 +32,7 @@ class TestGraphWithRealAtomLogic(TestCase):
         calls = [
             call(*(0, 0, 0), s=5, c=COLOR_ATOM, marker='8'),
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8'),
+            call(*self.atoms_logic.get_origin_coordinate(), s=5, c=COLOR_ORIGIN, marker='8'),
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8'),
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8'),
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8'),
@@ -55,6 +56,7 @@ class TestGraphWithRealAtomLogic(TestCase):
         calls = [
             call(*(0, 0, 0), s=5, c=COLOR_ATOM, marker='8'),
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8'),
+            call(*self.atoms_logic.get_origin_coordinate(), s=5, c=COLOR_ORIGIN, marker='8'),
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8'),
         ]
         graph.ax.scatter.assert_has_calls(calls, any_order=False)

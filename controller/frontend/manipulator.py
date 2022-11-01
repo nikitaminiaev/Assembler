@@ -117,11 +117,13 @@ class ConstructorFrames:
         self.__scan_mode = Button(self.__bottom_area_2, text='on/off scan mode',
                                   command=self.__scan_mode)
         self.__stop_render_btn = Button(self.__bottom_area_3, text='stop/go render', command=self.__stop_go_render) # stop/go __drow_graph: canvas.draw_idle()
-        self.__snap_to_point_btn = Button(self.__bottom_area_5, text='snap_to_point', command=self.__snap_to_point)
+        self.__bind_to_tip_btn = Button(self.__bottom_area_5, text='bind to tip', command=self.__bind_to_tip)
+        self.__bind_to_origin_btn = Button(self.__bottom_area_5, text='bind to origin', command=self.__bind_to_origin)
+        self.__set_origin_btn = Button(self.__bottom_area_5, text='set new origin', command=self.__set_new_origin)
         # self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
         # self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
         # self.__is_atom_btn = Button(self.__frame_bottom_2, text='is_atom', command=self.__is_atom) # кнопка для дебага
-        self.__is_atom_captured_btn = Button(self.__bottom_area_5, text='is_atom_captured', command=self.__is_atom_captured)
+        # self.__is_atom_captured_btn = Button(self.__bottom_area_5, text='is_atom_captured', command=self.__is_atom_captured)
         self.__file_name = StringVar()
         self.__save_data_entry = Entry(self.__frame_debug, textvariable=self.__file_name)
         self.__save_data_entry.place(width=20, height=5)
@@ -131,7 +133,7 @@ class ConstructorFrames:
         self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
         self.default_bg = self.__stop_render_btn.cget("background")
         self.scanAlgorithm = ScanAlgorithms(SLEEP_BETWEEN_SCAN_ITERATION)
-        self.__snap_to_point()
+        self.__bind_to_tip()
 
     def __transmitting_value_x(self, x: int):
         y = self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Y)
@@ -139,7 +141,7 @@ class ConstructorFrames:
         try:
             self.tk.graph.frame.atoms_logic.set_val_to_dto(DTO_X, (x, y, z))
         except TouchingSurface as e:
-            self.__snap_to_point()
+            self.__bind_to_tip()
             print(traceback.format_exc())
             print(str(e))
 
@@ -150,7 +152,7 @@ class ConstructorFrames:
         try:
             self.tk.graph.frame.atoms_logic.set_val_to_dto(DTO_Y, (x, y, z))
         except TouchingSurface as e:
-            self.__snap_to_point()
+            self.__bind_to_tip()
             print(traceback.format_exc())
             print(str(e))
 
@@ -160,14 +162,21 @@ class ConstructorFrames:
         try:
             self.tk.graph.frame.atoms_logic.set_val_to_dto(DTO_Z, (x, y, z))
         except TouchingSurface as e:
-            self.__snap_to_point()
+            self.__bind_to_tip()
             print(traceback.format_exc())
             print(str(e))
 
-    def __snap_to_point(self):
+    def __bind_to_tip(self):
         self.__scale_x.set(self.tk.graph.frame.atoms_logic.get_dto_val(DTO_X))
         self.__scale_y.set(self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Y))
         self.__scale_z.set(self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Z))
+
+    def __set_new_origin(self):
+        self.tk.graph.frame.atoms_logic.set_new_origin_coordinate()
+
+    def __bind_to_origin(self):
+        self.tk.graph.frame.atoms_logic.set_origin_to_dto()
+        self.__bind_to_tip()
 
     def __remove_surface(self):
         self.tk.graph.frame.remove_surface()
@@ -294,8 +303,10 @@ class ConstructorFrames:
         self.__build_surface_btn.pack(side=c.RIGHT, padx=5)
         # self.__is_it_surface_btn.pack(side=c.LEFT, padx=5)
 
-        self.__is_atom_captured_btn.pack(side=c.RIGHT)
-        self.__snap_to_point_btn.pack(side=c.RIGHT, padx=5)
+        # self.__is_atom_captured_btn.pack(side=c.RIGHT)
+        self.__bind_to_tip_btn.pack(side=c.RIGHT, padx=5)
+        self.__set_origin_btn.pack(side=c.RIGHT)
+        self.__bind_to_origin_btn.pack(side=c.RIGHT)
         # self.__remove_surface_btn.pack(side=c.LEFT, padx=50)
         # self.__show_surface_btn.pack(side=c.LEFT)
         # self.__is_atom_btn.pack(side=c.LEFT, padx=5)

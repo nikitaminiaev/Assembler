@@ -3,7 +3,7 @@ from unittest import TestCase
 from unittest.mock import Mock, MagicMock, call
 
 from controller.core_logic.atom import Atom
-from controller.frontend.graph import COLOR_ATOM, COLOR_TIP
+from controller.frontend.graph import COLOR_ATOM, COLOR_TIP, COLOR_ORIGIN
 from tests.fake_graph_frame import FakeGraphFrame
 
 
@@ -12,6 +12,7 @@ class TestGraphWithFakeAtomLogic(TestCase):
     def setUp(self) -> None:
         self.atoms_logic = Mock()
         self.atoms_logic.get_tool_coordinate = MagicMock(return_value=[1, 1, 1])
+        self.atoms_logic.get_origin_coordinate = MagicMock(return_value=[0, 0, 0])
         self.atoms_logic.set_is_surface = MagicMock()
         self.atoms_logic.set_is_atom = MagicMock()
         atom0 = Atom(self.atoms_logic.get_tool_coordinate())
@@ -52,6 +53,7 @@ class TestGraphWithFakeAtomLogic(TestCase):
         calls = [
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8'),
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8'),
+            call(*self.atoms_logic.get_origin_coordinate(), s=5, c=COLOR_ORIGIN, marker='8'),
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8'),
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8'),
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8'),
@@ -82,6 +84,7 @@ class TestGraphWithFakeAtomLogic(TestCase):
         self.assertFalse(self.atoms_logic.atom_captured_event)
         calls = [
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8'),
+            call(*self.atoms_logic.get_origin_coordinate(), s=5, c=COLOR_ORIGIN, marker='8'),
         ]
         graph.ax.scatter.assert_has_calls(calls, any_order=False)
         graph.ax.plot_surface.assert_called_once()
