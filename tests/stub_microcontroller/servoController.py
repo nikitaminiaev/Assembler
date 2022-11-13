@@ -1,4 +1,4 @@
-from real_surface_stub import SurfaceGenerator, MAX_FIELD_SIZE
+from surface_generator import SurfaceGenerator, MAX_FIELD_SIZE
 
 CORRECT_FOR_CARRENT_WORKE = 30
 
