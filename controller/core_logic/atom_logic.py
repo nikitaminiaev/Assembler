@@ -33,7 +33,6 @@ class AtomsLogic:
         self.server = server(self.handle_server_data)
         self.atom_collection = AtomCollection(self.__tool)
         self.__origin = Origin()
-            # {'x': 0, 'y': 0, 'z': 0}
 
     def tool_is_coming_down(self):
         return self.__tool.is_coming_down
