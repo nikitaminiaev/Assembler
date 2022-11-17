@@ -6,7 +6,7 @@ class ServoController:
 
     def __init__(self, external_send_func):
         self.external_send_func = external_send_func
-        self.real_surface = SurfaceGenerator(MAX_FIELD_SIZE).generate()
+        self.real_surface = SurfaceGenerator(MAX_FIELD_SIZE, 20).generate()
         self.x_current = 0
         self.y_current = 0
         self.z_current = 0
