@@ -23,14 +23,18 @@ class SurfaceGenerator:
         self.general_height = general_height
 
     def generate(self) -> np.ndarray:
-        real_surface = np.full((self.max_field_size, self.max_field_size), self.general_height)
-        surface = self.__add_atom(real_surface, 15, 10)
-        noise = self.__get_noise(self.max_field_size)
+        surface = self.__get_empty_surface()
+
+        return self.__add_atom(surface, 15, 10)
+
+    def generate_noise_surface(self) -> np.ndarray:
+        surface = self.__get_empty_surface()
+        surface = self.__add_atom(surface, 15, 10)
+        noise = self.__get_noise()
 
         return surface + noise
 
-    @staticmethod
-    def __add_atom(surface: np.ndarray, x: int, y: int) -> np.ndarray:
+    def __add_atom(self, surface: np.ndarray, x: int, y: int) -> np.ndarray:
         z = surface[y, x]
         surface[(y - 3):(y + 4), (x - 3):(x + 4)] = z + 1
         surface[(y - 3), (x - 3)] = z
@@ -47,10 +51,12 @@ class SurfaceGenerator:
 
         return surface
 
-    @staticmethod
-    def __get_noise(max_field_size: int) -> np.ndarray:
-        return np.random.choice([-1, 0, +1], (max_field_size, max_field_size), replace=True, p=[0.2, 0.6, 0.2])
+    def __get_empty_surface(self):
+        return np.full((self.max_field_size, self.max_field_size), self.general_height)
+
+    def __get_noise(self) -> np.ndarray:
+        return np.random.choice([-1, 0, +1], (self.max_field_size, self.max_field_size), replace=True, p=[0.2, 0.6, 0.2])
 
 
 if __name__ == '__main__':
-    print(SurfaceGenerator(20, 20).generate())
+    print(SurfaceGenerator(20, 20).generate_noise_surface())

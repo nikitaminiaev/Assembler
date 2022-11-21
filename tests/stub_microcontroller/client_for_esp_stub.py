@@ -1,7 +1,7 @@
 import ujson
 import sys
 from mySocket_stub import Socket
-from servoController import ServoController
+from servo_controller import ServoController
 
 
 class Client(Socket):
