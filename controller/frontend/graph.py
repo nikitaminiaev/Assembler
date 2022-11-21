@@ -17,6 +17,7 @@ from controller.constants import *
 LARGE_FONT = ("Verdana", 12)
 COLOR_TIP = 'g'
 COLOR_ATOM = 'r'
+COLOR_ORIGIN = 'r'
 
 
 class Graph(tk.Tk):
@@ -51,6 +52,7 @@ class GraphFrame(tk.Frame):
         self.x_arr, self.y_arr = np.meshgrid(np.arange(0, MAX_FIELD_SIZE, 1), np.arange(0, MAX_FIELD_SIZE, 1))
         self.surface = None
         self.tool_tip = None
+        self.origin = None
         self.captured_atom = None
         fig = plt.figure()
         self.ax = fig.add_subplot(111, projection='3d')
@@ -65,11 +67,12 @@ class GraphFrame(tk.Frame):
         toolbar.update()
         self.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-    # главный алгоритм обновления данных при ручном управлении
+    # главный алгоритм обновления визуальных данных графика при ручном управлении
     def update_graph_data_algorithm(self):
         if self.atoms_logic.is_new_point():
             try:
                 self.tool_tip.remove() if self.tool_tip is not None else None
+                self.origin.remove() if self.origin is not None else None
                 self.captured_atom.remove() if self.captured_atom is not None else None
             except Exception as e:
                 self.captured_atom = None
@@ -80,6 +83,7 @@ class GraphFrame(tk.Frame):
                 self.atoms_logic.atom_release_event = False
             self.atoms_logic.update_tool_coordinate()
             self.tool_tip = self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8')
+            self.origin = self.ax.scatter(*self.atoms_logic.get_origin_coordinate(), s=5, c=COLOR_ORIGIN, marker='8')
             if self.atoms_logic.atom_collection.append_unique_atom():
                 self.ax.scatter(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8')
             if self.atoms_logic.atom_captured_event:

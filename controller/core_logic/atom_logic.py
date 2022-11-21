@@ -4,6 +4,7 @@ import numpy as np
 from controller.constants import *
 from controller.core_logic.atoms_collection import AtomCollection
 from controller.core_logic.dto import Dto
+from controller.core_logic.origin import Origin
 from controller.core_logic.tool import Tool
 from sockets.server import Server
 
@@ -30,7 +31,8 @@ class AtomsLogic:
         self.dto_z.set_val((0, 0, MAX))
         self.server = server(self.handle_server_data)
         self.atom_collection = AtomCollection(self.__tool)
-        
+        self.__origin = Origin()
+
     def tool_is_coming_down(self):
         return self.__tool.is_coming_down
 
@@ -119,16 +121,33 @@ class AtomsLogic:
         return (self.dto_x.get_val() != self.__tool.x or self.dto_y.get_val() != self.__tool.y or self.dto_z.get_val() != self.__tool.z) and \
                ((self.dto_x.get_val() % MULTIPLICITY == 0) or (self.dto_y.get_val() % MULTIPLICITY == 0) or (self.dto_z.get_val() % MULTIPLICITY == 0))
 
-    def update_tool_coordinate(self):
+    def update_tool_coordinate(self) -> None:
         self.__set_command_to_microcontroller()
         self.__tool.x = self.dto_x.get_val()
         self.__tool.y = self.dto_y.get_val()
         self.__tool.z = self.dto_z.get_val()
 
-    def get_tool_coordinate(self):
+    def get_tool_coordinate(self) -> tuple:
         return self.__tool.get_coordinate()
 
-    def __set_command_to_microcontroller(self):
+    def set_new_origin_coordinate(self) -> None:
+        self.__origin.set_coordinate(self.dto_x.get_val(), self.dto_y.get_val(), self.dto_z.get_val())
+
+    def get_origin_coordinate(self) -> tuple:
+        return self.__origin.get_coordinate()
+
+    def set_origin_to_dto(self) -> None:
+        z_max = np.amax(self.surface_data)
+        self.set_val_to_dto(DTO_Z, (self.dto_x.get_val(), self.dto_y.get_val(), z_max + 10))
+        self.update_tool_coordinate()
+        self.set_val_to_dto(DTO_X, self.get_origin_coordinate())
+        self.update_tool_coordinate()
+        self.set_val_to_dto(DTO_Y, self.get_origin_coordinate())
+        self.update_tool_coordinate()
+        self.set_val_to_dto(DTO_Z, self.get_origin_coordinate())
+        self.update_tool_coordinate()
+
+    def __set_command_to_microcontroller(self) -> None:
         if self.dto_x.get_val() != self.__tool.x:
             self.server.send_data_to_all_clients(json.dumps(self.dto_x.to_dict()))
             return

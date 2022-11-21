@@ -16,3 +16,4 @@ class FakeGraphFrame(GraphFrame):
         self.condition_build_surface = True
         self.canvas = MagicMock(return_value=True)
         self.x_arr, self.y_arr = None, None
+        self.origin = None
