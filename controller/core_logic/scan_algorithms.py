@@ -1,4 +1,5 @@
 import time
+from threading import Event
 from typing import Tuple
 
 from controller.constants import *
@@ -13,9 +14,8 @@ class ScanAlgorithms:
         self.stop = True
         self.sleep_between_scan_iteration = sleep_between_scan_iteration
 
-    def scan(self, get_val_func, set_x_func, set_y_func, set_z_func, **kwargs):
+    def scan(self, get_val_func, set_x_func, set_y_func, set_z_func, touching_surface_event: Event, **kwargs):
         gen_x_y = self.data_generator_x_y(kwargs['x_min'], kwargs['y_min'], kwargs['x_max'], kwargs['y_max'])
-
         while not self.stop:
             try:
                 next_coordinate = next(gen_x_y)
@@ -23,11 +23,12 @@ class ScanAlgorithms:
                 x = get_val_func(DTO_X)
                 y = get_val_func(DTO_Y)
                 if DTO_X in next_coordinate:
-                    self.set_algorithm_x_or_y((next_coordinate[DTO_X], y, z), set_x_func, set_z_func)
-                    self.set_algorithm_z((next_coordinate[DTO_X], y, z), set_z_func)
+                    touching_surface_event.clear()
+                    self.set_algorithm_x_or_y((next_coordinate[DTO_X], y, z), set_x_func, set_z_func, touching_surface_event)
                 if DTO_Y in next_coordinate:
-                    self.set_algorithm_x_or_y((x, next_coordinate[DTO_Y], z), set_y_func, set_z_func)
-                    self.set_algorithm_z((x, next_coordinate[DTO_Y], z), set_z_func)
+                    touching_surface_event.clear()
+                    self.set_algorithm_x_or_y((x, next_coordinate[DTO_Y], z), set_y_func, set_z_func, touching_surface_event)
+                touching_surface_event.wait()
             except Exception as e:
                 print(str(e))
                 break
@@ -51,29 +52,14 @@ class ScanAlgorithms:
                     yield {DTO_X: x}
         print('100%')
 
-    def set_algorithm_x_or_y(self, coordinates: Tuple[int, int, int], set_x_or_y_func, set_z_func):
+    def set_algorithm_x_or_y(self, coordinates: Tuple[int, int, int], set_x_or_y_func, set_z_func, touching_surface_event: Event):
         assert coordinates[2] < MAX_FIELD_SIZE
         time.sleep(self.sleep_between_scan_iteration)
         try:
             set_x_or_y_func((coordinates[0], coordinates[1], coordinates[2]))
+            touching_surface_event.wait()
         except TouchingSurface as e:
             print(str(e))
-            new_coordinates = (coordinates[0], coordinates[1], coordinates[2] + 2)
-            set_z_func(new_coordinates)
-            self.set_algorithm_x_or_y(new_coordinates, set_x_or_y_func, set_z_func)
-
-    def set_algorithm_z(self, coordinates: Tuple[int, int, int], set_z_func):
-        for z in range(coordinates[2], 0, -1):
-            if self.stop:
-                break
-            time.sleep(self.sleep_between_scan_iteration)
-            try:
-                set_z_func((coordinates[0], coordinates[1], z))
-            except TouchingSurface as e:
-                print(str(e))
-                z_ = z + 10
-                if z_ > FIELD_SIZE:
-                    z_ = FIELD_SIZE
-                time.sleep(self.sleep_between_scan_iteration)
-                set_z_func((coordinates[0], coordinates[1], z_))
-                break
+            new_coordinates = (coordinates[0], coordinates[1], coordinates[2] + 10)
+            self.set_algorithm_x_or_y(new_coordinates, set_x_or_y_func, set_z_func, touching_surface_event)
+            touching_surface_event.wait()

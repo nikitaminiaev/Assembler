@@ -16,6 +16,12 @@ MAX_FIELD_SIZE = 76
 #  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # 9
 #  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]  # 10
 
+# 3 вида помех:
+# 1. Случайный шум
+# 2. Смещение всего скана при повторных сканирвоаниях
+# 3. Ползучесть в разные стороны зонда во время сканирования
+#
+
 class SurfaceGenerator:
 
     def __init__(self, max_field_size: int, general_height: int):
@@ -59,4 +65,9 @@ class SurfaceGenerator:
 
 
 if __name__ == '__main__':
-    print(SurfaceGenerator(20, 20).generate_noise_surface())
+    print(np.around(
+        (
+                SurfaceGenerator(20, 20).generate_noise_surface()
+                + SurfaceGenerator(20, 20).generate_noise_surface()
+        )/2)
+    )

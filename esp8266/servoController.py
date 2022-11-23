@@ -1,5 +1,6 @@
 import machine
 
+MAX = 75
 CORRECT_FOR_CARRENT_WORKE = 40
 
 
@@ -26,3 +27,8 @@ class ServoController:
         value = int(data['value']) + CORRECT_FOR_CARRENT_WORKE
         if -1 != (sensor.find('servo')):
             exec('self.%s.duty(%d)' % (sensor, value), {}, {'self': self})
+
+    @staticmethod
+    def __invert_data(data: dict):
+        data['value'] = str(MAX - int(data['value']))
+        return data
