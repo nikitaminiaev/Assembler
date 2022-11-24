@@ -23,11 +23,11 @@ class TestHandleServerData(TestCase):
         cls.server_mock = None
 
     surface_data = [
-        ('{"sensor": "surface", "val": 1}', 'valid'),
-        (', "val": 1}{"sensor": "surface", "val": 1}', 'valid'),
-        ('al": 1}{"sensor": "surface", "val": 1}{"sensor": "su', 'valid'),
-        ('al": 1}{"sensor": "su', 'invalid'),
-        ('{"sensor": "surface", "any": 1}', 'invalid'),
+        ('{"sensor": "surface", "z_val": 20}', 'valid'),
+        (', "val": 1}{"sensor": "surface", "z_val": 20}', 'valid'),
+        ('al": 20}{"sensor": "surface", "z_val": 20}{"sensor": "su', 'valid'),
+        ('al": 20}{"sensor": "su', 'invalid'),
+        ('{"sensor": "surface", "any": 20}', 'invalid'),
     ]
 
     def test_handle_surface_data(self):
@@ -39,11 +39,11 @@ class TestHandleServerData(TestCase):
             if validated == 'valid':
                 atom_logic.handle_server_data(data)
                 self.assertTrue(atom_logic.is_surface())
-                self.assertEqual(z - CORRECTION_Z, atom_logic.surface_data[0, 0])
+                self.assertEqual(20, atom_logic.surface_data[0, 0])
             else:
                 atom_logic.handle_server_data(data)
                 self.assertFalse(atom_logic.is_surface())
-                self.assertNotEqual(z - CORRECTION_Z, atom_logic.surface_data[0, 0])
+                self.assertNotEqual(20, atom_logic.surface_data[0, 0])
             self.assertFalse(atom_logic.is_atom())
 
     atom_data = [

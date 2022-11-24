@@ -37,7 +37,7 @@ class TestGraphWithRealAtomLogic(TestCase):
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_TIP, marker='8'),
             call(*self.atoms_logic.get_tool_coordinate(), s=5, c=COLOR_ATOM, marker='8'),
         ]
-        self.atoms_logic.server.send_data_to_all_clients.assert_called_once_with('{"sensor": "servo_z", "value": "0"}')
+        self.atoms_logic.server.send_data_to_all_clients.assert_not_called()
         graph.ax.scatter.assert_has_calls(calls, any_order=False)
         self.assertFalse(self.atoms_logic.atom_release_event)
         self.assertFalse(self.atoms_logic.atom_captured_event)
@@ -61,7 +61,7 @@ class TestGraphWithRealAtomLogic(TestCase):
         ]
         graph.ax.scatter.assert_has_calls(calls, any_order=False)
 
-        self.atoms_logic.server.send_data_to_all_clients.assert_called_once_with('{"sensor": "servo_z", "value": "0"}')
+        self.atoms_logic.server.send_data_to_all_clients.assert_not_called()
 
         self.assertEqual(0, len(self.atoms_logic.atom_collection.atoms_list))
         self.assertFalse(self.atoms_logic.atom_release_event)

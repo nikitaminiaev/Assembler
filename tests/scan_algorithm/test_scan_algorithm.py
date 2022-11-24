@@ -35,7 +35,7 @@ class FakeDto(Dto):
 
 
 class FakeAtomsLogic(AtomsLogic):
-    def set_val_to_dto(self, dto_str: str, coordinates: Tuple[int, int, int]) -> None:
+    def set_val_to_dto(self, dto_str: str, coordinates: Tuple[int, int, int], is_auto: bool = False) -> None:
         if dto_str == DTO_Z and coordinates[2] == 20:
             raise TouchingSurface()
         if dto_str == DTO_X and coordinates[0] == 4 and coordinates[2] == 30:

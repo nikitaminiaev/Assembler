@@ -100,7 +100,7 @@ class TestSetAndValidateCoordinate(TestCase):
         self.assertNotEqual(y, tool_y)
         atom_logic.server. \
             send_data_to_all_clients. \
-            assert_called_once_with(f'{{"sensor": "servo_z", "value": "{str(MAX - z)}"}}')
+            assert_called_with(f'{{"sensor": "servo_z", "value": "{z}", "auto": 0}}')
 
         atom_logic.set_val_to_dto(DTO_Y, (0, y, z))
         assert not atom_logic.tool_is_coming_down()
@@ -116,9 +116,11 @@ class TestSetAndValidateCoordinate(TestCase):
         self.assertNotEqual(x, tool_x)
         self.assertEqual(z, tool_z)
         self.assertEqual(y, tool_y)
+        dict = atom_logic.dto_y.to_dict()
+        dict['auto'] = 0
         atom_logic.server. \
             send_data_to_all_clients. \
-            assert_called_with(json.dumps(atom_logic.dto_y.to_dict()))
+            assert_called_with(json.dumps(dict))
 
 
 if __name__ == '__main__':

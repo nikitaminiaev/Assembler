@@ -117,7 +117,7 @@ class ConstructorFrames:
         self.__scan_mode = Button(self.__bottom_area_2, text='on/off scan mode',
                                   command=self.__scan_mode)
         self.__stop_render_btn = Button(self.__bottom_area_3, text='stop/go render', command=self.__stop_go_render) # stop/go __drow_graph: canvas.draw_idle()
-        self.__bind_to_tip_btn = Button(self.__bottom_area_5, text='bind to tip', command=self.__bind_to_tip)
+        self.__bind_to_tip_btn = Button(self.__bottom_area_5, text='bind to tip', command=self.__bind_scale_to_tip)
         self.__bind_to_origin_btn = Button(self.__bottom_area_5, text='bind to origin', command=self.__bind_to_origin)
         self.__set_origin_btn = Button(self.__bottom_area_5, text='set new origin', command=self.__set_new_origin)
         # self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
@@ -133,7 +133,7 @@ class ConstructorFrames:
         self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
         self.default_bg = self.__stop_render_btn.cget("background")
         self.scanAlgorithm = ScanAlgorithms(SLEEP_BETWEEN_SCAN_ITERATION)
-        self.__bind_to_tip()
+        self.__bind_scale_to_tip()
 
     def __transmitting_value_x(self, x: int):
         y = self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Y)
@@ -141,7 +141,7 @@ class ConstructorFrames:
         try:
             self.tk.graph.frame.atoms_logic.set_val_to_dto(DTO_X, (x, y, z))
         except TouchingSurface as e:
-            self.__bind_to_tip()
+            self.__bind_scale_to_tip()
             print(traceback.format_exc())
             print(str(e))
 
@@ -152,7 +152,7 @@ class ConstructorFrames:
         try:
             self.tk.graph.frame.atoms_logic.set_val_to_dto(DTO_Y, (x, y, z))
         except TouchingSurface as e:
-            self.__bind_to_tip()
+            self.__bind_scale_to_tip()
             print(traceback.format_exc())
             print(str(e))
 
@@ -162,11 +162,11 @@ class ConstructorFrames:
         try:
             self.tk.graph.frame.atoms_logic.set_val_to_dto(DTO_Z, (x, y, z))
         except TouchingSurface as e:
-            self.__bind_to_tip()
+            self.__bind_scale_to_tip()
             print(traceback.format_exc())
             print(str(e))
 
-    def __bind_to_tip(self):
+    def __bind_scale_to_tip(self):
         self.__scale_x.set(self.tk.graph.frame.atoms_logic.get_dto_val(DTO_X))
         self.__scale_y.set(self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Y))
         self.__scale_z.set(self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Z))
@@ -176,7 +176,7 @@ class ConstructorFrames:
 
     def __bind_to_origin(self):
         self.tk.graph.frame.atoms_logic.set_origin_to_dto()
-        self.__bind_to_tip()
+        self.__bind_scale_to_tip()
 
     def __remove_surface(self):
         self.tk.graph.frame.remove_surface()
@@ -227,18 +227,19 @@ class ConstructorFrames:
             self.scanAlgorithm.stop = False
         else:
             self.scanAlgorithm.stop = True
-        vars = self.__get_vars()
-        threading.Thread(target=self._go_auto, args=vars).start()
+        vars = self.__get_params()
+        threading.Thread(target=self._go_auto, args=vars).start() # todo добавить евент
 
-    def __get_vars(self) -> tuple:
-        return (
-            int(self.__scan_vars_x_min.get().strip() if self.__scan_vars_x_min.get().strip() != '' else 0),
-            int(self.__scan_vars_y_min.get().strip() if self.__scan_vars_x_min.get().strip() != '' else 0),
-            int(self.__scan_vars_x_max.get().strip() if self.__scan_vars_x_min.get().strip() != '' else 0),
-            int(self.__scan_vars_y_max.get().strip() if self.__scan_vars_x_min.get().strip() != '' else 0),
-        )
+    def __get_params(self) -> tuple:
+        params = (self.tk.graph.frame.atoms_logic.touching_surface_event,)
+        if self.__scan_vars_x_min.get().strip() != '': params += (int(self.__scan_vars_x_min.get().strip()),)
+        if self.__scan_vars_y_min.get().strip() != '': params += (int(self.__scan_vars_y_min.get().strip()),)
+        if self.__scan_vars_x_max.get().strip() != '': params += (int(self.__scan_vars_x_max.get().strip()),)
+        if self.__scan_vars_y_max.get().strip() != '': params += (int(self.__scan_vars_y_max.get().strip()),)
 
-    def _go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None:
+        return params
+
+    def _go_auto(self, touching_surface_event, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None:
         get_val_func = self.tk.graph.frame.atoms_logic.get_dto_val
         self.tk.graph.frame.atoms_logic.set_val_to_dto(
             DTO_X,
@@ -246,17 +247,20 @@ class ConstructorFrames:
                 x_max,
                 get_val_func(DTO_Y),
                 get_val_func(DTO_Z)
-            )
+            ),
+            True
         )
         set_x_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_X)
         set_y_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_Y)
         set_z_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_Z)
+        self.tk.graph.frame.atoms_logic.push_z_coord_to_mk(True)
 
         self.scanAlgorithm.scan(
             get_val_func,
             set_x_func,
             set_y_func,
             set_z_func,
+            touching_surface_event,
             x_min=x_min,
             y_min=y_min,
             x_max=x_max,
