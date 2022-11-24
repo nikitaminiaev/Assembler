@@ -24,23 +24,24 @@ MAX_FIELD_SIZE = 76
 
 class SurfaceGenerator:
 
-    def __init__(self, max_field_size: int, general_height: int):
+    def __init__(self, max_field_size: int, general_height: int, atoms: list[tuple[int, int]]):
         self.max_field_size = max_field_size
         self.general_height = general_height
+        self.atoms = atoms
 
     def generate(self) -> np.ndarray:
         surface = self.__get_empty_surface()
 
-        return self.__add_atom(surface, 15, 10)
+        return self.__add_atoms(surface, self.atoms)
 
     def generate_noise_surface(self) -> np.ndarray:
         surface = self.__get_empty_surface()
-        surface = self.__add_atom(surface, 15, 10)
+        surface = self.__add_atoms(surface, self.atoms)
         noise = self.__get_noise()
 
         return surface + noise
 
-    def __add_atom(self, surface: np.ndarray, x: int, y: int) -> np.ndarray:
+    def __append_atom(self, surface: np.ndarray, x: int, y: int) -> np.ndarray:
         z = surface[y, x]
         surface[(y - 3):(y + 4), (x - 3):(x + 4)] = z + 1
         surface[(y - 3), (x - 3)] = z
@@ -57,6 +58,15 @@ class SurfaceGenerator:
 
         return surface
 
+    def __add_atoms(self, surface: np.ndarray, coordinates: list[tuple[int, int]]):
+        for x, y in coordinates:
+            try:
+                self.__append_atom(surface, x, y)
+            except IndexError as e:
+                print(str(e))
+
+        return surface
+
     def __get_empty_surface(self):
         return np.full((self.max_field_size, self.max_field_size), self.general_height)
 
@@ -65,9 +75,4 @@ class SurfaceGenerator:
 
 
 if __name__ == '__main__':
-    print(np.around(
-        (
-                SurfaceGenerator(20, 20).generate_noise_surface()
-                + SurfaceGenerator(20, 20).generate_noise_surface()
-        )/2)
-    )
+    print(SurfaceGenerator(20, 1, [(4, 6), (10, 50)]).generate_noise_surface())
