@@ -1,12 +1,13 @@
-from surface_generator import SurfaceGenerator, MAX_FIELD_SIZE
+from surface_generator import *
 import numpy as np
+
 
 class ServoController:
 
     def __init__(self, external_send_func):
         self.external_send_func = external_send_func
-        surface_generator = SurfaceGenerator(MAX_FIELD_SIZE, 20)
-        self.real_surface = np.around((surface_generator.generate_noise_surface() + surface_generator.generate_noise_surface() + surface_generator.generate_noise_surface()) / 3)
+        self.surface_generator = SurfaceGenerator(MAX_FIELD_SIZE, GENERAL_HEIGHT, ATOMS)
+        self.noise_surface = self.surface_generator.generate_noise_surface()
         self.x_current = 0
         self.y_current = 0
         self.z_current = 0
@@ -26,21 +27,26 @@ class ServoController:
             # print('y' + str(value)) # смещение мк по y
             self.scan_algorithm_z(is_auto)
         if -1 != (sensor.find('servo_z')):
-            self.z_current = value + 10 # смещение мк по z, только при ручном управлении
+            self.z_current = value + 10  # смещение мк по z, только при ручном управлении
             self.scan_algorithm_z(is_auto)
             if is_auto:
                 return
-            if self.z_current == self.real_surface[self.y_current, self.x_current]:
+            if self.z_current == self.noise_surface[self.y_current, self.x_current]:
                 self.z_current = self.z_current + 10
                 self.external_send_func(f'{{"sensor": "surface", "z_val": {value}}}')
             print('z' + str(value))
+        if sensor == 'gen_new_noise': # для теста
+            self.generate_new_noise()
 
     def scan_algorithm_z(self, is_auto: bool):
         # print('de' + str(is_auto))
         # if not is_auto:
         #     return
         for z in range(self.z_current, 0, -1):
-            if z == self.real_surface[self.y_current, self.x_current]:
+            if z == self.noise_surface[self.y_current, self.x_current]:
                 self.z_current = z + 10
                 self.external_send_func(f'{{"sensor": "surface", "z_val": {z}}}')
                 break
+
+    def generate_new_noise(self):
+        self.noise_surface = self.surface_generator.generate_noise_surface()

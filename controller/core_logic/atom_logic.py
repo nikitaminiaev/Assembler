@@ -6,9 +6,11 @@ from controller.constants import *
 from controller.core_logic.atoms_collection import AtomCollection
 from controller.core_logic.dto import Dto
 from controller.core_logic.origin import Origin
+from controller.core_logic.scan_transformer import ScanTransformer
 from controller.core_logic.tool import Tool
 from sockets.server import Server
 
+DEPARTURE_BY_Z = 10
 INVALID_DTO = "Invalid dto"
 
 
@@ -24,7 +26,7 @@ class AtomsLogic:
         self.atom_captured_event: bool = False
         self.is_surface_changed_event: bool = True    # это событие оптимизирует нагрузку на процессор
         self.atom_release_event: bool = False
-        self.append_unique_atom_event: bool = False
+        self.append_unique_atom_event: bool = False   # todo переместить все от чего зависит graph в отдельный класс
         self.__tool = Tool()
         self.dto_x = Dto(Dto.SERVO_X, self.surface_data, self.__tool)
         self.dto_y = Dto(Dto.SERVO_Y, self.surface_data, self.__tool)
@@ -34,6 +36,15 @@ class AtomsLogic:
         self.atom_collection = AtomCollection(self.__tool)
         self.touching_surface_event = Event()
         self.__origin = Origin()
+        self.scan_transformer = ScanTransformer()
+
+    def remove_noise(self):
+        if self.scan_transformer.is_surfaces_not_empty():
+            self.surface_data = self.scan_transformer.average_by_z()
+        self.is_surface_changed_event = True
+
+    def gen_new_noise(self):  #метод для тестовой мк заглушки
+        self.server.send_data_to_all_clients('{"sensor": "gen_new_noise", "value": 1}')
 
     def tool_is_coming_down(self):
         return self.__tool.is_coming_down
@@ -52,7 +63,7 @@ class AtomsLogic:
             raise ValueError(dto)
         dto.validate_val(coordinates_int)
         dto.set_val(coordinates_int)
-        # self.update_tool_coordinate(False)  //todo вернуть это когда в графике перейдет на событие new_point
+        # self.update_tool_coordinate(False)  //todo вернуть это, когда в графике перейдет на событие new_point
         self.push_coord_to_mk(dto_str, is_auto)
         if self.__tool.scan_mode and dto_str == DTO_Z:
             self.__update_existing_surface(coordinates_int)
@@ -73,8 +84,8 @@ class AtomsLogic:
             if is_surface_:
                 # self.__tool.is_coming_down = True
                 z_val_ = data_dict['z_val']
-                self.dto_z.set_val((self.dto_x.get_val(), self.dto_y.get_val(), z_val_ + 10))
-                self.__tool.z = z_val_+10
+                self.dto_z.set_val((self.dto_x.get_val(), self.dto_y.get_val(), z_val_ + DEPARTURE_BY_Z))
+                self.__tool.z = z_val_ + DEPARTURE_BY_Z
                 self.set_is_surface(True)
                 self.__build_new_surface(z_val_)
                 self.touching_surface_event.set()

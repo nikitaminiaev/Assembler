@@ -1,7 +1,17 @@
 import numpy as np
+from typing import List, Tuple
 
 MAX_FIELD_SIZE = 76
-
+GENERAL_HEIGHT = 20
+ATOMS = [
+    (10, 5),
+    (10, 15),
+    (10, 25),
+    (10, 35),
+    (10, 45),
+    (10, 55),
+    (10, 65),
+]
 
 # # 1  2  3  4  5  6  7  8  9 10 11 12 13
 
@@ -24,7 +34,7 @@ MAX_FIELD_SIZE = 76
 
 class SurfaceGenerator:
 
-    def __init__(self, max_field_size: int, general_height: int, atoms: list[tuple[int, int]]):
+    def __init__(self, max_field_size: int, general_height: int, atoms: List[Tuple[int, int]]):
         self.max_field_size = max_field_size
         self.general_height = general_height
         self.atoms = atoms
@@ -58,7 +68,7 @@ class SurfaceGenerator:
 
         return surface
 
-    def __add_atoms(self, surface: np.ndarray, coordinates: list[tuple[int, int]]):
+    def __add_atoms(self, surface: np.ndarray, coordinates: List[Tuple[int, int]]):
         for x, y in coordinates:
             try:
                 self.__append_atom(surface, x, y)
@@ -75,4 +85,4 @@ class SurfaceGenerator:
 
 
 if __name__ == '__main__':
-    print(SurfaceGenerator(20, 1, [(4, 6), (10, 50)]).generate_noise_surface())
+    print(SurfaceGenerator(20, 1, [(4, 6), (10, 50)]).generate())
