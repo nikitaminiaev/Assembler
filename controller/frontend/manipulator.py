@@ -115,14 +115,19 @@ class ConstructorFrames:
                                           command=self.__remember_surface)
         self.__remove_noise_btn = Button(self.__bottom_area_1, text='remove noise',
                                           command=self.__remove_noise)
+
         self.__gen_new_noise_btn = Button(self.__bottom_area_2, text='gen new noise',
                                           command=self.__gen_new_noise)
         # self.__is_it_surface_btn = Button(self.__frame_bottom_1, text='is it surface', bg='#595959',
         # command=self.__is_it_surface)   # кнопка для дебага
         self.__scan_mode = Button(self.__bottom_area_2, text='on/off scan mode',
                                   command=self.__scan_mode)
+        self.__del_surface_data_btn = Button(self.__bottom_area_2, text='del surface', command=self.__del_surface_data)
+
         self.__stop_render_btn = Button(self.__bottom_area_3, text='stop/go render', command=self.__stop_go_render) # stop/go __drow_graph: canvas.draw_idle()
+
         self.__auto_on_off_btn = Button(self.__bottom_area_4, text='go/stop auto_scan', bg='#595959', command=self.auto)
+
         self.__bind_to_tip_btn = Button(self.__bottom_area_5, text='bind to tip', command=self.__bind_scale_to_tip)
         self.__bind_to_origin_btn = Button(self.__bottom_area_5, text='bind to origin', command=self.__bind_to_origin)
         self.__set_origin_btn = Button(self.__bottom_area_5, text='set new origin', command=self.__set_new_origin)
@@ -130,6 +135,7 @@ class ConstructorFrames:
         # self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
         # self.__is_atom_btn = Button(self.__frame_bottom_2, text='is_atom', command=self.__is_atom) # кнопка для дебага
         # self.__is_atom_captured_btn = Button(self.__bottom_area_5, text='is_atom_captured', command=self.__is_atom_captured)
+
         self.__file_name = StringVar()
         self.__save_data_entry = Entry(self.__frame_debug, textvariable=self.__file_name)
         self.__save_data_entry.place(width=20, height=5)
@@ -211,15 +217,16 @@ class ConstructorFrames:
             self.__show_surface()
 
     def __remember_surface(self):
-        self.tk.graph.frame.atoms_logic.scan_transformer.append_surface(
-            self.tk.graph.frame.atoms_logic.surface_data
-        )
+        self.tk.graph.frame.atoms_logic.remember_surface()
 
     def __remove_noise(self):
         self.tk.graph.frame.atoms_logic.remove_noise()
 
     def __gen_new_noise(self):
         self.tk.graph.frame.atoms_logic.gen_new_noise()
+
+    def __del_surface_data(self):
+        self.tk.graph.frame.atoms_logic.del_surface_data()
 
     def __is_it_surface(self):
         if self.tk.graph.frame.atoms_logic.is_surface():
@@ -245,7 +252,7 @@ class ConstructorFrames:
         else:
             self.scanAlgorithm.stop = True
         vars = self.__get_params()
-        threading.Thread(target=self._go_auto, args=vars).start() # todo добавить евент
+        threading.Thread(target=self._go_auto, args=vars).start()
 
     def __get_params(self) -> tuple:
         params = (self.tk.graph.frame.atoms_logic.touching_surface_event,)
@@ -325,6 +332,7 @@ class ConstructorFrames:
         self.__remember_surface_btn.pack(side=c.RIGHT, padx=10)
         self.__remove_noise_btn.pack(side=c.RIGHT, padx=5)
         self.__gen_new_noise_btn.pack(side=c.RIGHT, padx=5)
+        self.__del_surface_data_btn.pack(side=c.LEFT, padx=5)
         # self.__is_it_surface_btn.pack(side=c.LEFT, padx=5)
 
         # self.__is_atom_captured_btn.pack(side=c.RIGHT)

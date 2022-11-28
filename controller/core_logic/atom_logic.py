@@ -22,7 +22,10 @@ class AtomsLogic:
             y_field_size: int = MAX_FIELD_SIZE,
             server=Server,
     ):
-        self.surface_data = np.zeros((x_field_size, y_field_size))
+        self.x_field_size = x_field_size
+        self.y_field_size = y_field_size
+        self.server = server(self.handle_server_data)
+        self.surface_data = np.zeros((self.x_field_size, self.y_field_size))
         self.atom_captured_event: bool = False
         self.is_surface_changed_event: bool = True    # это событие оптимизирует нагрузку на процессор
         self.atom_release_event: bool = False
@@ -32,11 +35,14 @@ class AtomsLogic:
         self.dto_y = Dto(Dto.SERVO_Y, self.surface_data, self.__tool)
         self.dto_z = Dto(Dto.SERVO_Z, self.surface_data, self.__tool)
         self.dto_z.set_val((0, 0, MAX))
-        self.server = server(self.handle_server_data)
         self.atom_collection = AtomCollection(self.__tool)
         self.touching_surface_event = Event()
         self.__origin = Origin()
         self.scan_transformer = ScanTransformer()
+
+    def del_surface_data(self):
+        self.surface_data = np.zeros((self.x_field_size, self.y_field_size))
+        self.is_surface_changed_event = True
 
     def remove_noise(self):
         if self.scan_transformer.is_surfaces_not_empty():
