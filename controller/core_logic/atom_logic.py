@@ -43,6 +43,9 @@ class AtomsLogic:
             self.surface_data = self.scan_transformer.average_by_z()
         self.is_surface_changed_event = True
 
+    def remember_surface(self):
+        self.scan_transformer.append_surface(self.surface_data.copy())
+
     def gen_new_noise(self):  #метод для тестовой мк заглушки
         self.server.send_data_to_all_clients('{"sensor": "gen_new_noise", "value": 1}')
 

@@ -1,6 +1,8 @@
 from surface_generator import *
 import numpy as np
 
+DEPARTURE_BY_Z = 10
+
 
 class ServoController:
 
@@ -27,14 +29,13 @@ class ServoController:
             # print('y' + str(value)) # смещение мк по y
             self.scan_algorithm_z(is_auto)
         if -1 != (sensor.find('servo_z')):
-            self.z_current = value + 10  # смещение мк по z, только при ручном управлении
+            self.z_current = value + DEPARTURE_BY_Z  # смещение мк по z, только при ручном управлении
             self.scan_algorithm_z(is_auto)
             if is_auto:
                 return
             if self.z_current == self.noise_surface[self.y_current, self.x_current]:
-                self.z_current = self.z_current + 10
+                self.z_current = self.z_current + DEPARTURE_BY_Z
                 self.external_send_func(f'{{"sensor": "surface", "z_val": {value}}}')
-            print('z' + str(value))
         if sensor == 'gen_new_noise': # для теста
             self.generate_new_noise()
 
@@ -44,7 +45,7 @@ class ServoController:
         #     return
         for z in range(self.z_current, 0, -1):
             if z == self.noise_surface[self.y_current, self.x_current]:
-                self.z_current = z + 10
+                self.z_current = z + DEPARTURE_BY_Z
                 self.external_send_func(f'{{"sensor": "surface", "z_val": {z}}}')
                 break
 

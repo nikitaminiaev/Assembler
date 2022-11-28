@@ -69,7 +69,7 @@ class GraphFrame(tk.Frame):
 
     # главный алгоритм обновления визуальных данных графика при ручном управлении
     def update_graph_data_algorithm(self):
-        if self.atoms_logic.is_new_point():
+        if self.atoms_logic.is_new_point() or self.atoms_logic.is_surface_changed_event:
             try:
                 self.tool_tip.remove() if self.tool_tip is not None else None
                 self.origin.remove() if self.origin is not None else None
@@ -95,6 +95,7 @@ class GraphFrame(tk.Frame):
                 self.__build_surface()
                 self.atoms_logic.is_surface_changed_event = False
             self.__reset_sensor()
+            self.atoms_logic.is_surface_changed_event = False
 
     def __reset_sensor(self):
         if self.atoms_logic.tool_is_coming_down():
