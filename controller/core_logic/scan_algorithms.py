@@ -5,6 +5,7 @@ from typing import Tuple
 from controller.constants import *
 from controller.core_logic.exceptions.touching_surface import TouchingSurface
 
+WAIT_TIMEOUT = 0.2
 FIELD_SIZE = MAX_FIELD_SIZE - 1
 
 
@@ -28,7 +29,7 @@ class ScanAlgorithms:
                 if DTO_Y in next_coordinate:
                     touching_surface_event.clear()
                     self.set_algorithm_x_or_y((x, next_coordinate[DTO_Y], z), set_y_func, set_z_func, touching_surface_event)
-                touching_surface_event.wait()
+                touching_surface_event.wait(WAIT_TIMEOUT)
             except Exception as e:
                 print(str(e))
                 break
@@ -57,9 +58,8 @@ class ScanAlgorithms:
         time.sleep(self.sleep_between_scan_iteration)
         try:
             set_x_or_y_func((coordinates[0], coordinates[1], coordinates[2]))
-            touching_surface_event.wait()
+            touching_surface_event.wait(WAIT_TIMEOUT)
         except TouchingSurface as e:
             print(str(e))
             new_coordinates = (coordinates[0], coordinates[1], coordinates[2] + 10)
             self.set_algorithm_x_or_y(new_coordinates, set_x_or_y_func, set_z_func, touching_surface_event)
-            touching_surface_event.wait()

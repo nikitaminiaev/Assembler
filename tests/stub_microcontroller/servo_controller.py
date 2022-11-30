@@ -51,3 +51,4 @@ class ServoController:
 
     def generate_new_noise(self):
         self.noise_surface = self.surface_generator.generate_noise_surface()
+        self.external_send_func('{}')  # обязательно должен быть ответ серверу иначе зависнит при следующем сообщении

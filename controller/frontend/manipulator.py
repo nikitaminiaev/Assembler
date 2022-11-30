@@ -1,4 +1,5 @@
 import traceback
+from time import sleep
 
 import matplotlib as plt
 from controller.core_logic.scan_algorithms import ScanAlgorithms, FIELD_SIZE
@@ -92,6 +93,7 @@ class ConstructorFrames:
         self.__scan_vars_x_max = StringVar()
         self.__scan_vars_y_min = StringVar()
         self.__scan_vars_y_max = StringVar()
+        self.__scan_count = StringVar()
         self.__label_x_min = Label(self.__bottom_area_1, text="x_min")
         self.__label_y_min = Label(self.__bottom_area_2, text="y_min")
         self.__label_x_max = Label(self.__bottom_area_3, text="x_max")
@@ -100,10 +102,12 @@ class ConstructorFrames:
         self.__scan_vars_entry_y_min = Entry(self.__bottom_area_2, textvariable=self.__scan_vars_y_min)
         self.__scan_vars_entry_x_max = Entry(self.__bottom_area_3, textvariable=self.__scan_vars_x_max)
         self.__scan_vars_entry_y_max = Entry(self.__bottom_area_4, textvariable=self.__scan_vars_y_max)
+        self.__scan_count_entry = Entry(self.__bottom_area_5, textvariable=self.__scan_count)
         self.__scan_vars_entry_x_min.place(width=5, height=5)
         self.__scan_vars_entry_x_max.place(width=5, height=5)
         self.__scan_vars_entry_y_min.place(width=5, height=5)
         self.__scan_vars_entry_y_max.place(width=5, height=5)
+        self.__scan_count_entry.place(width=5, height=5)
         self.__label_x_min.place(width=5, height=5)
         self.__label_x_max.place(width=5, height=5)
         self.__label_y_min.place(width=5, height=5)
@@ -131,6 +135,7 @@ class ConstructorFrames:
         self.__bind_to_tip_btn = Button(self.__bottom_area_5, text='bind to tip', command=self.__bind_scale_to_tip)
         self.__bind_to_origin_btn = Button(self.__bottom_area_5, text='bind to origin', command=self.__bind_to_origin)
         self.__set_origin_btn = Button(self.__bottom_area_5, text='set new origin', command=self.__set_new_origin)
+        self.__go_scan_count_btn = Button(self.__bottom_area_5, text='go scan count', command=self.__go_scan_count)
         # self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
         # self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
         # self.__is_atom_btn = Button(self.__frame_bottom_2, text='is_atom', command=self.__is_atom) # кнопка для дебага
@@ -246,6 +251,21 @@ class ConstructorFrames:
     def __load_file(self):
         pass
 
+    def __go_scan_count(self):
+        if self.__scan_count.get().strip() == '':
+            return
+        count = (int(self.__scan_count.get().strip()))
+        vars = self.__get_params()
+        threading.Thread(target=self.__go_n_scan, args=(count, vars)).start()
+
+    def __go_n_scan(self, count, vars):
+        for _ in range(count):
+            self.scanAlgorithm.stop = False
+            self._go_auto(*vars)
+            self.tk.graph.frame.atoms_logic.remember_surface()
+            self.tk.graph.frame.atoms_logic.gen_new_noise()
+        self.tk.graph.frame.atoms_logic.remove_noise()
+
     def auto(self):
         if self.scanAlgorithm.stop:
             self.scanAlgorithm.stop = False
@@ -325,6 +345,7 @@ class ConstructorFrames:
         self.__scan_vars_entry_y_min.pack(side=c.LEFT)
         self.__scan_vars_entry_x_max.pack(side=c.LEFT)
         self.__scan_vars_entry_y_max.pack(side=c.LEFT)
+        self.__scan_count_entry.pack(side=c.LEFT)
         self.__auto_on_off_btn.pack(side=c.LEFT)
         self.__stop_render_btn.pack(side=c.RIGHT, padx=5)
         self.__scan_mode.pack(side=c.RIGHT, padx=5)
@@ -339,6 +360,7 @@ class ConstructorFrames:
         self.__bind_to_tip_btn.pack(side=c.RIGHT, padx=5)
         self.__set_origin_btn.pack(side=c.RIGHT)
         self.__bind_to_origin_btn.pack(side=c.RIGHT)
+        self.__go_scan_count_btn.pack(side=c.LEFT)
         # self.__remove_surface_btn.pack(side=c.LEFT, padx=50)
         # self.__show_surface_btn.pack(side=c.LEFT)
         # self.__is_atom_btn.pack(side=c.LEFT, padx=5)
