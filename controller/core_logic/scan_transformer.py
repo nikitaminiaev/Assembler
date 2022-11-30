@@ -1,7 +1,5 @@
 import numpy as np
 
-from tests.stub_microcontroller.surface_generator import *
-
 
 class ScanTransformer:
 

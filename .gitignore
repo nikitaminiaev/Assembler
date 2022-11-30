@@ -4,4 +4,4 @@
 /sys
 /esp8266/cred.*
 /.env
-/tests/stub_microcontroller/cred.*
+/stub_microcontroller/cred.*
