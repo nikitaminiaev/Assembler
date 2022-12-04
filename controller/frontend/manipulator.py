@@ -1,6 +1,4 @@
 import traceback
-from time import sleep
-
 import matplotlib as plt
 from controller.core_logic.scan_algorithms import ScanAlgorithms, FIELD_SIZE
 from controller.core_logic.exceptions.touching_surface import TouchingSurface

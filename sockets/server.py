@@ -51,10 +51,3 @@ class Server(Socket):
                 print(traceback.format_exc())
                 print(str(e))
                 self.set_down()
-
-
-if __name__ == '__main__':
-    server = Server()
-    server.set_up()
-    if 1 in server.clients:
-        server.send_data_to_all_clients('hi')
