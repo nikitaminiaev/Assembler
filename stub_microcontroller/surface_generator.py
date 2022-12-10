@@ -1,31 +1,33 @@
 import numpy as np
 from typing import List, Tuple
+from noise_generator import NoiseGenerator
 
-MAX_FIELD_SIZE = 76
+MAX_FIELD_SIZE = 1000
 GENERAL_HEIGHT = 20
+OFFSET = 400
 ATOMS = [
-    (10, 5),
-    (10, 25),
-    (10, 45),
-    (10, 65),
-    (20, 10),
-    (20, 20),
-    (20, 30),
-    (20, 40),
-    (20, 50),
-    (20, 60),
-    (30, 25),
-    (30, 45),
-    (30, 65),
-    (40, 25),
-    (40, 45),
-    (40, 65),
-    (50, 10),
-    (50, 20),
-    (50, 30),
-    (50, 40),
-    (50, 50),
-    (50, 60),
+    (10 + OFFSET, 5 + OFFSET),
+    (10 + OFFSET, 25 + OFFSET),
+    (10 + OFFSET, 45 + OFFSET),
+    (10 + OFFSET, 65 + OFFSET),
+    (20 + OFFSET, 10 + OFFSET),
+    (20 + OFFSET, 20 + OFFSET),
+    (20 + OFFSET, 30 + OFFSET),
+    (20 + OFFSET, 40 + OFFSET),
+    (20 + OFFSET, 50 + OFFSET),
+    (20 + OFFSET, 60 + OFFSET),
+    (30 + OFFSET, 25 + OFFSET),
+    (30 + OFFSET, 45 + OFFSET),
+    (30 + OFFSET, 65 + OFFSET),
+    (40 + OFFSET, 25 + OFFSET),
+    (40 + OFFSET, 45 + OFFSET),
+    (40 + OFFSET, 65 + OFFSET),
+    (50 + OFFSET, 10 + OFFSET),
+    (50 + OFFSET, 20 + OFFSET),
+    (50 + OFFSET, 30 + OFFSET),
+    (50 + OFFSET, 40 + OFFSET),
+    (50 + OFFSET, 50 + OFFSET),
+    (50 + OFFSET, 60 + OFFSET),
 ]
 
 '''
@@ -64,7 +66,7 @@ class SurfaceGenerator:
     def generate_noise_surface(self) -> np.ndarray:
         surface = self.__get_empty_surface()
         surface = self.__add_atoms(surface, self.atoms)
-        noise = self.__get_noise()
+        noise = NoiseGenerator.gen_random_noise(self.max_field_size)
 
         return surface + noise
 
@@ -96,9 +98,6 @@ class SurfaceGenerator:
 
     def __get_empty_surface(self):
         return np.full((self.max_field_size, self.max_field_size), self.general_height)
-
-    def __get_noise(self) -> np.ndarray:
-        return np.random.choice([-1, 0, +1], (self.max_field_size, self.max_field_size), replace=True, p=[0.2, 0.6, 0.2])
 
 
 if __name__ == '__main__':
