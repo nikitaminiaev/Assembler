@@ -14,3 +14,6 @@ class ScanTransformer:
 
     def is_surfaces_not_empty(self) -> bool:
         return len(self.__surfaces) > 0
+
+    def clear_data(self):
+        self.__surfaces = []
