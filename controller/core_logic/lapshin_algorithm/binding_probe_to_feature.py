@@ -28,18 +28,20 @@ class BindingProbeToFeature:
         self.get_val_func = get_val_func
         self.delay_between_iterations = 1
         self.stop = True
-        self.z_optimal_height = None  # можно вычислить программно после сканирования области local_surface
+        self.z_optimal_height = None
         self.current_absolute_coordinates_feature = None
 
-    def bind_to_feature(self, start_point: Tuple[int, int]) -> None:
-        # сканирование области local_surface
-
+    def bind_to_feature(self) -> None:
+        # сканирование области и копирование этой части в local_surface
         self.calc_optimal_height(self.local_surface.copy())
+        # гуляние по local_surface в цикле и делать feature_recognition() если есть start_point
         start_point = self.find_start_point()
+        self.feature_recognition(start_point)
 
+    def feature_recognition(self, start_point: Tuple[int, int]):
         coord = self.bypass_feature(start_point)
-
         centr_coord = self.centroid(coord)
+        self.reset_to_zero_feature_area(coord)
 
     def calc_optimal_height(self, surface: np.ndarray) -> None:
         def recur_clip(arr: np.ndarray, next_to_clip: int):
@@ -109,3 +111,6 @@ class BindingProbeToFeature:
         for _ in range(2):
             y += 1
             yield x, y
+
+    def reset_to_zero_feature_area(self, coord):
+        pass
