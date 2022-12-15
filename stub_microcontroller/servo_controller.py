@@ -11,8 +11,8 @@ class ServoController:
         self.external_send_func = external_send_func
         self.surface_generator = SurfaceGenerator(MAX_FIELD_SIZE, GENERAL_HEIGHT, ATOMS)
         self.noise_generator = NoiseGenerator()
-        self.noise_generator.start()
-        self.noise_surface = self.surface_generator.generate_noise_surface()
+        # self.noise_generator.start()
+        self.noise_surface = self.surface_generator.generate()
         self.x_current = 0 + OFFSET
         self.y_current = 0 + OFFSET
         self.z_current = 0
@@ -25,11 +25,11 @@ class ServoController:
             is_auto = bool(data['auto'])
         if -1 != (sensor.find('servo_x')):
             self.x_current = value + OFFSET + self.noise_generator.x_offset
-            print(self.noise_generator.x_offset)
+            # print(self.noise_generator.x_offset)
             self.scan_algorithm_z()
         if -1 != (sensor.find('servo_y')):
             self.y_current = value + OFFSET + self.noise_generator.y_offset
-            print(self.noise_generator.y_offset)
+            # print(self.noise_generator.y_offset)
             self.scan_algorithm_z()
         if -1 != (sensor.find('servo_z')):
             self.z_current = value + DEPARTURE_BY_Z  # смещение мк по z, только при ручном управлении

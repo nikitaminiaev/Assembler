@@ -59,16 +59,16 @@ class SurfaceGenerator:
         self.atoms = atoms
 
     def generate(self) -> np.ndarray:
-        surface = self.__get_empty_surface()
+        return self.__get_empty_surface()
 
-        return self.__add_atoms(surface, self.atoms)
+        # return self.__add_atoms(surface, self.atoms)
 
     def generate_noise_surface(self) -> np.ndarray:
         surface = self.__get_empty_surface()
-        surface = self.__add_atoms(surface, self.atoms)
-        noise = NoiseGenerator.gen_random_noise(self.max_field_size)
+        # surface = self.__add_atoms(surface, self.atoms)
+        # noise = NoiseGenerator.gen_random_noise(self.max_field_size)
 
-        return surface + noise
+        return surface# + noise
 
     def __append_atom(self, surface: np.ndarray, x: int, y: int) -> np.ndarray:
         z = surface[y, x]

@@ -1,3 +1,5 @@
+import time
+
 import ujson
 import sys
 from mySocket_stub import Socket
@@ -21,6 +23,7 @@ class Client(Socket):
         self.listen_server()
 
     def listen_server(self):
+        end = 0
         while not self._quit:
             try:
                 data = self.recv(self.PACKAGE_SIZE).decode(self.CODING)
@@ -29,8 +32,11 @@ class Client(Socket):
                     self.send_data('hi_esp8266')
                 if self.data_prev != data and self.CONNECTED != data:
                     try:
+                        start = time.time()
                         parsed = ujson.loads(data)
                         self.servoController.process_data(parsed)
+                        end += time.time() - start
+                        print(end)
                     except ValueError as e:
                         self.send_data(str(e))
                     finally:
@@ -39,6 +45,7 @@ class Client(Socket):
                 self.send_data(str(e))
                 self.set_down()
                 break
+
 
     def send_data(self, data: str):
         try:
