@@ -19,7 +19,9 @@ class ScanAlgorithms:
         gen_x_y = self.__data_generator_x_y(kwargs['x_min'], kwargs['y_min'], kwargs['x_max'], kwargs['y_max'])
         while not self.stop:
             try:
-                next_coordinate = next(gen_x_y)
+                next_coordinate = next(gen_x_y, False)
+                if not next_coordinate:
+                    break
                 z = get_val_func(DTO_Z)
                 x = get_val_func(DTO_X)
                 y = get_val_func(DTO_Y)
@@ -42,11 +44,11 @@ class ScanAlgorithms:
             y_max: int = FIELD_SIZE
     ):
         assert x_max <= FIELD_SIZE and y_max <= FIELD_SIZE
-        for y in range(y_min, y_max):
+        for y in range(y_min, y_max + 1):
             yield {DTO_Y: y}
             if y % 2 == 0:
                 print(f'{int(y*100/y_max)}%')
-                for x in range(x_min, x_max):
+                for x in range(x_min, x_max + 1):
                     yield {DTO_X: x}
             else:
                 for x in range(x_max, x_min - 1, -1):
