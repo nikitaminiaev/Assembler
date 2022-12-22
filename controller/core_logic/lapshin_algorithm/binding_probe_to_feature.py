@@ -2,6 +2,9 @@ from threading import Event
 from typing import Tuple, List
 import numpy as np
 
+from controller.core_logic.entity.feature import Feature
+from controller.core_logic.scan_algorithms import ScanAlgorithms, DTO_Y, DTO_Z
+
 
 class BindingProbeToFeature:
     """
@@ -20,28 +23,33 @@ class BindingProbeToFeature:
     максимального значения, то выполняется переход к пункту 1.
     """
 
-    def __init__(self, get_val_func, set_x_func, set_y_func, touching_surface_event: Event, **kwargs):
-        self.local_surface = np.zeros((7, 7))
+    def __init__(self, get_val_func, set_x_func, set_y_func, touching_surface_event: Event, global_surface):
+        self.global_surface = global_surface
+        self.local_surface = None
+        self.x_correction = 0
+        self.y_correction = 0
         self.touching_surface_event = touching_surface_event
         self.set_y_func = set_y_func
         self.set_x_func = set_x_func
         self.get_val_func = get_val_func
-        self.delay_between_iterations = 1
+        self.delay_between_iterations = 0.1
         self.stop = True
         self.z_optimal_height = None
-        self.current_absolute_coordinates_feature = None
+        self.scan_algorithm = ScanAlgorithms(0)
 
-    def bind_to_feature(self) -> None:
-        # сканирование области и копирование этой части в local_surface
+    def bind_to_feature(self, feature: Feature) -> None:
+        self.__scan_aria_around_feature(feature)
         self.calc_optimal_height(self.local_surface.copy())
         # гуляние по local_surface в цикле и делать feature_recognition() если есть start_point
         start_point = self.find_start_point()
         self.feature_recognition(start_point)
 
     def feature_recognition(self, start_point: Tuple[int, int]):
-        coord = self.bypass_feature(start_point)
-        centr_coord = self.centroid(coord)
-        self.reset_to_zero_feature_area(coord)
+        figure = self.bypass_feature(start_point)
+        self.reset_to_zero_feature_area(figure)
+        center_coord = self.centroid(figure)
+        if self.coordinate_in_aria(center_coord):
+            pass  # вычислить разницу и привязаться
 
     def calc_optimal_height(self, surface: np.ndarray) -> None:
         def recur_clip(arr: np.ndarray, next_to_clip: int):
@@ -63,30 +71,33 @@ class BindingProbeToFeature:
 
         return recur_search_point(self.local_surface, self.z_optimal_height, 0, 0)
 
-    def bypass_feature(self, start_point: Tuple[int, int]) -> list:
+    def bypass_feature(self, start_point: Tuple[int, int]) -> np.ndarray:
         x_start = start_point[0]
         y_start = start_point[1]
-        points = []
+        points = np.array([[0, 0]], dtype='int8')
+        x, y = x_start, y_start
+        x_prev, y_prev = x_start, y_start
 
-        while points[-1] == (x_start, y_start):
-            gen = self.__gen_bypass_point(points[-1])
-            max_iteration = 8
+        while not self.is_vector_entry(points, np.array([x_start, y_start], dtype='int8')):
+            gen = self.__gen_bypass_point((x, y))
+            max_iteration = 9
             for _ in range(max_iteration):
                 try:
                     x, y = next(gen)
                 except StopIteration:
                     break
-                x_prev, y_prev = self.local_surface[-1]
                 if self.local_surface[y, x] >= self.z_optimal_height \
-                   and self.local_surface[y_prev, x_prev] < self.local_surface[y, x]:
-                    points.append((x, y))
+                        and self.local_surface[y, x] > self.local_surface[y_prev, x_prev]\
+                        and self.local_surface[y_prev, x_prev] < self.z_optimal_height:
+                    points = np.append(points, [[x, y]], axis=0)
+                    x_prev, y_prev = x, y
                     break
+                x_prev, y_prev = x, y
+        return np.delete(points, 0, 0)
 
-        return points
-
-    def centroid(self, vertexes: List[Tuple[int, int], ...]):
-        _x_list = [vertex[0] for vertex in vertexes]
-        _y_list = [vertex[1] for vertex in vertexes]
+    def centroid(self, vertexes: np.ndarray) -> Tuple[int, int]:
+        _x_list = vertexes[:, 0]
+        _y_list = vertexes[:, 1]
         _len = len(vertexes)
         _x = sum(_x_list) / _len
         _y = sum(_y_list) / _len
@@ -94,7 +105,7 @@ class BindingProbeToFeature:
 
     def __gen_bypass_point(self, point: Tuple[int, int]):
         """
-            обход 8-ми точек по кругу от стартовой
+            обход 8-ми точек против часовой от стартовой
         """
         x = point[0]
         y = point[1]
@@ -111,6 +122,68 @@ class BindingProbeToFeature:
         for _ in range(2):
             y += 1
             yield x, y
+        yield x-1, y
 
-    def reset_to_zero_feature_area(self, coord):
-        pass
+    def reset_to_zero_feature_area(self, figure: np.ndarray):
+        figtr = np.transpose(figure)
+        for st in range(np.min(figtr[0]), np.max(figtr[0]) + 1):
+            fig1 = figtr[1][figtr[0] == st]
+            self.local_surface[st, np.min(fig1):np.max(fig1) + 1] = 0
+
+    def coordinate_in_aria(self, point: Tuple[int, int], figure: np.ndarray) -> bool:
+        _x_list = figure[:, 0]
+        _y_list = figure[:, 1]
+
+        np.count_nonzero(_x_list == point[0]) == 2
+
+    def is_vector_entry(self, arr: np.ndarray, entry: np.ndarray) -> bool:
+        return np.isclose(arr - entry, np.zeros(entry.shape)).all(axis=1).any()
+
+    def __scan_aria_around_feature(self, feature: Feature) -> None:
+        #todo вычислить максимальный радиус фичи и прибавлять к нему const
+        x_min = feature.coordinates[0] - 7
+        y_min = feature.coordinates[1] - 7
+        x_max = feature.coordinates[0] + 7
+        y_max = feature.coordinates[1] + 7
+
+        self.set_x_func(
+            x_max,
+            self.get_val_func(DTO_Y),
+            self.get_val_func(DTO_Z),
+        )
+        # self.tk.graph.frame.atoms_logic.push_z_coord_to_mk(True)
+
+        self.scan_algorithm.scan_line_by_line(
+            self.get_val_func,
+            self.set_x_func,
+            self.set_y_func,
+            self.touching_surface_event,
+            x_min=x_min,
+            y_min=y_min,
+            x_max=x_max,
+            y_max=y_max,
+        )
+
+        self.fill_local_surface(x_min, y_min, x_max, y_max)
+
+    def fill_local_surface(self, x_min: int, y_min: int, x_max: int, y_max: int): # todo передавать сюда координаты min max coord
+        self.local_surface = self.global_surface[y_min:y_max, x_min:x_max].copy()
+
+
+if __name__ == '__main__':
+    points = np.array([[7, 8], [7,9]], dtype='int8')
+    e = np.array([7,8], dtype='int8')
+    print(points)
+    print(np.isclose(points - e, np.zeros(e.shape)).all(axis=1).any())
+    # points = np.empty((1,1), dtype='int8')
+    # points = np.zeros((1,2))
+    # print(points)
+    # points = np.append(points, [[1, 2]], axis=0)
+    # points = np.append(points, [[4, 5]], axis=0)
+    # points = np.append(points, [[5, 5]], axis=0)
+    # points = np.append(points, [[8, 5]], axis=0)
+    #
+    # print(np.delete(points, 0, 0))
+    #
+    # print(1 in points[:, 0])
+    # print(type(points[:, 1]))

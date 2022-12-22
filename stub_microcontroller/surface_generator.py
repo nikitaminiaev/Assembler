@@ -101,5 +101,12 @@ class SurfaceGenerator:
 
 
 if __name__ == '__main__':
-    arr = SurfaceGenerator(MAX_FIELD_SIZE, 20, ATOMS).generate()
+    arr = SurfaceGenerator(20, 20, [(5,5)]).generate()
+    # arr = SurfaceGenerator(20, 20, [(5,5)]).generate()
+    print(arr)
+    # arr2 = arr[2:9, 2:9].copy()
+    #
+    # arr2[3, 3] = 0
+    # print(arr2)
+    # print(arr2[3,3])
 
