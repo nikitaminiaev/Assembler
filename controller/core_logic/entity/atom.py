@@ -1,10 +1,11 @@
 from typing import Tuple
+from controller.core_logic.entity.feature import Feature
 
 
-class Atom:
+class Atom(Feature):
 
     def __init__(self, coordinates: tuple, type: str = 'carbon'):
-        self.coordinates: Tuple[int, int, int] = coordinates #todo сдулать поле приватным
+        super().__init__(coordinates)
         self.type: str = type
         self.is_captured: bool = False
 
