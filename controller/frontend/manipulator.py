@@ -294,14 +294,12 @@ class ConstructorFrames:
         )
         set_x_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_X)
         set_y_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_Y)
-        set_z_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_Z)
         self.tk.graph.frame.atoms_logic.push_z_coord_to_mk(True)
 
         self.scanAlgorithm.scan_line_by_line(
             get_val_func,
             set_x_func,
             set_y_func,
-            set_z_func,
             touching_surface_event,
             x_min=x_min,
             y_min=y_min,
