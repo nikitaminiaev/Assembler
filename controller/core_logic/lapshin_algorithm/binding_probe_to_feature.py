@@ -40,16 +40,20 @@ class BindingProbeToFeature:
     def bind_to_feature(self, feature: Feature) -> None:
         self.__scan_aria_around_feature(feature)
         self.calc_optimal_height(self.local_surface.copy())
+        # ----  начало цикла
         # гуляние по local_surface в цикле и делать feature_recognition() если есть start_point
         start_point = self.find_start_point()
-        self.feature_recognition(start_point)
+        figure = self.feature_recognition(start_point)
+        # ---- конец цикла
+        center_coord = self.centroid(figure)
+        if self.feature_in_aria(feature.coordinates, figure):
+            self.x_correction = feature.coordinates[0] - center_coord[0]
+            self.y_correction = feature.coordinates[1] - center_coord[1]
 
-    def feature_recognition(self, start_point: Tuple[int, int]):
+    def feature_recognition(self, start_point: Tuple[int, int]) -> np.ndarray: # todo вынести в класс
         figure = self.bypass_feature(start_point)
         self.reset_to_zero_feature_area(figure)
-        center_coord = self.centroid(figure)
-        if self.coordinate_in_aria(center_coord):
-            pass  # вычислить разницу и привязаться
+        return figure
 
     def calc_optimal_height(self, surface: np.ndarray) -> None:
         def recur_clip(arr: np.ndarray, next_to_clip: int):
@@ -60,7 +64,7 @@ class BindingProbeToFeature:
 
         self.z_optimal_height = recur_clip(surface, np.amax(surface)) + 2
 
-    def find_start_point(self) -> Tuple[int, int]:
+    def find_start_point(self) -> Tuple[int, int]: # todo заменить на bool функцию котрая будет работать во внешнем цикле
         # todo должны находится любые стартовые точки на всех поверхности. Фильтровать пройденные фичи будут заранее, обнуляя внутренние области
         def recur_search_point(surface: np.ndarray, z: int, x: int, y: int) -> Tuple[int, int]:
             try:
@@ -86,9 +90,8 @@ class BindingProbeToFeature:
                     x, y = next(gen)
                 except StopIteration:
                     break
-                if self.local_surface[y, x] >= self.z_optimal_height \
-                        and self.local_surface[y, x] > self.local_surface[y_prev, x_prev]\
-                        and self.local_surface[y_prev, x_prev] < self.z_optimal_height:
+                if self.local_surface[y, x] >= self.z_optimal_height > self.local_surface[y_prev, x_prev] \
+                        and self.local_surface[y, x] > self.local_surface[y_prev, x_prev]:
                     points = np.append(points, [[x, y]], axis=0)
                     x_prev, y_prev = x, y
                     break
@@ -130,11 +133,14 @@ class BindingProbeToFeature:
             fig1 = figtr[1][figtr[0] == st]
             self.local_surface[st, np.min(fig1):np.max(fig1) + 1] = 0
 
-    def coordinate_in_aria(self, point: Tuple[int, int], figure: np.ndarray) -> bool:
-        _x_list = figure[:, 0]
-        _y_list = figure[:, 1]
-
-        np.count_nonzero(_x_list == point[0]) == 2
+    def feature_in_aria(self, feature_coordinates: tuple, figure: np.ndarray) -> bool:
+        figtr = np.transpose(figure)
+        for st in range(np.min(figtr[0]), np.max(figtr[0]) + 1):
+            fig1 = figtr[1][figtr[0] == st]
+            for i in range(np.min(fig1),np.max(fig1) + 1):
+                if (feature_coordinates[0], feature_coordinates[1]) == (st, i):
+                    return True
+        return False
 
     def is_vector_entry(self, arr: np.ndarray, entry: np.ndarray) -> bool:
         return np.isclose(arr - entry, np.zeros(entry.shape)).all(axis=1).any()
