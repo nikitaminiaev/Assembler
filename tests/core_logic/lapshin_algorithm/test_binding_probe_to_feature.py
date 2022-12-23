@@ -44,8 +44,8 @@ class TestBindingProbeToFeature(TestCase):
         self.assertTrue(self.BindingProbeToFeature.is_vector_entry(points, np.array([7, 19], dtype='int8')))
         self.assertTrue(self.BindingProbeToFeature.is_vector_entry(points, np.array([200, 190], dtype='int8')))
 
-        self.assertFalse(self.BindingProbeToFeature.is_vector_entry(points, np.array([2, 1], dtype='int8')))
-        self.assertFalse(self.BindingProbeToFeature.is_vector_entry(points, np.array([20, 10], dtype='int8')))
+        self.assertFalse(self.BindingProbeToFeature.is_vector_entry(points, np.array([2,     1], dtype='int8')))
+        self.assertFalse(self.BindingProbeToFeature.is_vector_entry(points, np.array([20,   10], dtype='int8')))
         self.assertFalse(self.BindingProbeToFeature.is_vector_entry(points, np.array([200, 191], dtype='int8')))
 
     def test_bypass_bypass_feature(self) -> None:
@@ -76,6 +76,13 @@ class TestBindingProbeToFeature(TestCase):
         figure = self.BindingProbeToFeature.bypass_feature((7, 9))
         self.assertEqual(figure_probe.all(), figure.all())
 
+    zero_points = [
+        (10, 10),
+        (10, 11),
+        (11, 10),
+        (11, 11),
+    ]
+
     def test_reset_to_zero_feature_area(self) -> None:
         self.BindingProbeToFeature.local_surface = SurfaceGenerator(20, 20, [(10, 10)]).generate()
         self.BindingProbeToFeature.z_optimal_height = 21
@@ -85,17 +92,58 @@ class TestBindingProbeToFeature(TestCase):
         for vector in figure:
             self.assertEqual(self.BindingProbeToFeature.local_surface[vector[1], vector[0]], 0)
 
-        self.assertEqual(self.BindingProbeToFeature.local_surface[10, 10], 0)
-        self.assertEqual(self.BindingProbeToFeature.local_surface[10, 11], 0)
-        self.assertEqual(self.BindingProbeToFeature.local_surface[11, 10], 0)
-        self.assertEqual(self.BindingProbeToFeature.local_surface[11, 11], 0)
+        for x, y in self.zero_points:
+            self.assertEqual(self.BindingProbeToFeature.local_surface[x, y], 0)
 
     def test_centroid(self) -> None:
-        self.BindingProbeToFeature.local_surface = SurfaceGenerator(20, 20, [(8, 9)]).generate()
+        atom_cord = (8, 9)
+        self.BindingProbeToFeature.local_surface = SurfaceGenerator(20, 20, [atom_cord]).generate()
         self.BindingProbeToFeature.z_optimal_height = 21
-        figure = self.BindingProbeToFeature.bypass_feature((5, 8))
 
+        figure = self.BindingProbeToFeature.bypass_feature((5, 8))
         centr = self.BindingProbeToFeature.centroid(figure)
 
-        print(centr)
-        print(self.BindingProbeToFeature.local_surface)
+        self.assertEqual(centr, atom_cord)
+
+    def test_feature_recognition(self) -> None:
+        atom_cord = (8, 9)
+        self.BindingProbeToFeature.local_surface = SurfaceGenerator(20, 20, [atom_cord]).generate()
+        self.BindingProbeToFeature.z_optimal_height = 21
+
+        figure1 = self.BindingProbeToFeature.bypass_feature((5, 8))
+        figure2 = self.BindingProbeToFeature.feature_recognition((5, 8))
+        self.assertEqual(figure1.all(), figure2.all())
+
+        centr1 = self.BindingProbeToFeature.centroid(figure1)
+        centr2 = self.BindingProbeToFeature.centroid(figure2)
+
+        self.assertEqual(centr1, atom_cord)
+        self.assertEqual(centr2, atom_cord)
+
+    points_in_aria = [
+        (9, 9),
+        (7, 9),
+        (9, 9),
+        (10, 10),
+        (10, 11),
+        (11, 10),
+        (11, 11),
+    ]
+    points_not_in_aria = [
+        (2, 1),
+        (20, 10),
+        (200, 191),
+        (6, 8),
+    ]
+
+    def test_feature_in_aria(self) -> None:
+        self.BindingProbeToFeature.local_surface = SurfaceGenerator(20, 20, [(10, 10)]).generate()
+        self.BindingProbeToFeature.z_optimal_height = 21
+
+        figure = self.BindingProbeToFeature.bypass_feature((7, 9))
+
+        for point in self.points_in_aria:
+            self.assertTrue(self.BindingProbeToFeature.feature_in_aria(point, figure))
+
+        for point in self.points_not_in_aria:
+            self.assertFalse(self.BindingProbeToFeature.feature_in_aria(point, figure))
