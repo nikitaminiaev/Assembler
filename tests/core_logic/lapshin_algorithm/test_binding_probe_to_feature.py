@@ -1,5 +1,7 @@
 import sys, os
 
+from controller.core_logic.entity.atom import Atom
+
 path = os.path.abspath("../../../stub_microcontroller")
 print(path)
 if path not in sys.path:
@@ -44,8 +46,8 @@ class TestBindingProbeToFeature(TestCase):
         self.assertTrue(self.BindingProbeToFeature.is_vector_entry(points, np.array([7, 19], dtype='int8')))
         self.assertTrue(self.BindingProbeToFeature.is_vector_entry(points, np.array([200, 190], dtype='int8')))
 
-        self.assertFalse(self.BindingProbeToFeature.is_vector_entry(points, np.array([2,     1], dtype='int8')))
-        self.assertFalse(self.BindingProbeToFeature.is_vector_entry(points, np.array([20,   10], dtype='int8')))
+        self.assertFalse(self.BindingProbeToFeature.is_vector_entry(points, np.array([2, 1], dtype='int8')))
+        self.assertFalse(self.BindingProbeToFeature.is_vector_entry(points, np.array([20, 10], dtype='int8')))
         self.assertFalse(self.BindingProbeToFeature.is_vector_entry(points, np.array([200, 191], dtype='int8')))
 
     def test_bypass_bypass_feature(self) -> None:
@@ -94,6 +96,25 @@ class TestBindingProbeToFeature(TestCase):
 
         for x, y in self.zero_points:
             self.assertEqual(self.BindingProbeToFeature.local_surface[x, y], 0)
+
+    def test_reset_to_zero_feature_another_area(self) -> None:
+        self.BindingProbeToFeature.local_surface = SurfaceGenerator(12, 20, [(7, 6)]).generate()
+        self.BindingProbeToFeature.z_optimal_height = 22
+        figure = self.BindingProbeToFeature.bypass_feature((7, 4))
+
+        self.BindingProbeToFeature.reset_to_zero_feature_area(figure)
+        for vector in figure:
+            self.assertEqual(self.BindingProbeToFeature.local_surface[vector[1], vector[0]], 0)
+            self.assertTrue(self.BindingProbeToFeature.feature_in_aria((vector[0], vector[1]), figure))
+
+    def test_reset_to_zero_feature_another_area2(self) -> None:
+        self.BindingProbeToFeature.local_surface = np.array([[20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], [20, 20, 20, 20, 21, 21, 21, 21, 21, 20, 20, 20, 20], [20, 20, 20, 21, 21, 22, 22, 22, 21, 21, 20, 20, 20], [20, 20, 20, 21, 22, 23, 23, 23, 22, 21, 20, 20, 20], [20, 20, 20, 21, 22, 23, 24, 23, 22, 21, 20, 20, 20], [20, 20, 20, 21, 22, 23, 23, 23, 22, 21, 20, 20, 20], [20, 20, 20, 21, 21, 22, 22, 22, 21, 21, 20, 20, 20], [20, 20, 20, 20, 21, 21, 21, 21, 21, 20, 20, 20, 20], [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20], [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20]])
+        figure = np.array([[6, 5], [7, 5], [8, 6], [8, 7], [8, 8], [7, 9], [6, 9], [5, 9], [4, 8], [4, 7], [4, 6], [5, 5]])
+
+        self.BindingProbeToFeature.reset_to_zero_feature_area(figure)
+        for vector in figure:
+            self.assertEqual(self.BindingProbeToFeature.local_surface[vector[1], vector[0]], 0)
+            self.assertTrue(self.BindingProbeToFeature.feature_in_aria((vector[0], vector[1]), figure))
 
     def test_centroid(self) -> None:
         atom_cord = (8, 9)
@@ -147,3 +168,12 @@ class TestBindingProbeToFeature(TestCase):
 
         for point in self.points_not_in_aria:
             self.assertFalse(self.BindingProbeToFeature.feature_in_aria(point, figure))
+
+    def test_bind_to_feature(self) -> None:
+        self.BindingProbeToFeature.global_surface = SurfaceGenerator(20, 20, [(10, 10)]).generate()
+        feature = Atom((9, 9, 20), 3)
+
+        self.BindingProbeToFeature.bind_to_feature(feature)
+
+        print(self.BindingProbeToFeature.x_correction)
+        print(self.BindingProbeToFeature.y_correction)

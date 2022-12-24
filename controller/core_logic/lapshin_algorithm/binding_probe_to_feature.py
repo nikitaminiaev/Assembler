@@ -23,9 +23,17 @@ class BindingProbeToFeature:
     максимального значения, то выполняется переход к пункту 1.
     """
 
+    """
+    При разности координат более
+    45 % от длины усреднённой постоянной решётки процедура привязки фиксирует состоя-
+    ние PAF (Probe Attachment Failure) и пытается захватить ближайший атом.
+    """
+
     def __init__(self, get_val_func, set_x_func, set_y_func, touching_surface_event: Event, global_surface):
         self.global_surface = global_surface
         self.local_surface = None
+        self.x_local_center = 6
+        self.y_local_center = 6 # todo вычислять из радиуса фичи  и из x_max...
         self.x_correction = 0
         self.y_correction = 0
         self.touching_surface_event = touching_surface_event
@@ -40,15 +48,14 @@ class BindingProbeToFeature:
     def bind_to_feature(self, feature: Feature) -> None:
         self.__scan_aria_around_feature(feature)
         self.calc_optimal_height(self.local_surface.copy())
-        # ----  начало цикла
-        # гуляние по local_surface в цикле и делать feature_recognition() если есть start_point
-        start_point = self.find_start_point()
-        figure = self.feature_recognition(start_point)
-        # ---- конец цикла
-        center_coord = self.centroid(figure)
-        if self.feature_in_aria(feature.coordinates, figure):
-            self.x_correction = feature.coordinates[0] - center_coord[0]
-            self.y_correction = feature.coordinates[1] - center_coord[1]
+        for y, row in enumerate(self.local_surface):
+            for x, val in enumerate(row):
+                if self.is_start_point(val):
+                    figure = self.feature_recognition((x, y))
+                    if self.feature_in_aria((self.x_local_center, self.y_local_center), figure):
+                        center_coord = self.centroid(figure)
+                        self.x_correction = self.x_local_center - center_coord[0]
+                        self.y_correction = self.y_local_center - center_coord[1]
 
     def feature_recognition(self, start_point: Tuple[int, int]) -> np.ndarray: # todo вынести в класс
         figure = self.bypass_feature(start_point)
@@ -81,7 +88,7 @@ class BindingProbeToFeature:
         points = np.array([[0, 0]], dtype='int8')
         x, y = x_start, y_start
         x_prev, y_prev = x_start, y_start
-
+        # todo использовать максимальное кол-во итераций в зависимости от величины фичи если превышает то кидать exeption
         while not self.is_vector_entry(points, np.array([x_start, y_start], dtype='int8')):
             gen = self.__gen_bypass_point((x, y))
             max_iteration = 9
@@ -90,7 +97,7 @@ class BindingProbeToFeature:
                     x, y = next(gen)
                 except StopIteration:
                     break
-                if self.local_surface[y, x] >= self.z_optimal_height > self.local_surface[y_prev, x_prev] \
+                if self.local_surface[y, x] > self.z_optimal_height >= self.local_surface[y_prev, x_prev] \
                         and self.local_surface[y, x] > self.local_surface[y_prev, x_prev]:
                     points = np.append(points, [[x, y]], axis=0)
                     x_prev, y_prev = x, y
@@ -131,14 +138,14 @@ class BindingProbeToFeature:
         figtr = np.transpose(figure)
         for st in range(np.min(figtr[0]), np.max(figtr[0]) + 1):
             fig1 = figtr[1][figtr[0] == st]
-            self.local_surface[st, np.min(fig1):np.max(fig1) + 1] = 0
+            self.local_surface[np.min(fig1):np.max(fig1) + 1, st] = 0
 
-    def feature_in_aria(self, feature_coordinates: tuple, figure: np.ndarray) -> bool:
+    def feature_in_aria(self, coordinates: tuple, figure: np.ndarray) -> bool:
         figtr = np.transpose(figure)
         for st in range(np.min(figtr[0]), np.max(figtr[0]) + 1):
             fig1 = figtr[1][figtr[0] == st]
             for i in range(np.min(fig1),np.max(fig1) + 1):
-                if (feature_coordinates[0], feature_coordinates[1]) == (st, i):
+                if (coordinates[0], coordinates[1]) == (st, i):
                     return True
         return False
 
@@ -147,8 +154,8 @@ class BindingProbeToFeature:
 
     def __scan_aria_around_feature(self, feature: Feature) -> None:
         #todo вычислить максимальный радиус фичи и прибавлять к нему const
-        x_min = feature.coordinates[0] - 7
-        y_min = feature.coordinates[1] - 7
+        x_min = feature.coordinates[0] - 6 # todo вычислять из радиуса фичи
+        y_min = feature.coordinates[1] - 6
         x_max = feature.coordinates[0] + 7
         y_max = feature.coordinates[1] + 7
 
@@ -174,6 +181,9 @@ class BindingProbeToFeature:
 
     def fill_local_surface(self, x_min: int, y_min: int, x_max: int, y_max: int): # todo передавать сюда координаты min max coord
         self.local_surface = self.global_surface[y_min:y_max, x_min:x_max].copy()
+
+    def is_start_point(self, val: int) -> bool:
+        return val > self.z_optimal_height
 
 
 if __name__ == '__main__':
