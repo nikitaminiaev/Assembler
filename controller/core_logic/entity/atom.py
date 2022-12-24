@@ -4,8 +4,8 @@ from controller.core_logic.entity.feature import Feature
 
 class Atom(Feature):
 
-    def __init__(self, coordinates: tuple, type: str = 'carbon'):
-        super().__init__(coordinates)
+    def __init__(self, coordinates: tuple, max_rad: int, type: str = 'carbon'):
+        super().__init__(coordinates, max_rad)
         self.type: str = type
         self.is_captured: bool = False
 
@@ -17,9 +17,3 @@ class Atom(Feature):
     def set_coordinates(self, *args):
         self.coordinates = args
 
-
-
-if __name__ == '__main__':
-    l = [Atom((1, 1, 1)), Atom((1, 2, 1))]
-    if Atom((1, 1, 2)) in l:
-        a = 1
