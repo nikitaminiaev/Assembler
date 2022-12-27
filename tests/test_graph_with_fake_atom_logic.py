@@ -15,10 +15,10 @@ class TestGraphWithFakeAtomLogic(TestCase):
         self.atoms_logic.get_origin_coordinate = MagicMock(return_value=[0, 0, 0])
         self.atoms_logic.set_is_surface = MagicMock()
         self.atoms_logic.set_is_atom = MagicMock()
-        atom0 = Atom(self.atoms_logic.get_tool_coordinate())
+        atom0 = Atom(self.atoms_logic.get_tool_coordinate(), 5, 10)
         atom0.is_captured = True
         atom_coord1 = (1, 2, 3)
-        atom1 = Atom(atom_coord1)
+        atom1 = Atom(atom_coord1, 5, 10)
         self.atoms_logic.atom_collection.atoms_list = [atom0, atom1]
 
     def tearDown(self) -> None:

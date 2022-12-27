@@ -1,9 +1,12 @@
 from threading import Event
-from typing import Tuple, List
+from typing import Tuple
 import numpy as np
 
 from controller.core_logic.entity.feature import Feature
+from controller.core_logic.lapshin_algorithm.recognition.feature_recognizer_interface import FeatureRecognizerInterface
 from controller.core_logic.scan_algorithms import ScanAlgorithms, DTO_Y, DTO_Z
+
+COEF_NOISE = 2
 
 
 class BindingProbeToFeature:
@@ -29,21 +32,22 @@ class BindingProbeToFeature:
     ние PAF (Probe Attachment Failure) и пытается захватить ближайший атом.
     """
 
-    def __init__(self, get_val_func, set_x_func, set_y_func, touching_surface_event: Event, global_surface):
+    def __init__(self, FeatureRecognizer: FeatureRecognizerInterface, get_val_func, set_x_func, set_y_func, touching_surface_event: Event, global_surface):
         self.global_surface = global_surface
         self.local_surface = None
         self.x_local_center = 6
-        self.y_local_center = 6 # todo вычислять из радиуса фичи  и из x_max...
+        self.y_local_center = 6 # todo вычислять из радиуса фичи и из x_max...
         self.x_correction = 0
-        self.y_correction = 0
+        self.y_correction = 0 # todo сбрасывается при переходе к новой фиче
         self.touching_surface_event = touching_surface_event
         self.set_y_func = set_y_func
         self.set_x_func = set_x_func
         self.get_val_func = get_val_func
         self.delay_between_iterations = 0.1
         self.stop = True
-        self.z_optimal_height = None
+        self.optimal_height = None
         self.scan_algorithm = ScanAlgorithms(0)
+        self.feature_recognizer = FeatureRecognizer
 
     def bind_to_feature(self, feature: Feature) -> None:
         self.__scan_aria_around_feature(feature)
@@ -51,16 +55,18 @@ class BindingProbeToFeature:
         for y, row in enumerate(self.local_surface):
             for x, val in enumerate(row):
                 if self.is_start_point(val):
-                    figure = self.feature_recognition((x, y))
-                    if self.feature_in_aria((self.x_local_center, self.y_local_center), figure):
-                        center_coord = self.centroid(figure)
-                        self.x_correction = self.x_local_center - center_coord[0]
-                        self.y_correction = self.y_local_center - center_coord[1]
-
-    def feature_recognition(self, start_point: Tuple[int, int]) -> np.ndarray: # todo вынести в класс
-        figure = self.bypass_feature(start_point)
-        self.reset_to_zero_feature_area(figure)
-        return figure
+                    figure = self.feature_recognizer.recognize((x, y), self.local_surface, self.optimal_height)
+                    if self.feature_recognizer.feature_in_aria((self.x_local_center, self.y_local_center), figure):
+                        center_coord = self.feature_recognizer.centroid(figure)
+                        x_correct = center_coord[0] - self.x_local_center
+                        y_correct = center_coord[1] - self.y_local_center
+                        self.x_correction += x_correct
+                        self.y_correction += y_correct
+                        feature.set_coordinates(
+                            feature.coordinates[0] + x_correct,
+                            feature.coordinates[1] + y_correct,
+                            self.optimal_height,
+                        )
 
     def calc_optimal_height(self, surface: np.ndarray) -> None:
         def recur_clip(arr: np.ndarray, next_to_clip: int):
@@ -69,77 +75,7 @@ class BindingProbeToFeature:
                 next_to_clip = recur_clip(arr, next_to_clip - 1)
             return next_to_clip
 
-        self.z_optimal_height = recur_clip(surface, np.amax(surface)) + 2
-
-    def bypass_feature(self, start_point: Tuple[int, int]) -> np.ndarray:
-        x_start = start_point[0]
-        y_start = start_point[1]
-        points = np.array([[0, 0]], dtype='int8')
-        x, y = x_start, y_start
-        x_prev, y_prev = x_start, y_start
-        # todo использовать максимальное кол-во итераций в зависимости от величины фичи если превышает то кидать exeption
-        while not self.is_vector_entry(points, np.array([x_start, y_start], dtype='int8')):
-            gen = self.__gen_bypass_point((x, y))
-            max_iteration = 9
-            for _ in range(max_iteration):
-                try:
-                    x, y = next(gen)
-                except StopIteration:
-                    break
-                if self.local_surface[y, x] > self.z_optimal_height >= self.local_surface[y_prev, x_prev] \
-                        and self.local_surface[y, x] > self.local_surface[y_prev, x_prev]:
-                    points = np.append(points, [[x, y]], axis=0)
-                    x_prev, y_prev = x, y
-                    break
-                x_prev, y_prev = x, y
-        return np.delete(points, 0, 0)
-
-    def centroid(self, vertexes: np.ndarray) -> Tuple[int, int]:
-        _x_list = vertexes[:, 0]
-        _y_list = vertexes[:, 1]
-        _len = len(vertexes)
-        _x = sum(_x_list) / _len
-        _y = sum(_y_list) / _len
-        return _x, _y
-
-    def __gen_bypass_point(self, point: Tuple[int, int]):
-        """
-            обход 8-ми точек против часовой от стартовой
-        """
-        x = point[0]
-        y = point[1]
-        y += 1
-        yield x, y
-        x -= 1
-        yield x, y
-        for _ in range(2):
-            y -= 1
-            yield x, y
-        for _ in range(2):
-            x += 1
-            yield x, y
-        for _ in range(2):
-            y += 1
-            yield x, y
-        yield x-1, y
-
-    def reset_to_zero_feature_area(self, figure: np.ndarray):
-        figtr = np.transpose(figure)
-        for st in range(np.min(figtr[0]), np.max(figtr[0]) + 1):
-            fig1 = figtr[1][figtr[0] == st]
-            self.local_surface[np.min(fig1):np.max(fig1) + 1, st] = 0
-
-    def feature_in_aria(self, coordinates: tuple, figure: np.ndarray) -> bool:
-        figtr = np.transpose(figure)
-        for st in range(np.min(figtr[0]), np.max(figtr[0]) + 1):
-            fig1 = figtr[1][figtr[0] == st]
-            for i in range(np.min(fig1),np.max(fig1) + 1):
-                if (coordinates[0], coordinates[1]) == (st, i):
-                    return True
-        return False
-
-    def is_vector_entry(self, arr: np.ndarray, entry: np.ndarray) -> bool:
-        return np.isclose(arr - entry, np.zeros(entry.shape)).all(axis=1).any()
+        self.optimal_height = recur_clip(surface, np.amax(surface)) + COEF_NOISE
 
     def __scan_aria_around_feature(self, feature: Feature) -> None:
         #todo вычислить максимальный радиус фичи и прибавлять к нему const
@@ -172,23 +108,4 @@ class BindingProbeToFeature:
         self.local_surface = self.global_surface[y_min:y_max, x_min:x_max].copy()
 
     def is_start_point(self, val: int) -> bool:
-        return val > self.z_optimal_height
-
-
-if __name__ == '__main__':
-    points = np.array([[7, 8], [7,9]], dtype='int8')
-    e = np.array([7,8], dtype='int8')
-    print(points)
-    print(np.isclose(points - e, np.zeros(e.shape)).all(axis=1).any())
-    # points = np.empty((1,1), dtype='int8')
-    # points = np.zeros((1,2))
-    # print(points)
-    # points = np.append(points, [[1, 2]], axis=0)
-    # points = np.append(points, [[4, 5]], axis=0)
-    # points = np.append(points, [[5, 5]], axis=0)
-    # points = np.append(points, [[8, 5]], axis=0)
-    #
-    # print(np.delete(points, 0, 0))
-    #
-    # print(1 in points[:, 0])
-    # print(type(points[:, 1]))
+        return val > self.optimal_height
