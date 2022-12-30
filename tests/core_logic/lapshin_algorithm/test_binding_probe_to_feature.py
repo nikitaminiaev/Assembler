@@ -1,6 +1,6 @@
 import sys, os
+
 path = os.path.abspath("../../../stub_microcontroller")
-print(path)
 if path not in sys.path:
     sys.path.insert(0, path)
 
@@ -19,7 +19,7 @@ class TestBindingProbeToFeature(TestCase):
         set_x_func = MagicMock()
         set_y_func = MagicMock()
         touching_surface_event = MagicMock()
-        global_surface = MagicMock()
+        external_surface = MagicMock()
 
         self.binding_probe_to_feature = BindingProbeToFeature(
             LapshinFeatureRecognizer(),
@@ -27,7 +27,7 @@ class TestBindingProbeToFeature(TestCase):
             set_x_func,
             set_y_func,
             touching_surface_event,
-            global_surface
+            external_surface
         )
 
     def test_calc_optimal_height(self) -> None:
@@ -35,17 +35,26 @@ class TestBindingProbeToFeature(TestCase):
 
         self.binding_probe_to_feature.calc_optimal_height(arr)
 
-        self.assertEqual(22, self.binding_probe_to_feature.optimal_height)
-
+        self.assertEqual(21, self.binding_probe_to_feature.optimal_height)
 
     def test_bind_to_feature(self) -> None:
-        self.binding_probe_to_feature.global_surface = SurfaceGenerator(20, 20, [(10, 10)]).generate()
-        feature = Atom((9, 9, 20), 3, 10)
+        surface = SurfaceGenerator(20, 20, [(10, 10)]).generate()
+        self.binding_probe_to_feature.external_surface = surface
+        feature = Atom((9, 9, 20))
+        self.assertEqual(0, feature.perimeter_len)
 
         self.binding_probe_to_feature.bind_to_feature(feature)
 
-        print(self.binding_probe_to_feature.x_correction)
-        print(self.binding_probe_to_feature.y_correction)
+        self.assertNotEqual(0, feature.perimeter_len)
+        self.assertEqual((10, 10, self.binding_probe_to_feature.optimal_height), feature.coordinates)
+
+    def test_feature_not_found(self) -> None:
+        surface = SurfaceGenerator(20, 20, []).generate()
+        self.binding_probe_to_feature.external_surface = surface
+        feature = Atom((9, 9, 20))
+
+        self.assertRaises(RuntimeError, self.binding_probe_to_feature.bind_to_feature, feature)
+
 
     # todo def test_bind_to_feature_with_noise(self) -> None:
     #     self.BindingProbeToFeature.global_surface = SurfaceGenerator(20, 20, [(10, 10)]).generate_noise_surface()

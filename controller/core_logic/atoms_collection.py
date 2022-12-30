@@ -7,12 +7,12 @@ from controller.core_logic.tool import Tool
 class AtomCollection:
     def __init__(self, tool: Tool):
         self.__tool = tool
-        self.atoms_list: List[Atom] = []  # todo должен быть двусвязный список особенностей DoublyLinkedList
+        self.atoms_list: List[Atom] = []
 
     def append_unique_atom(self) -> bool:
         if not self.__tool.is_atom:
             return False
-        atom = Atom(self.__tool.get_coordinate(), 5)
+        atom = Atom(self.__tool.get_coordinate())
         if not self.__tool.is_atom_captured and not atom in self.atoms_list:
             self.atoms_list.append(atom)
             return True

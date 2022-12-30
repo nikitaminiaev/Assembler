@@ -14,5 +14,5 @@ class FeatureRecognizerInterface(ABC):
         pass
 
     @abstractmethod
-    def centroid(self, vertexes: np.ndarray) -> Tuple[int, int]:
+    def get_center(self, figure: np.ndarray) -> Tuple[int, int]:
         pass

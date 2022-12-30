@@ -1,7 +1,6 @@
 import sys, os
 
 path = os.path.abspath("../../../stub_microcontroller")
-print(path)
 if path not in sys.path:
     sys.path.insert(0, path)
 
@@ -113,7 +112,7 @@ class TestLapshinFeatureRecognizer(TestCase):
         optimal_height = 21
 
         figure = self.feature_recognizer._LapshinFeatureRecognizer__bypass_feature((10, 9), optimal_height, surface)
-        centr = self.feature_recognizer.centroid(figure)
+        centr = self.feature_recognizer.get_center(figure)
 
         self.assertEqual(centr, atom_cord)
 
@@ -126,8 +125,8 @@ class TestLapshinFeatureRecognizer(TestCase):
         figure2 = self.feature_recognizer.recognize((6, 9), surface, optimal_height)
         self.assertEqual(figure1.all(), figure2.all())
 
-        centr1 = self.feature_recognizer.centroid(figure1)
-        centr2 = self.feature_recognizer.centroid(figure2)
+        centr1 = self.feature_recognizer.get_center(figure1)
+        centr2 = self.feature_recognizer.get_center(figure2)
 
         self.assertEqual(centr1, atom_cord)
         self.assertEqual(centr2, atom_cord)
