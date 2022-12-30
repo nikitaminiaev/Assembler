@@ -1,12 +1,23 @@
 from typing import Tuple
 import numpy as np
+
+from controller.core_logic.entity.atom import Atom
+from controller.core_logic.entity.feature import Feature
 from controller.core_logic.lapshin_algorithm.recognition.feature_recognizer_interface import FeatureRecognizerInterface
 
 
 class LapshinFeatureRecognizer(FeatureRecognizerInterface):
     FULL_POINT_BYPASS = 9
 
-    def recognize(self, start_point: Tuple[int, int], surface: np.ndarray, optimal_height: int) -> np.ndarray:
+    def recognize_feature(self, start_point: Tuple[int, int], surface: np.ndarray, optimal_height: int) -> Feature:
+        figure = self.__bypass_feature(start_point, optimal_height, surface)
+        center = self.get_center(figure)
+        feature = Atom((center[0], center[1], optimal_height))
+        feature.perimeter_len = len(figure)
+        #todo расчет max_rad
+        return feature
+
+    def recognize_perimeter(self, start_point: Tuple[int, int], surface: np.ndarray, optimal_height: int) -> np.ndarray:
         figure = self.__bypass_feature(start_point, optimal_height, surface)
         self.__reset_to_zero_feature_area(figure, surface)
         return figure
@@ -40,7 +51,7 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
         points = np.array([[0, 0]], dtype='int8')
         x, y = x_start, y_start
         x_prev, y_prev = x_start, y_start
-        max_iterations = 8 * 2 # раметр * 2
+        max_iterations = 8 * 2  # раметр * 2
         i = 0
         # todo использовать максимальное кол-во итераций в зависимости от величины фичи если превышает то кидать exeption
         while not self.__is_vector_entry(points, np.array([x_start, y_start], dtype='int8')):

@@ -122,7 +122,7 @@ class TestLapshinFeatureRecognizer(TestCase):
         optimal_height = 21
 
         figure1 = self.feature_recognizer._LapshinFeatureRecognizer__bypass_feature((10, 9), optimal_height, surface)
-        figure2 = self.feature_recognizer.recognize((6, 9), surface, optimal_height)
+        figure2 = self.feature_recognizer.recognize_perimeter((6, 9), surface, optimal_height)
         self.assertEqual(figure1.all(), figure2.all())
 
         centr1 = self.feature_recognizer.get_center(figure1)

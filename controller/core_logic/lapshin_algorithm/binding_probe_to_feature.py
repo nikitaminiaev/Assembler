@@ -5,13 +5,15 @@ from typing import Tuple
 import numpy as np
 
 from controller.core_logic.entity.feature import Feature
+from controller.core_logic.lapshin_algorithm.binding_probe_to_feature_interface import BindingProbeToFeatureInterface
 from controller.core_logic.lapshin_algorithm.recognition.feature_recognizer_interface import FeatureRecognizerInterface
+from controller.core_logic.lapshin_algorithm.service.feature_scanner import FeatureScanner
 from controller.core_logic.scan_algorithms import ScanAlgorithms, DTO_Y, DTO_Z
 
 COEF_NOISE = 2
 
 
-class BindingProbeToFeature:
+class BindingProbeToFeature(BindingProbeToFeatureInterface):
     """
     1. Изображение, заданное в некотором окне, просматривается до тех пор, пока не будет
     встречена точка, имеющая высоту большую z, т. е. первая точка, принадлежащая контуру
@@ -34,43 +36,38 @@ class BindingProbeToFeature:
     ние PAF (Probe Attachment Failure) и пытается захватить ближайший атом.
     """
 
-    def __init__(self, FeatureRecognizer: FeatureRecognizerInterface, get_val_func, set_x_func, set_y_func, touching_surface_event: Event, external_surface):
-        self.external_surface = external_surface
+    def __init__(self, feature_recognizer: FeatureRecognizerInterface, feature_scanner: FeatureScanner):
+        self.feature_scanner = feature_scanner
         self.local_surface = None
         self.x_hypothetical_center = 6
         self.y_hypothetical_center = 6 # todo вычислять из радиуса фичи и из x_max...
         self.x_correction = 0
         self.y_correction = 0 # todo сбрасывается при переходе к новой фиче
-        self.touching_surface_event = touching_surface_event
-        self.set_y_func = set_y_func
-        self.set_x_func = set_x_func
-        self.get_val_func = get_val_func
         self.delay_between_iterations = 0.1
         self.stop = True
         self.optimal_height = None
         self.scan_algorithm = ScanAlgorithms(0)
-        self.feature_recognizer = FeatureRecognizer
+        self.feature_recognizer = feature_recognizer
 
-    def permanent_bind(self, feature: Feature) -> None:
+    def bind_to_feature(self, feature: Feature) -> None:
         while not self.stop:
-            correction = self.bind_to_feature(feature)
+            correction = self.return_to_feature(feature)
             self.__correct_delay(*correction)
             sleep(self.delay_between_iterations)
 
-    def bind_to_feature(self, feature: Feature) -> Tuple[int, int]:
-        self.__scan_aria_around_feature(feature)
+    def return_to_feature(self, feature: Feature) -> Tuple[int, int]:
+        self.local_surface = self.feature_scanner.scan_aria_around_feature(feature)
         self.calc_optimal_height(self.local_surface.copy())
         for y, row in enumerate(self.local_surface):
             for x, val in enumerate(row):
                 if self.__is_start_point(val):
-                    figure = self.feature_recognizer.recognize((x, y), self.local_surface, self.optimal_height)
+                    figure = self.feature_recognizer.recognize_perimeter((x, y), self.local_surface, self.optimal_height)
                     if self.feature_recognizer.feature_in_aria((self.x_hypothetical_center, self.y_hypothetical_center), figure):
                         x_correction, y_correction = self.__calc_correction(figure)
                         self.x_correction += x_correction
                         self.y_correction += y_correction
                         self.__update_feature(feature, figure, x_correction, y_correction)
-                        self.set_x_func(feature.coordinates)
-                        self.set_y_func(feature.coordinates)
+                        self.feature_scanner.go_to_feature(feature)
                         return x_correction, y_correction
         raise RuntimeError('feature not found')
 
@@ -97,35 +94,6 @@ class BindingProbeToFeature:
             return next_to_clip
 
         self.optimal_height = recur_clip(surface_copy, np.amax(surface_copy)) + COEF_NOISE
-
-    def __scan_aria_around_feature(self, feature: Feature) -> None:
-        #todo вычислить максимальный радиус фичи и прибавлять к нему const
-        x_min = feature.coordinates[0] - 6 # todo вычислять из радиуса фичи
-        y_min = feature.coordinates[1] - 6
-        x_max = feature.coordinates[0] + 7
-        y_max = feature.coordinates[1] + 7
-
-        self.set_x_func(
-            x_max,
-            self.get_val_func(DTO_Y),
-            self.get_val_func(DTO_Z),
-        )
-
-        self.scan_algorithm.scan_line_by_line(
-            self.get_val_func,
-            self.set_x_func,
-            self.set_y_func,
-            self.touching_surface_event,
-            x_min=x_min,
-            y_min=y_min,
-            x_max=x_max,
-            y_max=y_max,
-        )
-
-        self.__fill_local_surface(x_min, y_min, x_max, y_max)
-
-    def __fill_local_surface(self, x_min: int, y_min: int, x_max: int, y_max: int): # todo передавать сюда координаты min max coord
-        self.local_surface = self.external_surface[y_min:y_max, x_min:x_max].copy()
 
     def __is_start_point(self, val: int) -> bool:
         return val > self.optimal_height
