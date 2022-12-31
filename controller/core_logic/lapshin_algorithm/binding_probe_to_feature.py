@@ -1,5 +1,4 @@
 from time import sleep
-from threading import Event
 from typing import Tuple
 
 import numpy as np
@@ -7,13 +6,13 @@ import numpy as np
 from controller.core_logic.entity.feature import Feature
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature_interface import BindingProbeToFeatureInterface
 from controller.core_logic.lapshin_algorithm.recognition.feature_recognizer_interface import FeatureRecognizerInterface
-from controller.core_logic.lapshin_algorithm.service.feature_scanner import FeatureScanner
-from controller.core_logic.scan_algorithms import ScanAlgorithms, DTO_Y, DTO_Z
+from controller.core_logic.scan_algorithms import ScanAlgorithms
+from controller.core_logic.service.feature_scanner import ScannerInterface
 
-COEF_NOISE = 2
 
 
 class BindingProbeToFeature(BindingProbeToFeatureInterface):
+    COEF_NOISE = 2
     """
     1. Изображение, заданное в некотором окне, просматривается до тех пор, пока не будет
     встречена точка, имеющая высоту большую z, т. е. первая точка, принадлежащая контуру
@@ -36,7 +35,7 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
     ние PAF (Probe Attachment Failure) и пытается захватить ближайший атом.
     """
 
-    def __init__(self, feature_recognizer: FeatureRecognizerInterface, feature_scanner: FeatureScanner):
+    def __init__(self, feature_recognizer: FeatureRecognizerInterface, feature_scanner: ScannerInterface):
         self.feature_scanner = feature_scanner
         self.local_surface = None
         self.x_hypothetical_center = 6
@@ -76,7 +75,7 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
             feature.coordinates[0] + x_correction,
             feature.coordinates[1] + y_correction,
             self.optimal_height,
-        )
+            )
         # todo расчет max_rad
         feature.perimeter_len = len(figure)
 
@@ -93,7 +92,7 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
                 next_to_clip = recur_clip(arr, next_to_clip - 1)
             return next_to_clip
 
-        self.optimal_height = recur_clip(surface_copy, np.amax(surface_copy)) + COEF_NOISE
+        self.optimal_height = recur_clip(surface_copy, np.amax(surface_copy)) + self.COEF_NOISE
 
     def __is_start_point(self, val: int) -> bool:
         return val > self.optimal_height
