@@ -1,12 +1,14 @@
 import sys, os
-path = os.path.abspath("../../../stub_microcontroller")
+root = sys.path[1]
+path = os.path.join(root, "stub_microcontroller")
 if path not in sys.path:
     sys.path.insert(0, path)
+    sys.path.insert(0, os.path.abspath("../../../stub_microcontroller"))
 
 from controller.core_logic.service.feature_scanner import FeatureScanner
 from unittest import TestCase
 from controller.core_logic.entity.atom import Atom
-from controller.core_logic.lapshin_algorithm.recognition.lapshin_feature_recognizer import LapshinFeatureRecognizer
+from controller.core_logic.lapshin_algorithm.service.recognition.lapshin_feature_recognizer import LapshinFeatureRecognizer
 from unittest.mock import MagicMock
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature import BindingProbeToFeature
 from stub_microcontroller.surface_generator import SurfaceGenerator
@@ -20,7 +22,8 @@ class TestBindingProbeToFeature(TestCase):
         set_y_func = MagicMock()
         touching_surface_event = MagicMock()
         external_surface = MagicMock()
-        scanner = FeatureScanner(get_val_func, set_x_func, set_y_func, touching_surface_event, external_surface)
+        push_coord_to_mk = MagicMock()
+        scanner = FeatureScanner(get_val_func, set_x_func, set_y_func, touching_surface_event, external_surface, push_coord_to_mk, 0)
 
         self.binding_probe_to_feature = BindingProbeToFeature(
             LapshinFeatureRecognizer(),

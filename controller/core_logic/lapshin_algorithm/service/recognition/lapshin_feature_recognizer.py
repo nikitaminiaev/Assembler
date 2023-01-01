@@ -3,7 +3,7 @@ import numpy as np
 
 from controller.core_logic.entity.atom import Atom
 from controller.core_logic.entity.feature import Feature
-from controller.core_logic.lapshin_algorithm.recognition.feature_recognizer_interface import FeatureRecognizerInterface
+from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import FeatureRecognizerInterface
 
 
 class LapshinFeatureRecognizer(FeatureRecognizerInterface):

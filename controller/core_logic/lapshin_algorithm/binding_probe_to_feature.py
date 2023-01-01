@@ -5,8 +5,7 @@ import numpy as np
 
 from controller.core_logic.entity.feature import Feature
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature_interface import BindingProbeToFeatureInterface
-from controller.core_logic.lapshin_algorithm.recognition.feature_recognizer_interface import FeatureRecognizerInterface
-from controller.core_logic.scan_algorithms import ScanAlgorithms
+from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import FeatureRecognizerInterface
 from controller.core_logic.service.feature_scanner import ScannerInterface
 
 
@@ -45,7 +44,6 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
         self.delay_between_iterations = 0.1
         self.stop = True
         self.optimal_height = None
-        self.scan_algorithm = ScanAlgorithms(0)
         self.feature_recognizer = feature_recognizer
 
     def bind_to_feature(self, feature: Feature) -> None:

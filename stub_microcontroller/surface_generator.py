@@ -4,7 +4,7 @@ from noise_generator import NoiseGenerator
 
 MAX_FIELD_SIZE = 1000
 GENERAL_HEIGHT = 20
-OFFSET = 400
+OFFSET = 425
 ATOMS = [
     (10 + OFFSET, 5 + OFFSET),
     (10 + OFFSET, 25 + OFFSET),

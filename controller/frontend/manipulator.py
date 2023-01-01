@@ -2,6 +2,8 @@ import traceback
 import matplotlib as plt
 from controller.core_logic.scan_algorithms import ScanAlgorithms, FIELD_SIZE
 from controller.core_logic.exceptions.touching_surface import TouchingSurface
+from controller.core_logic.service.feature_scanner import FeatureScanner
+from controller.core_logic.service.scanner_interface import ScannerInterface
 from controller.frontend.graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, Label, constants as c
 import tkinter as tk
@@ -147,7 +149,7 @@ class ConstructorFrames:
         self.__load_data_entry.place(width=20, height=5)
         self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
         self.default_bg = self.__stop_render_btn.cget("background")
-        self.scanAlgorithm = ScanAlgorithms(SLEEP_BETWEEN_SCAN_ITERATION)
+        self.feature_scanner = self.create_scanner(self.tk.graph.frame.atoms_logic.touching_surface_event)
         self.__bind_scale_to_tip()
 
     def __transmitting_value_x(self, x: int):
@@ -258,22 +260,19 @@ class ConstructorFrames:
 
     def __go_n_scan(self, count, vars):
         for _ in range(count):
-            self.scanAlgorithm.stop = False
+            self.feature_scanner.scan_algorithm.stop = False
             self._go_auto(*vars)
             self.tk.graph.frame.atoms_logic.remember_surface()
             self.tk.graph.frame.atoms_logic.gen_new_noise()
         self.tk.graph.frame.atoms_logic.remove_noise()
 
     def auto(self):
-        if self.scanAlgorithm.stop:
-            self.scanAlgorithm.stop = False
-        else:
-            self.scanAlgorithm.stop = True
+        self.feature_scanner.switch_scan()
         vars = self.__get_params()
         threading.Thread(target=self._go_auto, args=vars).start()
 
     def __get_params(self) -> tuple:
-        params = (self.tk.graph.frame.atoms_logic.touching_surface_event,)
+        params = ()
         if self.__scan_vars_x_min.get().strip() != '': params += (int(self.__scan_vars_x_min.get().strip()),)
         if self.__scan_vars_y_min.get().strip() != '': params += (int(self.__scan_vars_y_min.get().strip()),)
         if self.__scan_vars_x_max.get().strip() != '': params += (int(self.__scan_vars_x_max.get().strip()),)
@@ -281,31 +280,24 @@ class ConstructorFrames:
 
         return params
 
-    def _go_auto(self, touching_surface_event, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None:
+    def _go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None:
+        self.feature_scanner.scan_aria(x_min, y_min, x_max, y_max)
+
+    def create_scanner(self, touching_surface_event) -> FeatureScanner:
         get_val_func = self.tk.graph.frame.atoms_logic.get_dto_val
-        self.tk.graph.frame.atoms_logic.set_val_to_dto(
-            DTO_X,
-            (
-                x_max,
-                get_val_func(DTO_Y),
-                get_val_func(DTO_Z)
-            ),
-            True
-        )
         set_x_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_X)
         set_y_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_Y)
-        self.tk.graph.frame.atoms_logic.push_z_coord_to_mk(True)
-
-        self.scanAlgorithm.scan_line_by_line(
+        push_coord_to_mk = self.tk.graph.frame.atoms_logic.push_coord_to_mk
+        feature_scanner = FeatureScanner(
             get_val_func,
             set_x_func,
             set_y_func,
             touching_surface_event,
-            x_min=x_min,
-            y_min=y_min,
-            x_max=x_max,
-            y_max=y_max,
+            self.tk.graph.frame.atoms_logic.surface_data,
+            push_coord_to_mk,
+            SLEEP_BETWEEN_SCAN_ITERATION
         )
+        return feature_scanner
 
     def __stop_go_render(self):
         if self.tk.graph.frame.quit:
@@ -373,7 +365,7 @@ class ConstructorFrames:
 
     def change_button(self, event, cause):
         cause = {
-            'scanAlgorithm.stop': {'condition': not self.scanAlgorithm.stop, 'button': self.__auto_on_off_btn},
+            'scanAlgorithm.stop': {'condition': not self.feature_scanner.scan_algorithm.stop, 'button': self.__auto_on_off_btn},
             'tk.graph.frame.quit': {'condition': not self.tk.graph.frame.quit, 'button': self.__stop_render_btn},
             'tk.graph.frame.condition_build_surface': {'condition': self.tk.graph.frame.condition_build_surface, 'button': self.__build_surface_btn},
             'tk.graph.frame.condition_scan_mode': {'condition': self.tk.graph.frame.atoms_logic.is_scan_mode(), 'button': self.__scan_mode},

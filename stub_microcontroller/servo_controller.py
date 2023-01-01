@@ -1,9 +1,8 @@
 from surface_generator import *
-import numpy as np
 from noise_generator import NoiseGenerator
 
 DEPARTURE_BY_Z = 10
-OFFSET = 400
+OFFSET = 425
 
 class ServoController:
 

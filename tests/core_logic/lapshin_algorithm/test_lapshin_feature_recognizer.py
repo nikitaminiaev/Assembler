@@ -1,10 +1,11 @@
 import sys, os
-
-path = os.path.abspath("../../../stub_microcontroller")
+root = sys.path[1]
+path = os.path.join(root, "stub_microcontroller")
 if path not in sys.path:
     sys.path.insert(0, path)
+    sys.path.insert(0, os.path.abspath("../../../stub_microcontroller"))
 
-from controller.core_logic.lapshin_algorithm.recognition.lapshin_feature_recognizer import LapshinFeatureRecognizer
+from controller.core_logic.lapshin_algorithm.service.recognition.lapshin_feature_recognizer import LapshinFeatureRecognizer
 from stub_microcontroller.surface_generator import SurfaceGenerator
 from unittest import TestCase
 import numpy as np
