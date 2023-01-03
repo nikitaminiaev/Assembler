@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Tuple
+from typing import Tuple, Iterator
 import numpy as np
 from controller.core_logic.entity.feature import Feature
 
@@ -7,11 +7,11 @@ from controller.core_logic.entity.feature import Feature
 class FeatureRecognizerInterface(ABC):
 
     @abstractmethod
-    def recognize_feature(self, start_point: Tuple[int, int], surface: np.ndarray, optimal_height: int) -> Feature:
+    def recognize_feature(self, figure: np.ndarray, surface: np.ndarray) -> Feature:
         pass
 
     @abstractmethod
-    def recognize_perimeter(self, start_point: Tuple[int, int], surface: np.ndarray, optimal_height: int) -> np.ndarray:
+    def recognize_all_figure_in_aria(self, surface: np.ndarray) -> Iterator[np.ndarray]:
         pass
 
     @abstractmethod
@@ -20,4 +20,12 @@ class FeatureRecognizerInterface(ABC):
 
     @abstractmethod
     def get_center(self, figure: np.ndarray) -> Tuple[int, int]:
+        pass
+
+    @abstractmethod
+    def calc_optimal_height(self, surface_copy: np.ndarray) -> int:
+        pass
+
+    @abstractmethod
+    def get_max_height(self, surface_copy: np.ndarray) -> int:
         pass

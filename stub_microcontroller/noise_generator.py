@@ -21,20 +21,20 @@ class NoiseGenerator:
         pass
 
     def gen_thermal_offset_x(self) -> None:
-        delay = 0.1
+        delay = 0.2
         while not self.stop:
             sleep(abs(delay))
-            self.x_offset += random.randint(0, random.randint(1, 2))
+            self.x_offset += random.randint(0, random.randint(0, 1))
             if bool(random.getrandbits(1)):
                 delay += 0.5 * random.random()
             else:
                 delay -= 0.5 * random.random()
 
     def gen_thermal_offset_y(self) -> None:
-        delay = 0.1
+        delay = 0.2
         while not self.stop:
             sleep(abs(delay))
-            self.y_offset += random.randint(0, random.randint(1, 2))
+            self.y_offset += random.randint(0, random.randint(0, 1))
             if bool(random.getrandbits(1)):
                 delay += 0.5 * random.random()
             else:

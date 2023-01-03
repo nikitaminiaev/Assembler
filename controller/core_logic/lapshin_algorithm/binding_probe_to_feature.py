@@ -1,3 +1,4 @@
+import traceback
 from time import sleep
 from typing import Tuple
 
@@ -11,7 +12,7 @@ from controller.core_logic.service.feature_scanner import ScannerInterface
 
 
 class BindingProbeToFeature(BindingProbeToFeatureInterface):
-    COEF_NOISE = 2
+
     """
     1. Изображение, заданное в некотором окне, просматривается до тех пор, пока не будет
     встречена точка, имеющая высоту большую z, т. е. первая точка, принадлежащая контуру
@@ -39,40 +40,39 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
         self.local_surface = None
         self.x_hypothetical_center = 6
         self.y_hypothetical_center = 6 # todo вычислять из радиуса фичи и из x_max...
-        self.x_correction = 0
-        self.y_correction = 0 # todo сбрасывается при переходе к новой фиче
-        self.delay_between_iterations = 0.1
-        self.stop = True
+        self.delay_between_iterations = 0.05
+        self.stop = False
         self.optimal_height = None
         self.feature_recognizer = feature_recognizer
 
     def bind_to_feature(self, feature: Feature) -> None:
         while not self.stop:
-            correction = self.return_to_feature(feature)
-            self.__correct_delay(*correction)
+            try:
+                correction = self.return_to_feature(feature)
+                self.__correct_delay(*correction)
+            except Exception as e:
+                self.stop = True
+                print(e)
+                print(traceback.format_exc())
             sleep(self.delay_between_iterations)
 
     def return_to_feature(self, feature: Feature) -> Tuple[int, int]:
-        self.local_surface = self.feature_scanner.scan_aria_around_feature(feature)
-        self.calc_optimal_height(self.local_surface.copy())
-        for y, row in enumerate(self.local_surface):
-            for x, val in enumerate(row):
-                if self.__is_start_point(val):
-                    figure = self.feature_recognizer.recognize_perimeter((x, y), self.local_surface, self.optimal_height)
-                    if self.feature_recognizer.feature_in_aria((self.x_hypothetical_center, self.y_hypothetical_center), figure):
-                        x_correction, y_correction = self.__calc_correction(figure)
-                        self.x_correction += x_correction
-                        self.y_correction += y_correction
-                        self.__update_feature(feature, figure, x_correction, y_correction)
-                        self.feature_scanner.go_to_feature(feature)
-                        return x_correction, y_correction
+        surface = self.feature_scanner.scan_aria_around_feature(feature)
+        feature_height = self.feature_recognizer.get_max_height(surface.copy())
+        figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface)
+        for figure in figure_gen:
+            if self.feature_recognizer.feature_in_aria((self.x_hypothetical_center, self.y_hypothetical_center), figure):
+                x_correction, y_correction = self.__calc_correction(figure)
+                self.__update_feature(feature, figure, x_correction, y_correction, feature_height)
+                self.feature_scanner.go_to_feature(feature)
+                return x_correction, y_correction
         raise RuntimeError('feature not found')
 
-    def __update_feature(self, feature: Feature, figure, x_correction, y_correction):
+    def __update_feature(self, feature: Feature, figure, x_correction, y_correction, feature_height):
         feature.set_coordinates(
             feature.coordinates[0] + x_correction,
             feature.coordinates[1] + y_correction,
-            self.optimal_height,
+            feature_height,
             )
         # todo расчет max_rad
         feature.perimeter_len = len(figure)
@@ -82,18 +82,6 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
         x_correct = int(actual_center[0] - self.x_hypothetical_center)
         y_correct = int(actual_center[1] - self.y_hypothetical_center)
         return x_correct, y_correct
-
-    def calc_optimal_height(self, surface_copy: np.ndarray) -> None:
-        def recur_clip(arr: np.ndarray, next_to_clip: int):
-            arr = np.clip(arr, 0, next_to_clip)
-            if np.amax(arr) != int(arr.mean()):
-                next_to_clip = recur_clip(arr, next_to_clip - 1)
-            return next_to_clip
-
-        self.optimal_height = recur_clip(surface_copy, np.amax(surface_copy)) + self.COEF_NOISE
-
-    def __is_start_point(self, val: int) -> bool:
-        return val > self.optimal_height
 
     def __correct_delay(self, x: int, y: int):
         pass

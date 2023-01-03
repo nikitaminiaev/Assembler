@@ -149,7 +149,7 @@ class ConstructorFrames:
         self.__load_data_entry.place(width=20, height=5)
         self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
         self.default_bg = self.__stop_render_btn.cget("background")
-        self.feature_scanner = self.create_scanner(self.tk.graph.frame.atoms_logic.touching_surface_event)
+        self.feature_scanner = self.tk.graph.frame.atoms_logic.create_scanner(self.tk.graph.frame.atoms_logic.touching_surface_event)
         self.__bind_scale_to_tip()
 
     def __transmitting_value_x(self, x: int):
@@ -282,22 +282,6 @@ class ConstructorFrames:
 
     def _go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None:
         self.feature_scanner.scan_aria(x_min, y_min, x_max, y_max)
-
-    def create_scanner(self, touching_surface_event) -> FeatureScanner:
-        get_val_func = self.tk.graph.frame.atoms_logic.get_dto_val
-        set_x_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_X)
-        set_y_func = self.tk.graph.frame.atoms_logic.set_val_dto_curried(DTO_Y)
-        push_coord_to_mk = self.tk.graph.frame.atoms_logic.push_coord_to_mk
-        feature_scanner = FeatureScanner(
-            get_val_func,
-            set_x_func,
-            set_y_func,
-            touching_surface_event,
-            self.tk.graph.frame.atoms_logic.surface_data,
-            push_coord_to_mk,
-            SLEEP_BETWEEN_SCAN_ITERATION
-        )
-        return feature_scanner
 
     def __stop_go_render(self):
         if self.tk.graph.frame.quit:

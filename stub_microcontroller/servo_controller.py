@@ -2,7 +2,6 @@ from surface_generator import *
 from noise_generator import NoiseGenerator
 
 DEPARTURE_BY_Z = 10
-OFFSET = 425
 
 class ServoController:
 
@@ -11,7 +10,7 @@ class ServoController:
         self.surface_generator = SurfaceGenerator(MAX_FIELD_SIZE, GENERAL_HEIGHT, ATOMS)
         self.noise_generator = NoiseGenerator()
         self.noise_generator.start()
-        self.noise_surface = self.surface_generator.generate_noise_surface()
+        self.noise_surface = self.surface_generator.generate()
         self.x_current = 0 + OFFSET
         self.y_current = 0 + OFFSET
         self.z_current = 0

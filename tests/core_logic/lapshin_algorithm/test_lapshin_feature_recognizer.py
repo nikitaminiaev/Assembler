@@ -14,7 +14,6 @@ import numpy as np
 class TestLapshinFeatureRecognizer(TestCase):
 
     def setUp(self) -> None:
-
         self.feature_recognizer = LapshinFeatureRecognizer()
 
     entry_vectors = [
@@ -40,6 +39,13 @@ class TestLapshinFeatureRecognizer(TestCase):
         for vector in self.not_entry_vectors:
             self.assertFalse(self.feature_recognizer._LapshinFeatureRecognizer__is_vector_entry(points, np.array(vector,
                                                                                                                  dtype='int8')))
+
+    def test_calc_optimal_height(self) -> None:
+        arr = SurfaceGenerator(20, 20, [(5, 5), (10, 5), (15, 5), (5, 10), (10, 10), (15, 10)]).generate_noise_surface()
+
+        optimal_height = self.feature_recognizer.calc_optimal_height(arr)
+
+        self.assertEqual(21, optimal_height)
 
     def test_bypass_bypass_feature(self) -> None:
         surface = SurfaceGenerator(20, 20, [(10, 10)]).generate()
@@ -123,7 +129,7 @@ class TestLapshinFeatureRecognizer(TestCase):
         optimal_height = 21
 
         figure1 = self.feature_recognizer._LapshinFeatureRecognizer__bypass_feature((10, 9), optimal_height, surface)
-        figure2 = self.feature_recognizer.recognize_perimeter((6, 9), surface, optimal_height)
+        figure2 = self.feature_recognizer.recognize_figure((6, 9), surface, optimal_height)
         self.assertEqual(figure1.all(), figure2.all())
 
         centr1 = self.feature_recognizer.get_center(figure1)

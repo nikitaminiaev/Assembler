@@ -30,13 +30,6 @@ class TestBindingProbeToFeature(TestCase):
             scanner
         )
 
-    def test_calc_optimal_height(self) -> None:
-        arr = SurfaceGenerator(20, 20, [(5, 5), (10, 5), (15, 5), (5, 10), (10, 10), (15, 10)]).generate_noise_surface()
-
-        self.binding_probe_to_feature.calc_optimal_height(arr)
-
-        self.assertEqual(21, self.binding_probe_to_feature.optimal_height)
-
     def test_bind_to_feature(self) -> None:
         surface = SurfaceGenerator(20, 20, [(10, 10)]).generate()
         self.binding_probe_to_feature.feature_scanner.external_surface = surface
@@ -45,10 +38,11 @@ class TestBindingProbeToFeature(TestCase):
 
         self.binding_probe_to_feature.return_to_feature(feature)
 
+        height = self.binding_probe_to_feature.feature_recognizer.get_max_height(surface)
         self.assertNotEqual(0, feature.perimeter_len)
-        self.assertEqual((10, 10, self.binding_probe_to_feature.optimal_height), feature.coordinates)
-        self.binding_probe_to_feature.feature_scanner.set_x_func.assert_called_with(feature.coordinates)
-        self.binding_probe_to_feature.feature_scanner.set_y_func.assert_called_with(feature.coordinates)
+        self.assertEqual((10, 10, height), feature.coordinates)
+        self.binding_probe_to_feature.feature_scanner.set_x_func.assert_called_with((feature.coordinates[0], feature.coordinates[1], feature.coordinates[2] + 3))
+        self.binding_probe_to_feature.feature_scanner.set_y_func.assert_called_with((feature.coordinates[0], feature.coordinates[1], feature.coordinates[2] + 3))
 
     def test_feature_not_found(self) -> None:
         surface = SurfaceGenerator(20, 20, []).generate()

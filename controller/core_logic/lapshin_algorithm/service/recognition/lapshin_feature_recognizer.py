@@ -1,6 +1,5 @@
-from typing import Tuple
+from typing import Tuple, Iterator
 import numpy as np
-
 from controller.core_logic.entity.atom import Atom
 from controller.core_logic.entity.feature import Feature
 from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import FeatureRecognizerInterface
@@ -8,16 +7,24 @@ from controller.core_logic.lapshin_algorithm.service.recognition.feature_recogni
 
 class LapshinFeatureRecognizer(FeatureRecognizerInterface):
     FULL_POINT_BYPASS = 9
+    COEF_NOISE = 2
 
-    def recognize_feature(self, start_point: Tuple[int, int], surface: np.ndarray, optimal_height: int) -> Feature:
-        figure = self.__bypass_feature(start_point, optimal_height, surface)
+    def recognize_feature(self, figure: np.ndarray, surface: np.ndarray) -> Feature: #todo покрыть тестами
         center = self.get_center(figure)
-        feature = Atom((center[0], center[1], optimal_height))
+        max_height = surface[center[1], center[0]] #todo использовать метод get_max_height
+        feature = Atom((center[0], center[1], max_height))
         feature.perimeter_len = len(figure)
         #todo расчет max_rad
         return feature
 
-    def recognize_perimeter(self, start_point: Tuple[int, int], surface: np.ndarray, optimal_height: int) -> np.ndarray:
+    def recognize_all_figure_in_aria(self, surface: np.ndarray) -> Iterator[np.ndarray]: #todo покрыть тестами
+        self.optimal_height = self.calc_optimal_height(surface.copy())
+        for y, row in enumerate(surface):
+            for x, val in enumerate(row):
+                if self.__is_start_point(val):
+                    yield self.recognize_figure((x, y), surface, self.optimal_height)
+
+    def recognize_figure(self, start_point: Tuple[int, int], surface: np.ndarray, optimal_height: int) -> np.ndarray:
         figure = self.__bypass_feature(start_point, optimal_height, surface)
         self.__reset_to_zero_feature_area(figure, surface)
         return figure
@@ -37,7 +44,19 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
         _len = len(figure)
         _x = sum(_x_list) / _len
         _y = sum(_y_list) / _len
-        return _x, _y
+        return int(_x), int(_y)
+
+    def calc_optimal_height(self, surface_copy: np.ndarray) -> int: # todo сделать приватным
+        def recur_clip(arr: np.ndarray, next_to_clip: int):
+            arr = np.clip(arr, 0, next_to_clip)
+            if np.amax(arr) != int(arr.mean()):
+                next_to_clip = recur_clip(arr, next_to_clip - 1)
+            return next_to_clip
+
+        return recur_clip(surface_copy, np.amax(surface_copy)) + self.COEF_NOISE
+
+    def get_max_height(self, surface_copy: np.ndarray) -> int:
+        return np.amax(surface_copy)
 
     def __reset_to_zero_feature_area(self, figure: np.ndarray, surface: np.ndarray):
         figtr = np.transpose(figure)
@@ -74,6 +93,9 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
 
     def __is_vector_entry(self, arr: np.ndarray, entry: np.ndarray) -> bool:
         return np.isclose(arr - entry, np.zeros(entry.shape)).all(axis=1).any()
+
+    def __is_start_point(self, val: int) -> bool:
+        return val > self.optimal_height
 
     def __gen_bypass_point(self, point: Tuple[int, int]):
         """

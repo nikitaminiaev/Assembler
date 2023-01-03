@@ -23,5 +23,5 @@ class ScannerInterface(ABC):
         pass
 
     @abstractmethod
-    def switch_scan(self) -> None:
+    def switch_scan(self, stop: bool) -> None:
         pass
