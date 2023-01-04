@@ -1,6 +1,6 @@
 import traceback
 import matplotlib
-from controller.core_logic.entity.atom import Atom
+from controller.core_logic.lapshin_algorithm.entity.atom import Atom
 from controller.core_logic.atom_logic import AtomsLogic
 
 matplotlib.use("TkAgg")

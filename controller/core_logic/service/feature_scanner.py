@@ -1,7 +1,7 @@
 from threading import Event
 import numpy as np
 from controller.constants import DTO_Y, DTO_Z, DTO_X
-from controller.core_logic.entity.feature import Feature
+from controller.core_logic.lapshin_algorithm.entity.feature import Feature
 from controller.core_logic.scan_algorithms import ScanAlgorithms, FIELD_SIZE
 from controller.core_logic.service.scanner_interface import ScannerInterface
 

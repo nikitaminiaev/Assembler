@@ -1,7 +1,6 @@
-from abc import ABC, abstractmethod
 
 
-class Feature(ABC):
+class Feature:
 
     def __init__(self, coordinates: tuple):
         self.coordinates: tuple = coordinates
@@ -11,6 +10,5 @@ class Feature(ABC):
         self.vector_to_next = None
         self.vector_to_prev = None
 
-    @abstractmethod
-    def set_coordinates(self, *args) -> None:
-        pass
+    def set_coordinates(self, *args):
+        self.coordinates = args

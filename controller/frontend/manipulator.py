@@ -1,9 +1,7 @@
 import traceback
 import matplotlib as plt
-from controller.core_logic.scan_algorithms import ScanAlgorithms, FIELD_SIZE
+from controller.core_logic.scan_algorithms import FIELD_SIZE
 from controller.core_logic.exceptions.touching_surface import TouchingSurface
-from controller.core_logic.service.feature_scanner import FeatureScanner
-from controller.core_logic.service.scanner_interface import ScannerInterface
 from controller.frontend.graph import Graph, GraphFrame
 from tkinter import Frame, Button, Scale, Canvas, StringVar, Entry, Label, constants as c
 import tkinter as tk

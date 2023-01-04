@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from controller.core_logic.entity.feature import Feature
+from controller.core_logic.lapshin_algorithm.entity.feature import Feature
 from controller.core_logic.scan_algorithms import FIELD_SIZE
 
 

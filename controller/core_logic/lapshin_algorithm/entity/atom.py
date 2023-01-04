@@ -1,5 +1,4 @@
-from typing import Tuple
-from controller.core_logic.entity.feature import Feature
+from controller.core_logic.lapshin_algorithm.entity.feature import Feature
 
 
 class Atom(Feature):
@@ -14,7 +13,4 @@ class Atom(Feature):
         if not isinstance(other, Atom):
             return False
         return self.coordinates == other.coordinates
-
-    def set_coordinates(self, *args):
-        self.coordinates = args
 

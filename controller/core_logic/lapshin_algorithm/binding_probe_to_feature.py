@@ -2,9 +2,7 @@ import traceback
 from time import sleep
 from typing import Tuple
 
-import numpy as np
-
-from controller.core_logic.entity.feature import Feature
+from controller.core_logic.lapshin_algorithm.entity.feature import Feature
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature_interface import BindingProbeToFeatureInterface
 from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import FeatureRecognizerInterface
 from controller.core_logic.service.feature_scanner import ScannerInterface
@@ -39,7 +37,8 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
         self.feature_scanner = feature_scanner
         self.local_surface = None
         self.x_hypothetical_center = 6
-        self.y_hypothetical_center = 6 # todo вычислять из радиуса фичи и из x_max...
+        self.y_hypothetical_center = 6 # todo вычисля
+        # ть из радиуса фичи и из x_max...
         self.delay_between_iterations = 0.05
         self.stop = False
         self.optimal_height = None

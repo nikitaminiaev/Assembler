@@ -1,8 +1,7 @@
 import threading
 
-from controller.core_logic.lapshin_algorithm.binding_probe_to_feature import BindingProbeToFeature
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature_interface import BindingProbeToFeatureInterface
-from controller.core_logic.lapshin_algorithm.feature_collections.doubly_linked_list import DoublyLinkedList
+from controller.core_logic.lapshin_algorithm.feature_collection.doubly_linked_list import DoublyLinkedList
 from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import \
     FeatureRecognizerInterface
 from controller.core_logic.service.scanner_interface import ScannerInterface

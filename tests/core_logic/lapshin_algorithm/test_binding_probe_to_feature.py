@@ -7,7 +7,7 @@ if path not in sys.path:
 
 from controller.core_logic.service.feature_scanner import FeatureScanner
 from unittest import TestCase
-from controller.core_logic.entity.atom import Atom
+from controller.core_logic.lapshin_algorithm.entity.atom import Atom
 from controller.core_logic.lapshin_algorithm.service.recognition.lapshin_feature_recognizer import LapshinFeatureRecognizer
 from unittest.mock import MagicMock
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature import BindingProbeToFeature
