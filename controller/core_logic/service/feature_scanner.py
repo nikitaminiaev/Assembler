@@ -59,9 +59,14 @@ class FeatureScanner(ScannerInterface):
         self.scan_algorithm.stop = stop
 
     def __calc_aria_borders(self, feature):
-        # todo вычислить максимальный радиус фичи и прибавлять к нему const
-        x_min = feature.coordinates[0] - 6  # todo вычислять из радиуса фичи
-        y_min = feature.coordinates[1] - 6
-        x_max = feature.coordinates[0] + 7
-        y_max = feature.coordinates[1] + 7
+        rad = int(round(feature.max_rad)) # todo иногда проскакивает 3, надо 2
+        print(rad)
+        x_min = feature.coordinates[0] - rad * 3
+        y_min = feature.coordinates[1] - rad * 3
+        x_max = feature.coordinates[0] + rad * 3 + 1
+        y_max = feature.coordinates[1] + rad * 3 + 1
         return x_min, x_max, y_min, y_max
+
+    def get_scan_aria_center(self, feature) -> tuple:
+        rad = int(round(feature.max_rad))
+        return rad * 3, rad * 3

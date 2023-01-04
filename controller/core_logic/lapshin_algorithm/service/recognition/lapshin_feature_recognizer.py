@@ -1,28 +1,34 @@
 from typing import Tuple, Iterator
 import numpy as np
-from controller.core_logic.lapshin_algorithm.entity.atom import Atom
 from controller.core_logic.lapshin_algorithm.entity.feature import Feature
+from controller.core_logic.lapshin_algorithm.service.feature_factory import FeatureFactory
 from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import FeatureRecognizerInterface
 
 
 class LapshinFeatureRecognizer(FeatureRecognizerInterface):
     FULL_POINT_BYPASS = 9
-    COEF_NOISE = 2
+    NOISE_COEF = 1  #todo подумать, возможн сделать настраиваемым параметром автоматически
 
-    def recognize_feature(self, figure: np.ndarray, surface: np.ndarray) -> Feature: #todo покрыть тестами
+    def __init__(self):
+        self.__optimal_height = None
+
+    def recognize_feature(self, figure: np.ndarray, surface: np.ndarray) -> Feature:
         center = self.get_center(figure)
-        max_height = surface[center[1], center[0]] #todo использовать метод get_max_height
-        feature = Atom((center[0], center[1], max_height))
-        feature.perimeter_len = len(figure)
-        #todo расчет max_rad
-        return feature
+        max_height = self.get_max_height(surface.copy())
+        max_rad = self.calc_max_feature_rad(center, figure)
+        return FeatureFactory.create(len(figure), max_rad, center[0], center[1], max_height)
 
-    def recognize_all_figure_in_aria(self, surface: np.ndarray) -> Iterator[np.ndarray]: #todo покрыть тестами
-        self.optimal_height = self.calc_optimal_height(surface.copy())
+    def recognize_all_figure_in_aria(self, surface: np.ndarray) -> Iterator[np.ndarray]:
+        self.__optimal_height = self.calc_optimal_height(surface.copy())
         for y, row in enumerate(surface):
             for x, val in enumerate(row):
                 if self.__is_start_point(val):
-                    yield self.recognize_figure((x, y), surface, self.optimal_height)
+                    try:
+                        figure = self.recognize_figure((x, y), surface, self.__optimal_height)
+                    except IndexError as e:
+                        print(e)
+                        continue
+                    yield figure
 
     def recognize_figure(self, start_point: Tuple[int, int], surface: np.ndarray, optimal_height: int) -> np.ndarray:
         figure = self.__bypass_feature(start_point, optimal_height, surface)
@@ -53,10 +59,18 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
                 next_to_clip = recur_clip(arr, next_to_clip - 1)
             return next_to_clip
 
-        return recur_clip(surface_copy, np.amax(surface_copy)) + self.COEF_NOISE
+        return recur_clip(surface_copy, np.amax(surface_copy)) + self.NOISE_COEF
 
     def get_max_height(self, surface_copy: np.ndarray) -> int:
         return np.amax(surface_copy)
+
+    def calc_max_feature_rad(self, center: tuple, figure: np.ndarray) -> float:
+         for point in figure:
+             point[0] = point[0] - center[0]
+             point[1] = point[1] - center[1]
+
+         return max(np.linalg.norm(vector) for vector in figure)
+
 
     def __reset_to_zero_feature_area(self, figure: np.ndarray, surface: np.ndarray):
         figtr = np.transpose(figure)
@@ -70,9 +84,8 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
         points = np.array([[0, 0]], dtype='int8')
         x, y = x_start, y_start
         x_prev, y_prev = x_start, y_start
-        max_iterations = 8 * 2  # раметр * 2
+        max_iterations = 500
         i = 0
-        # todo использовать максимальное кол-во итераций в зависимости от величины фичи если превышает то кидать exeption
         while not self.__is_vector_entry(points, np.array([x_start, y_start], dtype='int8')):
             i += 1
             if i > max_iterations:
@@ -95,7 +108,7 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
         return np.isclose(arr - entry, np.zeros(entry.shape)).all(axis=1).any()
 
     def __is_start_point(self, val: int) -> bool:
-        return val > self.optimal_height
+        return val > self.__optimal_height
 
     def __gen_bypass_point(self, point: Tuple[int, int]):
         """

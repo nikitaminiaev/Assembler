@@ -35,13 +35,8 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
 
     def __init__(self, feature_recognizer: FeatureRecognizerInterface, feature_scanner: ScannerInterface):
         self.feature_scanner = feature_scanner
-        self.local_surface = None
-        self.x_hypothetical_center = 6
-        self.y_hypothetical_center = 6 # todo вычисля
-        # ть из радиуса фичи и из x_max...
         self.delay_between_iterations = 0.05
         self.stop = False
-        self.optimal_height = None
         self.feature_recognizer = feature_recognizer
 
     def bind_to_feature(self, feature: Feature) -> None:
@@ -60,26 +55,28 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
         feature_height = self.feature_recognizer.get_max_height(surface.copy())
         figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface)
         for figure in figure_gen:
-            if self.feature_recognizer.feature_in_aria((self.x_hypothetical_center, self.y_hypothetical_center), figure):
-                x_correction, y_correction = self.__calc_correction(figure)
-                self.__update_feature(feature, figure, x_correction, y_correction, feature_height)
+            if self.feature_recognizer.feature_in_aria(self.feature_scanner.get_scan_aria_center(feature), figure):
+                actual_center = self.feature_recognizer.get_center(figure)
+                hypothetical_center = self.feature_scanner.get_scan_aria_center(feature)
+                x_correction, y_correction = self.__calc_correction(actual_center, hypothetical_center)
+                self.__update_feature(feature, figure, x_correction, y_correction, feature_height, actual_center)
                 self.feature_scanner.go_to_feature(feature)
                 return x_correction, y_correction
         raise RuntimeError('feature not found')
 
-    def __update_feature(self, feature: Feature, figure, x_correction, y_correction, feature_height):
+    def __update_feature(self, feature: Feature, figure, x_correction, y_correction, feature_height, actual_center):
         feature.set_coordinates(
             feature.coordinates[0] + x_correction,
             feature.coordinates[1] + y_correction,
             feature_height,
             )
-        # todo расчет max_rad
+        feature.max_height = feature_height
+        feature.max_rad = self.feature_recognizer.calc_max_feature_rad(actual_center, figure)
         feature.perimeter_len = len(figure)
 
-    def __calc_correction(self, figure):
-        actual_center = self.feature_recognizer.get_center(figure)
-        x_correct = int(actual_center[0] - self.x_hypothetical_center)
-        y_correct = int(actual_center[1] - self.y_hypothetical_center)
+    def __calc_correction(self, actual_center: tuple, hypothetical_center: tuple):
+        x_correct = int(actual_center[0] - hypothetical_center[0])
+        y_correct = int(actual_center[1] - hypothetical_center[1])
         return x_correct, y_correct
 
     def __correct_delay(self, x: int, y: int):

@@ -25,3 +25,7 @@ class ScannerInterface(ABC):
     @abstractmethod
     def switch_scan(self, stop: bool) -> None:
         pass
+
+    @abstractmethod
+    def get_scan_aria_center(self, feature) -> tuple:
+        pass

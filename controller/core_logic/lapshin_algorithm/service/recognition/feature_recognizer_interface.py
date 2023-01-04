@@ -29,3 +29,7 @@ class FeatureRecognizerInterface(ABC):
     @abstractmethod
     def get_max_height(self, surface_copy: np.ndarray) -> int:
         pass
+
+    @abstractmethod
+    def calc_max_feature_rad(self, center: tuple, figure: np.ndarray) -> float:
+        pass

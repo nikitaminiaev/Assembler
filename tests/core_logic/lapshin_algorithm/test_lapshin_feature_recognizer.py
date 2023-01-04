@@ -41,11 +41,14 @@ class TestLapshinFeatureRecognizer(TestCase):
                                                                                                                  dtype='int8')))
 
     def test_calc_optimal_height(self) -> None:
-        arr = SurfaceGenerator(20, 20, [(5, 5), (10, 5), (15, 5), (5, 10), (10, 10), (15, 10)]).generate_noise_surface()
+        arr_noise = SurfaceGenerator(20, 20, [(5, 5), (10, 5), (15, 5), (5, 10), (10, 10), (15, 10)]).generate_noise_surface()
+        arr = SurfaceGenerator(20, 20, [(5, 5), (10, 5), (15, 5), (5, 10), (10, 10), (15, 10)]).generate()
 
+        optimal_height_noise = self.feature_recognizer.calc_optimal_height(arr_noise)
         optimal_height = self.feature_recognizer.calc_optimal_height(arr)
 
         self.assertEqual(21, optimal_height)
+        self.assertEqual(20, optimal_height_noise)
 
     def test_bypass_bypass_feature(self) -> None:
         surface = SurfaceGenerator(20, 20, [(10, 10)]).generate()
@@ -132,11 +135,11 @@ class TestLapshinFeatureRecognizer(TestCase):
         figure2 = self.feature_recognizer.recognize_figure((6, 9), surface, optimal_height)
         self.assertEqual(figure1.all(), figure2.all())
 
-        centr1 = self.feature_recognizer.get_center(figure1)
-        centr2 = self.feature_recognizer.get_center(figure2)
+        center1 = self.feature_recognizer.get_center(figure1)
+        center2 = self.feature_recognizer.get_center(figure2)
 
-        self.assertEqual(centr1, atom_cord)
-        self.assertEqual(centr2, atom_cord)
+        self.assertEqual(center1, atom_cord)
+        self.assertEqual(center2, atom_cord)
 
     points_in_aria = [
         (9, 9),
@@ -169,3 +172,34 @@ class TestLapshinFeatureRecognizer(TestCase):
 
         for point in self.points_not_in_aria:
             self.assertFalse(self.feature_recognizer.feature_in_aria(point, figure))
+
+    data = [
+        {'optimal_height': 21, 'start_point': (6, 9), 'expected': (2, 3)},
+        {'optimal_height': 22, 'start_point': (7, 8), 'expected': (1, 2)},
+    ]
+
+    def test_calc_max_feature_rad(self) -> None:
+        atom_cord = (8, 9)
+        surface = SurfaceGenerator(20, 20, [atom_cord]).generate()
+
+        for case in self.data:
+            figure = self.feature_recognizer.recognize_figure(case['start_point'], surface.copy(), case['optimal_height'])
+            center = self.feature_recognizer.get_center(figure)
+
+            rad = self.feature_recognizer.calc_max_feature_rad(center, figure)
+            self.assertGreater(rad, case['expected'][0])
+            self.assertLess(rad, case['expected'][1])
+
+    def test_recognize_feature(self):
+        atom_cord = (8, 9)
+        surface = SurfaceGenerator(20, 20, [atom_cord]).generate()
+
+        figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface.copy())
+        figure = next(figure_gen)
+
+        feature = self.feature_recognizer.recognize_feature(figure, surface.copy())
+
+        self.assertEqual(atom_cord + (24,), feature.coordinates)
+        self.assertEqual(len(figure), feature.perimeter_len)
+        self.assertEqual(24, feature.max_height)
+        self.assertEqual(2.2, round(feature.max_rad, 1))
