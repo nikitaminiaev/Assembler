@@ -17,10 +17,6 @@ class FeatureScanner(ScannerInterface):
         self.push_coord_to_mk = push_coord_to_mk
         self.scan_algorithm = ScanAlgorithms(delay)
 
-    def scan_aria_around_feature(self, feature: Feature) -> np.ndarray:
-        x_min, x_max, y_min, y_max = self.__calc_aria_borders(feature)
-        return self.scan_aria(x_min, y_min, x_max, y_max)
-
     def scan_aria(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> np.ndarray:
         self.set_x_func(
             (
@@ -58,13 +54,5 @@ class FeatureScanner(ScannerInterface):
     def switch_scan(self, stop: bool) -> None:
         self.scan_algorithm.stop = stop
 
-    def __calc_aria_borders(self, feature):
-        rad = int(round(feature.max_rad))
-        x_min = feature.coordinates[0] - rad * 3
-        y_min = feature.coordinates[1] - rad * 3
-        x_max = feature.coordinates[0] + rad * 3 + 1
-        y_max = feature.coordinates[1] + rad * 3 + 1
-        return x_min, x_max, y_min, y_max
-
     def get_scan_aria_center(self, surface: np.ndarray) -> tuple:
-        return (surface.shape[0] - 1) / 2, (surface.shape[0] - 1) / 2
+        return (surface.shape[1] - 1) / 2, (surface.shape[0] - 1) / 2

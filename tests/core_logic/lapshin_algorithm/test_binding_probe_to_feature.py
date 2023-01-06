@@ -23,11 +23,15 @@ class TestBindingProbeToFeature(TestCase):
         touching_surface_event = MagicMock()
         external_surface = MagicMock()
         push_coord_to_mk = MagicMock()
+        binding_in_delay = MagicMock()
+        allow_binding = MagicMock()
         scanner = FeatureScanner(get_val_func, set_x_func, set_y_func, touching_surface_event, external_surface, push_coord_to_mk, 0)
 
         self.binding_probe_to_feature = BindingProbeToFeature(
             LapshinFeatureRecognizer(),
-            scanner
+            scanner,
+            binding_in_delay,
+            allow_binding
         )
 
     def test_bind_to_feature(self) -> None:

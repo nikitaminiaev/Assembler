@@ -1,5 +1,6 @@
 from controller.core_logic.lapshin_algorithm.entity.feature import Feature
-
+from controller.core_logic.lapshin_algorithm.feature_collection.direction_generator_snake import DirectionGeneratorSnake
+import numpy as np
 
 class Node:
     def __init__(self, feature: Feature):
@@ -32,15 +33,22 @@ class DoublyLinkedList:
         self.current_node = n
         self.count += 1
 
-    def get_next_feature(self) -> Feature or None:
+    def get_current_feature(self) -> Feature or None:
         if self.list_is_empty() or self.current_node.next is None:
             return None
+        return self.current_node.item
+
+    def go_to_next_feature(self) -> Feature or None:
+        if self.list_is_empty() or self.current_node.next is None:
+            return None
+        # todo добавить физический переход к next
         self.current_node = self.current_node.next
         return self.current_node.item
 
-    def get_prev_feature(self) -> Feature or None:
+    def go_to_prev_feature(self) -> Feature or None:
         if self.list_is_empty() or self.current_node.prev is None:
             return None
+        # todo добавить физический переход к next
         self.current_node = self.current_node.prev
         return self.current_node.item
 
@@ -58,3 +66,6 @@ class DoublyLinkedList:
 
     def list_is_empty(self) -> bool:
         return self.start_node is None
+
+    def get_next_direction(self) -> np.ndarray:
+        return DirectionGeneratorSnake.generate_next_direction(self.count)
