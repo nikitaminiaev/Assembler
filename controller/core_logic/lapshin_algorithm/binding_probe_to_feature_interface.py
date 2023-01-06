@@ -12,3 +12,7 @@ class BindingProbeToFeatureInterface(ABC):
     @abstractmethod
     def return_to_feature(self, feature: Feature) -> Tuple[int, int]:
         pass
+
+    @abstractmethod
+    def set_stop(self, is_stop: bool) -> None:
+        pass

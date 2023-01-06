@@ -44,14 +44,16 @@ class FeatureSearcher:
 
     def find_first_feature(self):
         surface = self.feature_scanner.scan_aria()
-        figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface)
+        figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface.copy())
         figure = next(figure_gen)
-        feature = self.feature_recognizer.recognize_feature(figure, surface) #todo передавать сьюда surface ограниченную областью фичи
+        feature = self.feature_recognizer.recognize_feature(figure, surface)
         self.structure_of_feature.insert_to_end(feature)
         threading.Thread(target=self.binding_to_feature.bind_to_feature, args=(feature,)).start()
-        self.structure_of_feature.display()
+        # self.structure_of_feature.display()
 
     def find_next_feature(self):
+        self.binding_to_feature.set_stop(True)
+        surface = self.feature_scanner.scan_aria() # todo область текущей фичи + область предположительной
         pass
         # self.feature_scanner.go_in_direction()
 

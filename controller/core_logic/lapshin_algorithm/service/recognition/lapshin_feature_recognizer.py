@@ -14,8 +14,9 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
 
     def recognize_feature(self, figure: np.ndarray, surface: np.ndarray) -> Feature:
         center = self.get_center(figure)
-        max_height = self.get_max_height(surface.copy())
         max_rad = self.calc_max_feature_rad(center, figure)
+        rad = int(round(max_rad))
+        max_height = self.get_max_height(surface[center[1]-rad*2:center[1]+rad*2, center[0]-rad*2:center[0]+rad*2].copy())
         return FeatureFactory.create(len(figure), max_rad, center[0], center[1], max_height)
 
     def recognize_all_figure_in_aria(self, surface: np.ndarray) -> Iterator[np.ndarray]:

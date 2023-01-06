@@ -34,6 +34,7 @@ class TestBindingProbeToFeature(TestCase):
         surface = SurfaceGenerator(20, 20, [(10, 10)]).generate()
         self.binding_probe_to_feature.feature_scanner.external_surface = surface
         feature = Atom((9, 9, 20))
+        feature.max_rad = 2
         self.assertEqual(0, feature.perimeter_len)
 
         self.binding_probe_to_feature.return_to_feature(feature)

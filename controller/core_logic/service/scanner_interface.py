@@ -27,5 +27,5 @@ class ScannerInterface(ABC):
         pass
 
     @abstractmethod
-    def get_scan_aria_center(self, feature) -> tuple:
+    def get_scan_aria_center(self, surface: np.ndarray) -> tuple:
         pass

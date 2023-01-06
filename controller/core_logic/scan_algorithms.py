@@ -47,13 +47,13 @@ class ScanAlgorithms:
         for y in range(y_min, y_max + 1):
             yield {DTO_Y: y}
             if y % 2 == 0:
-                print(f'{int(y*100/y_max)}%')
+                # print(f'{int(y*100/y_max)}%')
                 for x in range(x_min, x_max + 1):
                     yield {DTO_X: x}
             else:
                 for x in range(x_max, x_min - 1, -1):
                     yield {DTO_X: x}
-        print('100%')
+        # print('100%')
 
     def __set_algorithm_x_or_y(self, coordinates: Tuple[int, int, int], set_x_or_y_func, touching_surface_event: Event):
         assert coordinates[2] < MAX_FIELD_SIZE

@@ -55,14 +55,17 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
         feature_height = self.feature_recognizer.get_max_height(surface.copy())
         figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface)
         for figure in figure_gen:
-            if self.feature_recognizer.feature_in_aria(self.feature_scanner.get_scan_aria_center(feature), figure):
+            if self.feature_recognizer.feature_in_aria(self.feature_scanner.get_scan_aria_center(surface), figure):
                 actual_center = self.feature_recognizer.get_center(figure)
-                hypothetical_center = self.feature_scanner.get_scan_aria_center(feature)
+                hypothetical_center = self.feature_scanner.get_scan_aria_center(surface)
                 x_correction, y_correction = self.__calc_correction(actual_center, hypothetical_center)
                 self.__update_feature(feature, figure, x_correction, y_correction, feature_height, actual_center)
                 self.feature_scanner.go_to_feature(feature)
                 return x_correction, y_correction
         raise RuntimeError('feature not found')
+
+    def set_stop(self, is_stop: bool) -> None:
+        self.stop = is_stop
 
     def __update_feature(self, feature: Feature, figure, x_correction, y_correction, feature_height, actual_center):
         feature.set_coordinates(
