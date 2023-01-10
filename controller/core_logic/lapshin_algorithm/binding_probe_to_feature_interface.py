@@ -20,3 +20,7 @@ class BindingProbeToFeatureInterface(ABC):
     @abstractmethod
     def set_stop(self, is_stop: bool) -> None:
         pass
+
+    @abstractmethod
+    def jumping(self, current_feature: Feature, next_feature: Feature) -> None:
+        pass

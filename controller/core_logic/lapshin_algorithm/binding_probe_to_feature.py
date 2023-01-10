@@ -79,6 +79,12 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
     def set_stop(self, is_stop: bool) -> None:
         self.stop = is_stop
 
+    def jumping(self, current_feature: Feature, next_feature: Feature) -> None:
+        self.binding_in_delay.wait()
+        self.allow_binding.clear()
+        #todo вычислять точный вектора до фич и усреднять вектор
+        pass
+
     def __update_feature_coord(self, feature: Feature, figure, x_correction, y_correction, feature_height, actual_center):
         feature.set_coordinates(
             feature.coordinates[0] + x_correction,

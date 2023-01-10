@@ -1,11 +1,15 @@
 import threading
 from threading import Event
+from typing import Tuple
+
 import numpy as np
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature_interface import BindingProbeToFeatureInterface
+from controller.core_logic.lapshin_algorithm.entity.feature import Feature
 from controller.core_logic.lapshin_algorithm.feature_collection.doubly_linked_list import DoublyLinkedList
 from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import \
     FeatureRecognizerInterface
 from controller.core_logic.lapshin_algorithm.service.scanner_around_feature import ScannerAroundFeature
+from controller.core_logic.lapshin_algorithm.service.vector_operations import VectorOperations
 from controller.core_logic.service.scanner_interface import ScannerInterface
 
 """
@@ -37,6 +41,8 @@ from controller.core_logic.service.scanner_interface import ScannerInterface
 
 class FeatureSearcher:
 
+    COS_QUARTER_PI = 0.7071
+
     def __init__(self,
                  binding_to_feature: BindingProbeToFeatureInterface,
                  feature_scanner: ScannerInterface,
@@ -61,9 +67,18 @@ class FeatureSearcher:
         while self.structure_of_feature.count < 5:
             self.binding_in_delay.wait()
             self.allow_binding.clear()
-            surface = self.scanner_around_feature.scan_aria_around_feature(self.structure_of_feature.get_current_feature(), 5)
+            surface = self.scanner_around_feature.scan_aria_around_feature(self.structure_of_feature.get_current_feature(), 5) #todo выделить в рекурсивную функцию
             self.allow_binding.set()
-            self.find_next_feature(surface)
+            try:
+                next_feature = self.find_next_feature(surface)
+            except RuntimeError:
+                self.binding_in_delay.wait()
+                self.allow_binding.clear()
+                surface = self.scanner_around_feature.scan_aria_around_feature(self.structure_of_feature.get_current_feature(), 7)
+                self.allow_binding.set()
+                next_feature = self.find_next_feature(surface)
+            current_feature = self.structure_of_feature.get_current_feature()
+            self.binding_to_feature.jumping(current_feature, next_feature)
 
     def find_first_feature(self, figure: np.ndarray, surface: np.ndarray):
         feature = self.feature_recognizer.recognize_feature(figure, surface)
@@ -71,51 +86,66 @@ class FeatureSearcher:
         self.binding_to_feature.set_current_feature(feature)
         threading.Thread(target=self.binding_to_feature.bind_to_current_feature).start()
 
-    def find_next_feature(self, surface: np.ndarray):
-        vectors_to_neighbors = self.__calc_vectors_to_neighbors(surface)
+    def find_next_feature(self, surface: np.ndarray) -> Feature:
+        current, neighbors = self.__get_figures_center(surface)
+        current_center = list(current.keys())[0]
+        neighbors_center = list(neighbors.keys())
+        vectors_to_neighbors = VectorOperations.calc_vectors_to_neighbors(current_center, neighbors_center)
         next_direction = self.structure_of_feature.get_next_direction()
+        vector_to_next_feature = self.__find_close_vector(vectors_to_neighbors, next_direction)
+        if vector_to_next_feature in None:
+            raise RuntimeError('next feature not found')
 
-        self.find_close_vector(vectors_to_neighbors, next_direction)
+        next_feature = self.feature_recognizer.recognize_feature(
+            neighbors[(current_center[0] + vector_to_next_feature[0], current_center[1] + vector_to_next_feature[1])],
+            surface
+        )
+        current_feature = self.structure_of_feature.get_current_feature()
+        if current_feature is not None:
+            current_feature: Feature
+            current_feature.vector_to_next = vector_to_next_feature
 
-        # расчитать угол между векторами направления движения и найденной фичой
-        # если угол > 90 то надо увеличивать аппертуру, чтобы искать дургие фичи
-        pass
-        # self.feature_scanner.go_in_direction()
+        return next_feature
 
     def bind_to_nearby_feature(self) -> None:  # в случае ошибки при сильном смещении
         pass
         # получить координаты из self.get_val_func
         # делать сканы по кругу и в каждом искать фичу
 
-    def __calc_vectors_to_neighbors(self, surface) -> np.ndarray:
+    def __get_figures_center(self, surface) -> Tuple[dict, dict]:
         figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface.copy())
-        neighbor_centers = []
-        current_center = None
+        neighbors = {}
+        current = None
         for figure in figure_gen:
-            if self.feature_recognizer.feature_in_aria(self.feature_scanner.get_scan_aria_center(surface), figure):
-                current_center = self.feature_recognizer.get_center(figure)
+            if self.feature_recognizer.feature_in_aria(self.feature_scanner.get_scan_aria_center(surface), figure):  # todo вычислять все ценрры и потом current_center тот который ближе всех к центра скана
+                current = {self.feature_recognizer.get_center(figure): figure}
                 continue
-            neighbor_centers.append(self.feature_recognizer.get_center(figure))
-        if current_center is None:
+            neighbors[self.feature_recognizer.get_center(figure)] = figure
+        if current is None:
             raise RuntimeError('center not found')
-        if len(neighbor_centers) == 0:
+        if len(neighbors) == 0:
             raise RuntimeError('neighbor not found')
-        vectors = np.array([[0, 0]], dtype='int8')
-        for neighbor_center in neighbor_centers:
-            vectors = np.append(vectors, [
-                [
-                    neighbor_center[0] - current_center[0],
-                    neighbor_center[1] - current_center[1]
-                ]
-            ], axis=0)
-        return np.delete(vectors, 0, 0)
+        return current, neighbors
 
-    def __calc_vectors_angle(self, v1: np.ndarray, v2: np.ndarray) -> float:
-        dot_pr = v1.dot(v2)
-        norms = np.linalg.norm(v1) * np.linalg.norm(v2)
-
-        return np.arccos(dot_pr / norms)
-
-    def find_close_vector(self, vectors_to_neighbors: np.ndarray, next_direction: np.ndarray) -> np.ndarray:
+    def __find_close_vector(self, vectors_to_neighbors: np.ndarray, next_direction: np.ndarray) -> np.ndarray or None:
+        """
+        диапазон допустимых углов углов
+            cos(0) - cos(pi/4)
+            cos(7pi/4) - cos(2pi)
+        """
+        optimal_angle = None
+        result = None
         for vector in vectors_to_neighbors:
-            angle = self.__calc_vectors_angle(next_direction, vector)
+            angle = VectorOperations.calc_vectors_cos_angle(next_direction, vector)
+            if angle < self.COS_QUARTER_PI:
+                continue
+            if optimal_angle is None:
+                optimal_angle = angle
+                result = vector
+                continue
+            if angle > optimal_angle:
+                optimal_angle = angle
+                result = vector
+        return result
+
+

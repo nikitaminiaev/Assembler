@@ -79,7 +79,7 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
             fig1 = figtr[1][figtr[0] == st]
             surface[np.min(fig1):np.max(fig1) + 1, st] = 0
 
-    def __bypass_feature(self, start_point: Tuple[int, int], optimal_height: int, surface: np.ndarray) -> np.ndarray:
+    def __bypass_feature(self, start_point: Tuple[int, int], optimal_height: int, surface: np.ndarray) -> np.ndarray:  #todo кандидат чтобы переписать в go
         x_start = start_point[0]
         y_start = start_point[1]
         points = np.array([[0, 0]], dtype='int8')
@@ -111,7 +111,7 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
     def __is_start_point(self, val: int) -> bool:
         return val > self.__optimal_height
 
-    def __gen_bypass_point(self, point: Tuple[int, int]):
+    def __gen_bypass_point(self, point: Tuple[int, int]): #todo кандидат чтобы переписать в go
         """
             обход 8-ми точек против часовой от стартовой
         """

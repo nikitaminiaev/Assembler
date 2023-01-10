@@ -8,6 +8,9 @@ class ScannerAroundFeature:
     def __init__(self, feature_scanner: ScannerInterface):
         self.feature_scanner = feature_scanner
 
+    def scan_aria_around_current_position(self) -> np.ndarray:
+        pass
+
     def scan_aria_around_feature(self, feature: Feature, rad_count: int) -> np.ndarray:
         x_min, x_max, y_min, y_max = self.__calc_aria_borders(feature, rad_count)
         return self.feature_scanner.scan_aria(x_min, y_min, x_max, y_max)
