@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from controller.core_logic.lapshin_algorithm.entity.feature import Feature
 from controller.core_logic.scan_algorithms import FIELD_SIZE
 
 
@@ -11,11 +10,11 @@ class ScannerInterface(ABC):
         pass
 
     @abstractmethod
-    def go_to_feature(self, feature: Feature) -> None:
+    def go_to_coordinate(self, *coordinate) -> None:
         pass
 
     @abstractmethod
-    def go_in_direction(self, vector: np.ndarray) -> None:
+    def go_to_direction(self, vector: np.ndarray) -> None:
         pass
 
     @abstractmethod
@@ -24,4 +23,8 @@ class ScannerInterface(ABC):
 
     @abstractmethod
     def get_scan_aria_center(self, surface: np.ndarray) -> tuple:
+        pass
+
+    @abstractmethod
+    def get_current_position(self) -> tuple:
         pass

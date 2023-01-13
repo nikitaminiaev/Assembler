@@ -36,7 +36,6 @@ class ServoController:
                 return
             if self.z_current == self.noise_surface[self.y_current, self.x_current]:
                 self.z_current = self.z_current + DEPARTURE_BY_Z
-                print(value)
                 self.external_send_func(f'{{"sensor": "surface", "z_val": {value}}}')
         if sensor == 'gen_new_noise': # имитация реальности
             self.generate_new_noise()

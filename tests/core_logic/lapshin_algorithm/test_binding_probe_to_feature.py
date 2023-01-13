@@ -36,23 +36,27 @@ class TestBindingProbeToFeature(TestCase):
 
     def test_bind_to_feature(self) -> None:
         surface = SurfaceGenerator(20, 20, [(10, 10)]).generate()
-        self.binding_probe_to_feature.feature_scanner.external_surface = surface
-        feature = Atom((9, 9, 20))
+        self.binding_probe_to_feature.scanner.external_surface = surface
+        any_val = 1
+        self.binding_probe_to_feature.scanner.get_val_func = MagicMock(side_effect=[9, 9, 27, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val])
+        feature = Atom((9, 9, 24))
         feature.max_rad = 2
         self.assertEqual(0, feature.perimeter_len)
 
-        self.binding_probe_to_feature.return_to_feature(feature)
+        correction = self.binding_probe_to_feature.return_to_feature(feature)
 
         height = self.binding_probe_to_feature.feature_recognizer.get_max_height(surface)
         self.assertNotEqual(0, feature.perimeter_len)
         self.assertEqual((10, 10, height), feature.coordinates)
-        self.binding_probe_to_feature.feature_scanner.set_x_func.assert_called_with((feature.coordinates[0], feature.coordinates[1], feature.coordinates[2] + 3))
-        self.binding_probe_to_feature.feature_scanner.set_y_func.assert_called_with((feature.coordinates[0], feature.coordinates[1], feature.coordinates[2] + 3))
+        self.binding_probe_to_feature.scanner.set_x_func.assert_called_with((any_val + correction[0], any_val, feature.max_height + 3))
+        self.binding_probe_to_feature.scanner.set_y_func.assert_called_with((any_val, any_val + correction[0], feature.max_height + 3))
 
     def test_feature_not_found(self) -> None:
         surface = SurfaceGenerator(20, 20, []).generate()
-        self.binding_probe_to_feature.feature_scanner.external_surface = surface
+        self.binding_probe_to_feature.scanner.external_surface = surface
         feature = Atom((9, 9, 20))
+        any_val = 1
+        self.binding_probe_to_feature.scanner.get_val_func = MagicMock(side_effect=[9, 9, 27, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val])
 
         self.assertRaises(RuntimeError, self.binding_probe_to_feature.return_to_feature, feature)
 

@@ -5,7 +5,7 @@ class VectorOperations:
 
     @staticmethod
     def calc_vectors_to_neighbors(current_center: tuple, neighbors_center: list) -> np.ndarray:
-        vectors = np.array([[0, 0]], dtype='int8')
+        vectors = np.array([[0, 0]])
         for center in neighbors_center:
             vectors = np.append(vectors, [
                 [
@@ -21,3 +21,7 @@ class VectorOperations:
         norms = np.linalg.norm(v1) * np.linalg.norm(v2)
 
         return dot_pr / norms
+
+    @staticmethod
+    def get_reverse_vector(v: np.ndarray) -> np.ndarray:
+        return np.array([-v[0], -v[1], v[2]])

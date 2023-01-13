@@ -14,10 +14,11 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
 
     def recognize_feature(self, figure: np.ndarray, surface: np.ndarray) -> Feature:
         center = self.get_center(figure)
+        center = tuple(int(item) for item in center)
         max_rad = self.calc_max_feature_rad(center, figure)
         rad = int(round(max_rad))
         max_height = self.get_max_height(surface[center[1]-rad*2:center[1]+rad*2, center[0]-rad*2:center[0]+rad*2].copy())
-        return FeatureFactory.create(len(figure), max_rad, center[0], center[1], max_height)
+        return FeatureFactory.create(len(figure), max_rad, *(*center, max_height))
 
     def recognize_all_figure_in_aria(self, surface: np.ndarray) -> Iterator[np.ndarray]:
         self.__optimal_height = self.calc_optimal_height(surface.copy())
@@ -45,13 +46,13 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
                     return True
         return False
 
-    def get_center(self, figure: np.ndarray) -> Tuple[int, int]:
+    def get_center(self, figure: np.ndarray) -> Tuple[float, float]:
         _x_list = figure[:, 0]
         _y_list = figure[:, 1]
         _len = len(figure)
         _x = sum(_x_list) / _len
         _y = sum(_y_list) / _len
-        return int(_x), int(_y)
+        return _x, _y       #todo убрать приведение к int
 
     def calc_optimal_height(self, surface_copy: np.ndarray) -> int: # todo сделать приватным
         def recur_clip(arr: np.ndarray, next_to_clip: int):

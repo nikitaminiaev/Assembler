@@ -1,5 +1,6 @@
 import sys, os
 
+
 root = sys.path[1]
 path = os.path.join(root, "stub_microcontroller")
 if path not in sys.path:
@@ -9,6 +10,7 @@ if path not in sys.path:
 from unittest import TestCase
 from controller.core_logic.lapshin_algorithm.service.vector_operations import VectorOperations
 import numpy as np
+
 
 class TestVectorOperations(TestCase):
     def test_calc_vectors_to_neighbors(self):
