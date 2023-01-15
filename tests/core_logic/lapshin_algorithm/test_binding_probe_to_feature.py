@@ -60,6 +60,8 @@ class TestBindingProbeToFeature(TestCase):
 
         self.assertRaises(RuntimeError, self.binding_probe_to_feature.return_to_feature, feature)
 
+    def test_jumping(self) -> None:
+        pass
 
     # todo def test_bind_to_feature_with_noise(self) -> None:
     #     self.BindingProbeToFeature.global_surface = SurfaceGenerator(20, 20, [(10, 10)]).generate_noise_surface()

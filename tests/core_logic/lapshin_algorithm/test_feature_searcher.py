@@ -7,7 +7,6 @@ if path not in sys.path:
     sys.path.insert(0, os.path.abspath("../../../stub_microcontroller"))
 
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature import BindingProbeToFeature
-from controller.core_logic.lapshin_algorithm.entity.atom import Atom
 from controller.core_logic.lapshin_algorithm.service.recognition.lapshin_feature_recognizer import \
     LapshinFeatureRecognizer
 from controller.core_logic.service.feature_scanner import FeatureScanner
@@ -67,23 +66,35 @@ class TestFeatureSearcher(TestCase):
         self.binding_probe_to_feature.scanner.get_val_func = MagicMock(
             side_effect=[9, 9, 27, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
                          any_val])
-        feature = Atom((9, 9, 24))
-        feature.max_rad = 2
-        self.assertEqual(0, feature.perimeter_len)
 
-        figure_gen = self.feature_searcher.feature_recognizer.recognize_all_figure_in_aria(surface.copy())
-        first_figure = next(figure_gen)
         self.binding_probe_to_feature.stop = True
-        self.feature_searcher.find_first_feature(first_figure, surface)
+        self.feature_searcher.find_first_feature(surface)
+        self.assertEqual(self.binding_probe_to_feature.current_feature.coordinates, (10, 10, 24))
+        self.assertEqual(self.binding_probe_to_feature.current_feature, self.feature_searcher.structure_of_feature.get_current_feature())
 
+    def test_find_next_feature(self):
+        vector_to_next_atom = np.array([6, 6, 24], dtype='int8')
+        surface = SurfaceGenerator(30, 20, [(6, 6), (6 + vector_to_next_atom[0], 6 + vector_to_next_atom[1])]).generate()
+        any_val = 1
+        self.binding_probe_to_feature.scanner.get_val_func = MagicMock(
+            side_effect=[9, 9, 27, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
+                         any_val])
 
+        self.binding_probe_to_feature.stop = True
+        self.feature_searcher.find_first_feature(surface)
 
+        surface = SurfaceGenerator(30, 20, [(15, 15), (15 + vector_to_next_atom[0], 15 + vector_to_next_atom[1])]).generate()
+
+        next_feature = self.feature_searcher.find_next_feature(surface)
+        self.assertIsNotNone(next_feature)
+
+        current_feature = self.feature_searcher.structure_of_feature.get_current_feature()
+        self.assertTrue((vector_to_next_atom == current_feature.vector_to_next).all())
+
+    #
     # def test_search_features(self):
     #     self.fail()
     #
-    #
-    # def test_find_next_feature(self):
-    #     self.fail()
-    #
+
     # def test_bind_to_nearby_feature(self):
     #     self.fail()

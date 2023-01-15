@@ -7,7 +7,6 @@ from controller.core_logic.lapshin_algorithm.entity.feature import Feature
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature_interface import BindingProbeToFeatureInterface
 from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import FeatureRecognizerInterface
 from controller.core_logic.lapshin_algorithm.service.scanner_around_feature import ScannerAroundFeature
-from controller.core_logic.lapshin_algorithm.service.vector_operations import VectorOperations
 from controller.core_logic.service.feature_scanner import ScannerInterface
 
 
@@ -77,15 +76,23 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
                 return correction
         raise RuntimeError('feature not found')
 
-    def jumping(self, current_feature: Feature, next_feature: Feature) -> None:
+    def jumping(self, current_feature: Feature, next_feature: Feature, jump_count: int) -> None:
         self.binding_in_delay.wait()
         self.allow_binding.clear()
-        self.scanner.go_to_direction(current_feature.vector_to_next)
-        x_correction, y_correction = self.return_to_feature(next_feature)
-        current_feature.vector_to_next[0] += x_correction
-        current_feature.vector_to_next[1] += y_correction
-        next_feature.vector_to_prev = VectorOperations.get_reverse_vector(current_feature.vector_to_next)
-        #todo вычислять точный вектора до фич и усреднять вектор
+        for i in range(jump_count):
+            if i % 2 == 0:
+                vector = current_feature.vector_to_next
+                feature = next_feature
+            else:
+                vector = next_feature.vector_to_prev
+                feature = current_feature
+            self.__refine_vector_to_feature(vector, feature)
+
+    def __refine_vector_to_feature(self, vector, feature):
+        self.scanner.go_to_direction(vector)
+        x_correction, y_correction = self.return_to_feature(feature)
+        vector[0] += x_correction
+        vector[1] += y_correction
 
     def set_stop(self, is_stop: bool) -> None:
         self.stop = is_stop

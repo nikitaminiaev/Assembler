@@ -22,5 +22,5 @@ class BindingProbeToFeatureInterface(ABC):
         pass
 
     @abstractmethod
-    def jumping(self, current_feature: Feature, next_feature: Feature) -> None:
+    def jumping(self, current_feature: Feature, next_feature: Feature, jump_count: int) -> None:
         pass

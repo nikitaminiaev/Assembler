@@ -30,13 +30,23 @@ class DoublyLinkedList:
         new_node = Node(feature)
         n.next = new_node
         new_node.prev = n
-        self.current_node = n
+        self.current_node = new_node
         self.count += 1
 
     def get_current_feature(self) -> Feature or None:
-        if self.list_is_empty() or self.current_node.next is None:
+        if self.list_is_empty() or self.current_node is None:
             return None
         return self.current_node.item
+
+    def get_next_feature(self) -> Feature or None:
+        if self.list_is_empty() or self.current_node.next is None:
+            return None
+        return self.current_node.next.item
+
+    def get_prev_feature(self) -> Feature or None:
+        if self.list_is_empty() or self.current_node.prev is None:
+            return None
+        return self.current_node.prev.item
 
     def go_to_next_feature(self) -> Feature or None:
         if self.list_is_empty() or self.current_node.next is None:
@@ -48,7 +58,7 @@ class DoublyLinkedList:
     def go_to_prev_feature(self) -> Feature or None:
         if self.list_is_empty() or self.current_node.prev is None:
             return None
-        # todo добавить физический переход к next
+        # todo добавить физический переход к prev
         self.current_node = self.current_node.prev
         return self.current_node.item
 

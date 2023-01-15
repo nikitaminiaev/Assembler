@@ -61,11 +61,9 @@ class FeatureSearcher:
 
     def search_features(self):
         surface = self.scanner.scan_aria() #todo избавиться от это-го (уйдет выше или другой метод)
-        figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface.copy())
-        first_figure = next(figure_gen)
-        self.find_first_feature(first_figure, surface)
+        self.find_first_feature(surface.copy())
 
-        while self.structure_of_feature.count < 5:
+        while self.structure_of_feature.count < 4:
             self.binding_in_delay.wait()
             self.allow_binding.clear()
             surface = self.scanner_around_feature.scan_aria_around_feature(self.structure_of_feature.get_current_feature(), 5) #todo выделить в рекурсивную функцию
@@ -78,31 +76,40 @@ class FeatureSearcher:
                 surface = self.scanner_around_feature.scan_aria_around_feature(self.structure_of_feature.get_current_feature(), 7)
                 self.allow_binding.set()
                 next_feature = self.find_next_feature(surface)
-            current_feature = self.structure_of_feature.get_current_feature()
-            self.binding_to_feature.jumping(current_feature, next_feature)
 
-    def find_first_feature(self, figure: np.ndarray, surface: np.ndarray):
-        feature = self.feature_recognizer.recognize_feature(figure, surface)
+            current_feature = self.structure_of_feature.get_current_feature()
+            self.binding_to_feature.jumping(current_feature, next_feature, 5)
+
+            self.structure_of_feature.insert_to_end(next_feature)
+            self.binding_to_feature.set_current_feature(next_feature)
+            self.allow_binding.set()
+
+    def find_first_feature(self, surface: np.ndarray):
+        figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface.copy())
+        first_figure = next(figure_gen)
+        feature = self.feature_recognizer.recognize_feature(first_figure, surface)
         self.structure_of_feature.insert_to_end(feature)
         self.scanner.go_to_coordinate(*feature.coordinates)
         self.binding_to_feature.set_current_feature(feature)
         self.allow_binding.set()
         threading.Thread(target=self.binding_to_feature.bind_to_current_feature).start()
 
-    def find_next_feature(self, surface: np.ndarray) -> Feature:
+    def find_next_feature(self, surface: np.ndarray) -> Feature: #TODO сделать рефакторинг функции, выделить приватный метод
         current, neighbors = self.__get_figures_center(surface)
         current_center = list(current.keys())[0]
         neighbors_center = list(neighbors.keys())
         vectors_to_neighbors = VectorOperations.calc_vectors_to_neighbors(current_center, neighbors_center)
         next_direction = self.structure_of_feature.get_next_direction()
         vector_to_next_feature = self.__find_close_vector(vectors_to_neighbors, next_direction)
-        if vector_to_next_feature in None:
+        if vector_to_next_feature is None:
             raise RuntimeError('next feature not found')
 
         next_feature = self.feature_recognizer.recognize_feature(
             neighbors[(current_center[0] + vector_to_next_feature[0], current_center[1] + vector_to_next_feature[1])],
             surface
         )
+        vector_to_next_feature = np.append(vector_to_next_feature, next_feature.max_height)
+        next_feature.vector_to_prev = VectorOperations.get_reverse_vector(vector_to_next_feature)
         current_feature = self.structure_of_feature.get_current_feature()
         if current_feature is not None:
             current_feature: Feature
@@ -120,12 +127,13 @@ class FeatureSearcher:
         neighbors = {}
         current = None
         for figure in figure_gen:
-            if self.feature_recognizer.feature_in_aria(self.scanner.get_scan_aria_center(surface), figure):  # todo вычислять все ценрры и потом current_center тот который ближе всех к центра скана
+            center = self.scanner.get_scan_aria_center(surface)
+            if self.feature_recognizer.feature_in_aria(tuple(int(item) for item in center), figure):  # todo вычислять все ценрры и потом current_center тот который ближе всех к центра скана
                 current = {self.feature_recognizer.get_center(figure): figure}
                 continue
             neighbors[self.feature_recognizer.get_center(figure)] = figure
         if current is None:
-            raise RuntimeError('center not found')
+            raise RuntimeError('current not found')
         if len(neighbors) == 0:
             raise RuntimeError('neighbors not found')
         return current, neighbors
@@ -140,7 +148,7 @@ class FeatureSearcher:
         result = None
         for vector in vectors_to_neighbors:
             angle = VectorOperations.calc_vectors_cos_angle(next_direction, vector)
-            if angle < self.COS_QUARTER_PI:
+            if angle < self.COS_QUARTER_PI:   #todo константу в параметр, функцию в VectorOperations
                 continue
             if optimal_angle is None:
                 optimal_angle = angle

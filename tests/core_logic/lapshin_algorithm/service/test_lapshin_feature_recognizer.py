@@ -3,7 +3,7 @@ root = sys.path[1]
 path = os.path.join(root, "stub_microcontroller")
 if path not in sys.path:
     sys.path.insert(0, path)
-    sys.path.insert(0, os.path.abspath("../../../stub_microcontroller"))
+    sys.path.insert(0, os.path.abspath("../../../../stub_microcontroller"))
 
 from controller.core_logic.lapshin_algorithm.service.recognition.lapshin_feature_recognizer import LapshinFeatureRecognizer
 from stub_microcontroller.surface_generator import SurfaceGenerator
@@ -54,29 +54,21 @@ class TestLapshinFeatureRecognizer(TestCase):
         surface = SurfaceGenerator(20, 20, [(10, 10)]).generate()
         optimal_height = 21
 
-        figure_probe = np.array([[7, 8],
-                                 [8, 7],
-                                 [9, 7],
-                                 [10, 7],
-                                 [11, 7],
-                                 [12, 7],
-                                 [13, 8],
-                                 [13, 9],
-                                 [13, 10],
-                                 [13, 11],
-                                 [13, 12],
-                                 [12, 13],
-                                 [11, 13],
-                                 [10, 13],
-                                 [9, 13],
-                                 [8, 13],
-                                 [7, 12],
-                                 [7, 11],
-                                 [7, 10],
-                                 [7, 9]], dtype='int8')
+        figure_probe = np.array([[ 9,  8],
+                                 [10,  8],
+                                 [11,  8],
+                                 [12,  9],
+                                 [12, 10],
+                                 [12, 11],
+                                 [11, 12],
+                                 [10, 12],
+                                 [ 9, 12],
+                                 [ 8, 11],
+                                 [ 8, 10],
+                                 [ 8,  9]], dtype='int8')
 
         figure = self.feature_recognizer._LapshinFeatureRecognizer__bypass_feature((8, 9), optimal_height, surface)
-        self.assertEqual(figure_probe.all(), figure.all())
+        self.assertTrue(np.array_equal(figure_probe, figure))
 
     zero_points = [
         (10, 10),
@@ -133,7 +125,10 @@ class TestLapshinFeatureRecognizer(TestCase):
 
         figure1 = self.feature_recognizer._LapshinFeatureRecognizer__bypass_feature((10, 9), optimal_height, surface)
         figure2 = self.feature_recognizer.recognize_figure((6, 9), surface, optimal_height)
-        self.assertEqual(figure1.all(), figure2.all())
+
+        figure1.sort(axis=0)
+        figure2.sort(axis=0)
+        self.assertTrue(np.array_equal(figure1, figure2))
 
         center1 = self.feature_recognizer.get_center(figure1)
         center2 = self.feature_recognizer.get_center(figure2)
