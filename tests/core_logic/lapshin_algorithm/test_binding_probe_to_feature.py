@@ -1,4 +1,7 @@
 import sys, os
+
+
+from controller.core_logic.lapshin_algorithm.service.vector_operations import VectorOperations
 root = sys.path[1]
 path = os.path.join(root, "stub_microcontroller")
 if path not in sys.path:
@@ -12,7 +15,7 @@ from controller.core_logic.lapshin_algorithm.service.recognition.lapshin_feature
 from unittest.mock import MagicMock
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature import BindingProbeToFeature
 from stub_microcontroller.surface_generator import SurfaceGenerator
-
+import numpy as np
 
 class TestBindingProbeToFeature(TestCase):
 
@@ -61,7 +64,25 @@ class TestBindingProbeToFeature(TestCase):
         self.assertRaises(RuntimeError, self.binding_probe_to_feature.return_to_feature, feature)
 
     def test_jumping(self) -> None:
-        pass
+        vector_to_next_atom = np.array([6.0, 6.0, 24.0])
+        surface = SurfaceGenerator(30, 20, [(15, 15), (15 + int(vector_to_next_atom[0]), 15 + int(vector_to_next_atom[1]))]).generate()
+        self.binding_probe_to_feature.scanner.external_surface = surface
+        any_val = 1
+        self.binding_probe_to_feature.scanner.get_val_func = MagicMock(
+            side_effect=[any_val, any_val, any_val, any_val,
+                         20, 21, 27,
+                         any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
+                         14, 14, 27,
+                         any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
+                         ])
+        current_feature = Atom((15,15,24))
+        current_feature.max_rad = 3
+        current_feature.vector_to_next = vector_to_next_atom
+        next_feature = Atom((21,21,24))
+        next_feature.max_rad = 3
+        self.binding_probe_to_feature.jumping(current_feature, next_feature, 2)
+
+        self.assertTrue((current_feature.vector_to_next == VectorOperations.get_reverse_vector(next_feature.vector_to_prev)).all())
 
     # todo def test_bind_to_feature_with_noise(self) -> None:
     #     self.BindingProbeToFeature.global_surface = SurfaceGenerator(20, 20, [(10, 10)]).generate_noise_surface()

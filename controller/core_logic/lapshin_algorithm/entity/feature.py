@@ -1,3 +1,4 @@
+import numpy as np
 
 
 class Feature:
@@ -12,3 +13,12 @@ class Feature:
 
     def set_coordinates(self, *args):
         self.coordinates = args
+
+    def to_string(self) -> str:
+        vector_to_next_str = None
+        vector_to_prev_str = None
+        if self.vector_to_next is not None:
+            vector_to_next_str = np.array2string(self.vector_to_next)
+        if self.vector_to_prev is not None:
+            vector_to_prev_str = np.array2string(self.vector_to_prev)
+        return f"{self.max_rad}, {self.max_height}, {self.perimeter_len}, {vector_to_next_str}, {vector_to_prev_str}"

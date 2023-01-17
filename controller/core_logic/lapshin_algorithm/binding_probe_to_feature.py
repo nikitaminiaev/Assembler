@@ -7,6 +7,7 @@ from controller.core_logic.lapshin_algorithm.entity.feature import Feature
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature_interface import BindingProbeToFeatureInterface
 from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import FeatureRecognizerInterface
 from controller.core_logic.lapshin_algorithm.service.scanner_around_feature import ScannerAroundFeature
+from controller.core_logic.lapshin_algorithm.service.vector_operations import VectorOperations
 from controller.core_logic.service.feature_scanner import ScannerInterface
 
 
@@ -66,11 +67,12 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
         surface = self.scanner_around_feature.scan_aria_around_current_position(int(round(feature.max_rad)) * 3)
         feature_height = self.feature_recognizer.get_max_height(surface.copy())
         figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface)
+        scan_center = self.scanner.get_scan_aria_center(surface)
+        scan_center_int = tuple(int(item) for item in scan_center)
         for figure in figure_gen:
-            if self.feature_recognizer.feature_in_aria(self.scanner.get_scan_aria_center(surface), figure):
+            if self.feature_recognizer.feature_in_aria(scan_center_int, figure):
                 actual_center = self.feature_recognizer.get_center(figure)
-                hypothetical_center = self.scanner.get_scan_aria_center(surface)
-                correction = self.__calc_correction(actual_center, hypothetical_center)
+                correction = self.__calc_correction(actual_center, scan_center)
                 self.__update_feature_coord(feature, figure, correction, feature_height, actual_center)
                 self.scanner.go_to_direction(np.asarray((*correction, feature_height)))
                 return correction
@@ -79,20 +81,30 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
     def jumping(self, current_feature: Feature, next_feature: Feature, jump_count: int) -> None:
         self.binding_in_delay.wait()
         self.allow_binding.clear()
+        vector = current_feature.vector_to_next
+        on_next_feature = False
         for i in range(jump_count):
             if i % 2 == 0:
-                vector = current_feature.vector_to_next
                 feature = next_feature
+                vector = self.__refine_vector_to_feature(vector, feature, i+1)
+                on_next_feature = False
             else:
-                vector = next_feature.vector_to_prev
                 feature = current_feature
-            self.__refine_vector_to_feature(vector, feature)
+                reverse_vector = self.__refine_vector_to_feature(VectorOperations.get_reverse_vector(vector), feature, i+1)
+                vector = VectorOperations.get_reverse_vector(reverse_vector)
+                on_next_feature = True
+        if not on_next_feature:
+            self.scanner.go_to_direction(vector)
+        current_feature.vector_to_next = vector
+        next_feature.vector_to_prev = VectorOperations.get_reverse_vector(vector)
 
-    def __refine_vector_to_feature(self, vector, feature):
+    def __refine_vector_to_feature(self, vector, feature, contribution_coefficient: int) -> np.ndarray:
         self.scanner.go_to_direction(vector)
         x_correction, y_correction = self.return_to_feature(feature)
-        vector[0] += x_correction
-        vector[1] += y_correction
+        #todo логирование correction
+        vector[0] += x_correction / contribution_coefficient
+        vector[1] += y_correction / contribution_coefficient
+        return vector
 
     def set_stop(self, is_stop: bool) -> None:
         self.stop = is_stop

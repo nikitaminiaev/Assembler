@@ -23,7 +23,7 @@ ATOMS = [
     (40 + OFFSET, 45 + OFFSET),
     (40 + OFFSET, 65 + OFFSET),
     # (50 + OFFSET, 10 + OFFSET),
-    # (50 + OFFSET, 20 + OFFSET),
+    (50 + OFFSET, 20 + OFFSET),
     (50 + OFFSET, 30 + OFFSET),
     (50 + OFFSET, 40 + OFFSET),
     (50 + OFFSET, 50 + OFFSET),

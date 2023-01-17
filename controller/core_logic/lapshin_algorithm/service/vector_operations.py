@@ -25,3 +25,11 @@ class VectorOperations:
     @staticmethod
     def get_reverse_vector(v: np.ndarray) -> np.ndarray:
         return np.array([-v[0], -v[1], v[2]])
+
+    @staticmethod
+    def get_vector_between_to_point(p1: tuple, p2: tuple) -> np.ndarray:
+        return np.array([p2[0] - p1[0], p2[1] - p1[1]])
+
+    @staticmethod
+    def get_vector_len(vector: np.ndarray) -> float:
+        return np.linalg.norm(vector)

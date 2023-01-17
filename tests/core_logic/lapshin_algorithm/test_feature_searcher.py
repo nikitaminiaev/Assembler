@@ -64,8 +64,7 @@ class TestFeatureSearcher(TestCase):
         self.binding_probe_to_feature.scanner.external_surface = surface
         any_val = 1
         self.binding_probe_to_feature.scanner.get_val_func = MagicMock(
-            side_effect=[9, 9, 27, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
-                         any_val])
+            side_effect=[any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val])
 
         self.binding_probe_to_feature.stop = True
         self.feature_searcher.find_first_feature(surface)
@@ -77,7 +76,7 @@ class TestFeatureSearcher(TestCase):
         surface = SurfaceGenerator(30, 20, [(6, 6), (6 + vector_to_next_atom[0], 6 + vector_to_next_atom[1])]).generate()
         any_val = 1
         self.binding_probe_to_feature.scanner.get_val_func = MagicMock(
-            side_effect=[9, 9, 27, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
+            side_effect=[any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
                          any_val])
 
         self.binding_probe_to_feature.stop = True

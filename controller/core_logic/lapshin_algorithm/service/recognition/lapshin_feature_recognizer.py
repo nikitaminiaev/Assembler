@@ -3,6 +3,7 @@ import numpy as np
 from controller.core_logic.lapshin_algorithm.entity.feature import Feature
 from controller.core_logic.lapshin_algorithm.service.feature_factory import FeatureFactory
 from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import FeatureRecognizerInterface
+from controller.core_logic.lapshin_algorithm.service.vector_operations import VectorOperations
 
 
 class LapshinFeatureRecognizer(FeatureRecognizerInterface):
@@ -71,7 +72,7 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
              point[0] = point[0] - center[0]
              point[1] = point[1] - center[1]
 
-         return max(np.linalg.norm(vector) for vector in figure)
+         return max(VectorOperations.get_vector_len(vector) for vector in figure)
 
 
     def __reset_to_zero_feature_area(self, figure: np.ndarray, surface: np.ndarray):

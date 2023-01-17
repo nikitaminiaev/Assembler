@@ -26,7 +26,6 @@ class DoublyLinkedList:
 
         while n.next is not None:
             n = n.next
-            #todo добавить физический переход к next
         new_node = Node(feature)
         n.next = new_node
         new_node.prev = n
@@ -71,6 +70,7 @@ class DoublyLinkedList:
             n = self.start_node
             while n is not None:
                 print("Element is: ", n.item)
+                print("feature ", n.item.to_string())
                 n = n.next
         print("\n")
 

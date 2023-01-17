@@ -62,27 +62,29 @@ class FeatureSearcher:
     def search_features(self):
         surface = self.scanner.scan_aria() #todo избавиться от это-го (уйдет выше или другой метод)
         self.find_first_feature(surface.copy())
-
-        while self.structure_of_feature.count < 4:
+        #todo проверить везде что корректно передается surface.copy()
+        while self.structure_of_feature.count < 3:
             self.binding_in_delay.wait()
             self.allow_binding.clear()
-            surface = self.scanner_around_feature.scan_aria_around_feature(self.structure_of_feature.get_current_feature(), 5) #todo выделить в рекурсивную функцию
+            current_feature = self.structure_of_feature.get_current_feature()
+            surface = self.scanner_around_feature.scan_aria_around_current_position(current_feature.max_rad*5) #todo выделить в рекурсивную функцию
             self.allow_binding.set()
             try:
                 next_feature = self.find_next_feature(surface)
             except RuntimeError:
                 self.binding_in_delay.wait()
                 self.allow_binding.clear()
-                surface = self.scanner_around_feature.scan_aria_around_feature(self.structure_of_feature.get_current_feature(), 7)
+                surface = self.scanner_around_feature.scan_aria_around_current_position(current_feature.max_rad*7)
                 self.allow_binding.set()
                 next_feature = self.find_next_feature(surface)
 
-            current_feature = self.structure_of_feature.get_current_feature()
             self.binding_to_feature.jumping(current_feature, next_feature, 5)
 
             self.structure_of_feature.insert_to_end(next_feature)
             self.binding_to_feature.set_current_feature(next_feature)
             self.allow_binding.set()
+        self.binding_to_feature.set_stop(True)
+        self.structure_of_feature.display()
 
     def find_first_feature(self, surface: np.ndarray):
         figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface.copy())
@@ -95,7 +97,7 @@ class FeatureSearcher:
         threading.Thread(target=self.binding_to_feature.bind_to_current_feature).start()
 
     def find_next_feature(self, surface: np.ndarray) -> Feature: #TODO сделать рефакторинг функции, выделить приватный метод
-        current, neighbors = self.__get_figures_center(surface)
+        current, neighbors = self.__get_figures_center(surface.copy())
         current_center = list(current.keys())[0]
         neighbors_center = list(neighbors.keys())
         vectors_to_neighbors = VectorOperations.calc_vectors_to_neighbors(current_center, neighbors_center)
@@ -125,17 +127,23 @@ class FeatureSearcher:
     def __get_figures_center(self, surface) -> Tuple[dict, dict]:
         figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface.copy())
         neighbors = {}
-        current = None
+        aria_center = self.scanner.get_scan_aria_center(surface)
+        vectors_len = {}
         for figure in figure_gen:
-            center = self.scanner.get_scan_aria_center(surface)
-            if self.feature_recognizer.feature_in_aria(tuple(int(item) for item in center), figure):  # todo вычислять все ценрры и потом current_center тот который ближе всех к центра скана
-                current = {self.feature_recognizer.get_center(figure): figure}
-                continue
-            neighbors[self.feature_recognizer.get_center(figure)] = figure
-        if current is None:
-            raise RuntimeError('current not found')
+            figure_center = self.feature_recognizer.get_center(figure)
+            vector_to_center = VectorOperations.get_vector_between_to_point(figure_center, aria_center)
+            vectors_len[VectorOperations.get_vector_len(vector_to_center)] = figure_center
+            neighbors[figure_center] = figure
+        if len(vectors_len) == 0:
+            #todo логирвоание surface
+            raise RuntimeError('figure not found')
+        min_vector = min(vectors_len.keys())
+        current = {vectors_len[min_vector]: neighbors[vectors_len[min_vector]]}
+        del neighbors[list(current.keys())[0]]
         if len(neighbors) == 0:
             raise RuntimeError('neighbors not found')
+        if current is None:
+            raise RuntimeError('current not found')
         return current, neighbors
 
     def __find_close_vector(self, vectors_to_neighbors: np.ndarray, next_direction: np.ndarray) -> np.ndarray or None:
