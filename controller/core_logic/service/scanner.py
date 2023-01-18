@@ -1,12 +1,11 @@
 from threading import Event
 import numpy as np
 from controller.constants import DTO_Y, DTO_Z, DTO_X
-from controller.core_logic.lapshin_algorithm.entity.feature import Feature
 from controller.core_logic.scan_algorithms import ScanAlgorithms, FIELD_SIZE
 from controller.core_logic.service.scanner_interface import ScannerInterface
 
 
-class FeatureScanner(ScannerInterface):
+class Scanner(ScannerInterface):
 
     def __init__(self, get_val_func, set_x_func, set_y_func, touching_surface_event: Event, external_surface, push_coord_to_mk, delay: float):
         self.external_surface = external_surface

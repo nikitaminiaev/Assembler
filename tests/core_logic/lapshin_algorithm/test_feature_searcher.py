@@ -9,7 +9,7 @@ if path not in sys.path:
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature import BindingProbeToFeature
 from controller.core_logic.lapshin_algorithm.service.recognition.lapshin_feature_recognizer import \
     LapshinFeatureRecognizer
-from controller.core_logic.service.feature_scanner import FeatureScanner
+from controller.core_logic.service.scanner import Scanner
 from stub_microcontroller.surface_generator import SurfaceGenerator
 from unittest import TestCase
 from unittest.mock import MagicMock
@@ -27,7 +27,7 @@ class TestFeatureSearcher(TestCase):
         push_coord_to_mk = MagicMock()
         binding_in_delay = MagicMock()
         allow_binding = MagicMock()
-        scanner = FeatureScanner(get_val_func, set_x_func, set_y_func, touching_surface_event, external_surface, push_coord_to_mk, 0)
+        scanner = Scanner(get_val_func, set_x_func, set_y_func, touching_surface_event, external_surface, push_coord_to_mk, 0)
 
         self.binding_probe_to_feature = BindingProbeToFeature(
             LapshinFeatureRecognizer(),

@@ -48,7 +48,7 @@ class GraphFrame(tk.Frame):
         label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
         self.is_new_point = False
-        self.quit = False
+        self.stop_graph = False
         self.x_arr, self.y_arr = np.meshgrid(np.arange(0, MAX_FIELD_SIZE, 1), np.arange(0, MAX_FIELD_SIZE, 1))
         self.surface = None
         self.tool_tip = None
@@ -126,15 +126,19 @@ class GraphFrame(tk.Frame):
             print(traceback.format_exc())
             print(str(e))
 
+    def close_matplot(self):
+        plt.close('all')
+
     def draw_graph(self):
-        while not self.quit:
+        while not self.stop_graph:
             try:
                 time.sleep(SLEEP_BETWEEN_DRAW_GRAPH_FRAME)
                 self.canvas.draw_idle()
             except Exception as e:
-                self.quit = True
+                self.stop_graph = True
                 print(traceback.format_exc())
                 print(str(e))
+                self.close_matplot()
                 self.destroy()
                 exit(0)
 

@@ -8,7 +8,7 @@ from controller.core_logic.lapshin_algorithm.binding_probe_to_feature_interface 
 from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import FeatureRecognizerInterface
 from controller.core_logic.lapshin_algorithm.service.scanner_around_feature import ScannerAroundFeature
 from controller.core_logic.lapshin_algorithm.service.vector_operations import VectorOperations
-from controller.core_logic.service.feature_scanner import ScannerInterface
+from controller.core_logic.service.scanner import ScannerInterface
 
 
 
@@ -76,6 +76,7 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
                 self.__update_feature_coord(feature, figure, correction, feature_height, actual_center)
                 self.scanner.go_to_direction(np.asarray((*correction, feature_height)))
                 return correction
+        print(surface) #todo логировать
         raise RuntimeError('feature not found')
 
     def jumping(self, current_feature: Feature, next_feature: Feature, jump_count: int) -> None:

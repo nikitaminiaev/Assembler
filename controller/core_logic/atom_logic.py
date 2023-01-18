@@ -8,7 +8,7 @@ from controller.core_logic.dto import Dto
 from controller.core_logic.lapshin_algorithm.factory import Factory
 from controller.core_logic.origin import Origin
 from controller.core_logic.scan_transformer import ScanTransformer
-from controller.core_logic.service.feature_scanner import FeatureScanner
+from controller.core_logic.service.scanner import Scanner
 from controller.core_logic.tool import Tool
 from sockets.server import Server
 
@@ -43,13 +43,13 @@ class AtomsLogic:
         self.scan_transformer = ScanTransformer()
         self.lapshin_algorithm = Factory.create_lapshin_feature_searcher(self.create_scanner(self.touching_surface_event))
 
-    def create_scanner(self, touching_surface_event) -> FeatureScanner:
+    def create_scanner(self, touching_surface_event) -> Scanner:
         get_val_func = self.get_dto_val
         set_x_func = self.set_val_dto_curried(DTO_X)
         set_y_func = self.set_val_dto_curried(DTO_Y)
         push_coord_to_mk = self.push_coord_to_mk
 
-        return FeatureScanner(
+        return Scanner(
             get_val_func,
             set_x_func,
             set_y_func,

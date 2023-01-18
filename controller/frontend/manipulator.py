@@ -1,4 +1,6 @@
 import traceback
+from time import sleep
+
 import matplotlib as plt
 from controller.core_logic.scan_algorithms import FIELD_SIZE
 from controller.core_logic.exceptions.touching_surface import TouchingSurface
@@ -57,6 +59,12 @@ class Manipulator(tk.Tk):
             self.destroy()
             exit(0)
 
+    def custom_destroy(self):
+        self.constructorFrames.close()
+        sleep(DELAY_BEFORE_DESTROY)
+        self.graph.destroy()
+        self.destroy()
+        exit(0)
 
 class ConstructorFrames:
 
@@ -64,29 +72,58 @@ class ConstructorFrames:
         self.tk = tk
         self.__canvas = Canvas(tk, height=CANVAS_SIZE, width=CANVAS_SIZE)
 
-        self.__frame_top = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__frame_top.place(relx=0.15, rely=0.05, relwidth=RELWIDTH, relheight=0.50)
-        self.__bottom_area_1 = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__bottom_area_1.place(relx=0.15, rely=0.60, relwidth=RELWIDTH, relheight=0.05)
-        self.__bottom_area_2 = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__bottom_area_2.place(relx=0.15, rely=0.65, relwidth=RELWIDTH, relheight=0.05)
-        self.__bottom_area_3 = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__bottom_area_3.place(relx=0.15, rely=0.70, relwidth=RELWIDTH, relheight=0.05)
-        self.__bottom_area_3 = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__bottom_area_3.place(relx=0.15, rely=0.75, relwidth=RELWIDTH, relheight=0.05)
-        self.__bottom_area_4 = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__bottom_area_4.place(relx=0.15, rely=0.80, relwidth=RELWIDTH, relheight=0.05)
-        self.__bottom_area_5 = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__bottom_area_5.place(relx=0.15, rely=0.85, relwidth=RELWIDTH, relheight=0.05)
-        self.__frame_debug = Frame(tk, bg=FRAME_COLOR, bd=2)
-        self.__frame_debug.place(relx=0.15, rely=0.90, relwidth=RELWIDTH, relheight=0.05)
+        self.create_frames(tk)
+        self.crate_scales()
+        self.create_entrys_and_labels()
+        self.create_buttons()
 
+        self.scanner = self.tk.graph.frame.atoms_logic.create_scanner(self.tk.graph.frame.atoms_logic.touching_surface_event)
+        self.__bind_scale_to_tip()
+
+    def create_buttons(self):
+        self.__build_surface_btn = Button(self.__bottom_area_1, text='on/off build surface',
+                                          command=self.__build_surface)  # не строит поверхноть, но копит данные о ней
+        self.__remember_surface_btn = Button(self.__bottom_area_1, text='remember surface',
+                                             command=self.__remember_surface)
+        self.__remove_noise_btn = Button(self.__bottom_area_1, text='remove noise',
+                                         command=self.__remove_noise)
+
+        self.__gen_new_noise_btn = Button(self.__bottom_area_2, text='gen new noise',
+                                          command=self.__gen_new_noise)
+        # self.__is_it_surface_btn = Button(self.__frame_bottom_1, text='is it surface', bg='#595959',
+        # command=self.__is_it_surface)   # кнопка для дебага
+        self.__scan_mode = Button(self.__bottom_area_2, text='on/off scan mode',
+                                  command=self.__scan_mode)
+        self.__del_surface_data_btn = Button(self.__bottom_area_2, text='del surface', command=self.__del_surface_data)
+
+        self.__stop_render_btn = Button(self.__bottom_area_3, text='stop/go render',
+                                        command=self.__stop_go_render)  # stop/go __drow_graph: canvas.draw_idle()
+
+        self.__auto_on_off_btn = Button(self.__bottom_area_4, text='go/stop auto_scan', bg='#595959', command=self.auto)
+
+        self.__bind_to_tip_btn = Button(self.__bottom_area_5, text='bind to tip', command=self.__bind_scale_to_tip)
+        self.__bind_to_origin_btn = Button(self.__bottom_area_5, text='bind to origin', command=self.__bind_to_origin)
+        self.__set_origin_btn = Button(self.__bottom_area_5, text='set new origin', command=self.__set_new_origin)
+        self.__go_scan_count_btn = Button(self.__bottom_area_5, text='go scan count', command=self.__go_scan_count)
+        # self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
+        # self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
+        # self.__is_atom_btn = Button(self.__frame_bottom_2, text='is_atom', command=self.__is_atom) # кнопка для дебага
+        # self.__is_atom_captured_btn = Button(self.__bottom_area_5, text='is_atom_captured', command=self.__is_atom_captured)
+
+        self.__save_data_btn = Button(self.__frame_debug, text='save data', command=self.__save_file)
+        self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
+
+        self.default_bg = self.__stop_render_btn.cget("background")
+
+    def crate_scales(self):
         self.__scale_z = Scale(self.__frame_top, from_=MAX, to=MIN, length=LENGTH, label='z',
                                command=self.__transmitting_value_z)
         self.__scale_x = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='x',
                                command=self.__transmitting_value_x)
         self.__scale_y = Scale(self.__frame_top, orient='horizontal', from_=MIN, to=MAX, length=LENGTH, label='y',
                                command=self.__transmitting_value_y)
+
+    def create_entrys_and_labels(self):
         self.__scan_vars_x_min = StringVar()
         self.__scan_vars_x_max = StringVar()
         self.__scan_vars_y_min = StringVar()
@@ -111,44 +148,29 @@ class ConstructorFrames:
         self.__label_y_min.place(width=5, height=5)
         self.__label_y_max.place(width=5, height=5)
 
-        self.__build_surface_btn = Button(self.__bottom_area_1, text='on/off build surface',
-                                          command=self.__build_surface)  # не строит поверхноть, но копит данные о ней
-        self.__remember_surface_btn = Button(self.__bottom_area_1, text='remember surface',
-                                          command=self.__remember_surface)
-        self.__remove_noise_btn = Button(self.__bottom_area_1, text='remove noise',
-                                          command=self.__remove_noise)
-
-        self.__gen_new_noise_btn = Button(self.__bottom_area_2, text='gen new noise',
-                                          command=self.__gen_new_noise)
-        # self.__is_it_surface_btn = Button(self.__frame_bottom_1, text='is it surface', bg='#595959',
-        # command=self.__is_it_surface)   # кнопка для дебага
-        self.__scan_mode = Button(self.__bottom_area_2, text='on/off scan mode',
-                                  command=self.__scan_mode)
-        self.__del_surface_data_btn = Button(self.__bottom_area_2, text='del surface', command=self.__del_surface_data)
-
-        self.__stop_render_btn = Button(self.__bottom_area_3, text='stop/go render', command=self.__stop_go_render) # stop/go __drow_graph: canvas.draw_idle()
-
-        self.__auto_on_off_btn = Button(self.__bottom_area_4, text='go/stop auto_scan', bg='#595959', command=self.auto)
-
-        self.__bind_to_tip_btn = Button(self.__bottom_area_5, text='bind to tip', command=self.__bind_scale_to_tip)
-        self.__bind_to_origin_btn = Button(self.__bottom_area_5, text='bind to origin', command=self.__bind_to_origin)
-        self.__set_origin_btn = Button(self.__bottom_area_5, text='set new origin', command=self.__set_new_origin)
-        self.__go_scan_count_btn = Button(self.__bottom_area_5, text='go scan count', command=self.__go_scan_count)
-        # self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
-        # self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
-        # self.__is_atom_btn = Button(self.__frame_bottom_2, text='is_atom', command=self.__is_atom) # кнопка для дебага
-        # self.__is_atom_captured_btn = Button(self.__bottom_area_5, text='is_atom_captured', command=self.__is_atom_captured)
-
         self.__file_name = StringVar()
         self.__save_data_entry = Entry(self.__frame_debug, textvariable=self.__file_name)
         self.__save_data_entry.place(width=20, height=5)
-        self.__save_data_btn = Button(self.__frame_debug, text='save data', command=self.__save_file)
         self.__load_data_entry = Entry(self.__frame_debug, textvariable=self.__file_name)
         self.__load_data_entry.place(width=20, height=5)
-        self.__load_data_btn = Button(self.__frame_debug, text='load data', command=self.__load_file)
-        self.default_bg = self.__stop_render_btn.cget("background")
-        self.feature_scanner = self.tk.graph.frame.atoms_logic.create_scanner(self.tk.graph.frame.atoms_logic.touching_surface_event)
-        self.__bind_scale_to_tip()
+
+    def create_frames(self, tk):
+        self.__frame_top = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__frame_top.place(relx=0.15, rely=0.05, relwidth=RELWIDTH, relheight=0.50)
+        self.__bottom_area_1 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__bottom_area_1.place(relx=0.15, rely=0.60, relwidth=RELWIDTH, relheight=0.05)
+        self.__bottom_area_2 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__bottom_area_2.place(relx=0.15, rely=0.65, relwidth=RELWIDTH, relheight=0.05)
+        self.__bottom_area_3 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__bottom_area_3.place(relx=0.15, rely=0.70, relwidth=RELWIDTH, relheight=0.05)
+        self.__bottom_area_3 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__bottom_area_3.place(relx=0.15, rely=0.75, relwidth=RELWIDTH, relheight=0.05)
+        self.__bottom_area_4 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__bottom_area_4.place(relx=0.15, rely=0.80, relwidth=RELWIDTH, relheight=0.05)
+        self.__bottom_area_5 = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__bottom_area_5.place(relx=0.15, rely=0.85, relwidth=RELWIDTH, relheight=0.05)
+        self.__frame_debug = Frame(tk, bg=FRAME_COLOR, bd=2)
+        self.__frame_debug.place(relx=0.15, rely=0.90, relwidth=RELWIDTH, relheight=0.05)
 
     def __transmitting_value_x(self, x: int):
         y = self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Y)
@@ -199,18 +221,6 @@ class ConstructorFrames:
     def __show_surface(self):
         self.tk.graph.frame.show_surface()
 
-    # def __is_atom(self):
-    # if self.tk.graph.frame.atoms_logic.is_atom():
-    #     self.tk.graph.frame.atoms_logic.set_is_atom(False)
-    # else:
-    #     self.tk.graph.frame.atoms_logic.set_is_atom(True)
-
-    def __is_atom_captured(self):
-        if self.tk.graph.frame.atoms_logic.is_atom_captured():
-            self.tk.graph.frame.atoms_logic.set_is_atom_captured(False)
-        else:
-            self.tk.graph.frame.atoms_logic.set_is_atom_captured(True)
-
     def __build_surface(self):
         if self.tk.graph.frame.condition_build_surface:
             self.tk.graph.frame.condition_build_surface = False
@@ -258,7 +268,7 @@ class ConstructorFrames:
 
     def __go_n_scan(self, count, vars):
         for _ in range(count):
-            self.feature_scanner.scan_algorithm.stop = False
+            self.scanner.scan_algorithm.stop = False
             self._go_auto(*vars)
             self.tk.graph.frame.atoms_logic.remember_surface()
             self.tk.graph.frame.atoms_logic.gen_new_noise()
@@ -279,14 +289,7 @@ class ConstructorFrames:
         return params
 
     def _go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None:
-        self.feature_scanner.scan_aria(x_min, y_min, x_max, y_max)
-
-    def __stop_go_render(self):
-        if self.tk.graph.frame.quit:
-            self.tk.graph.frame.quit = False
-            threading.Thread(target=self.tk.graph.frame.draw_graph).start()
-        else:
-            self.tk.graph.frame.quit = True
+        self.scanner.scan_aria(x_min, y_min, x_max, y_max)
 
     def pack(self):
         self.__build_surface_btn.bind('<Button-1>',
@@ -347,15 +350,14 @@ class ConstructorFrames:
 
     def change_button(self, event, cause):
         cause = {
-            'scanAlgorithm.stop': {'condition': not self.feature_scanner.scan_algorithm.stop, 'button': self.__auto_on_off_btn},
-            'tk.graph.frame.quit': {'condition': not self.tk.graph.frame.quit, 'button': self.__stop_render_btn},
+            'scanAlgorithm.stop': {'condition': not self.scanner.scan_algorithm.stop, 'button': self.__auto_on_off_btn},
+            'tk.graph.frame.quit': {'condition': not self.tk.graph.frame.stop_graph, 'button': self.__stop_render_btn},
             'tk.graph.frame.condition_build_surface': {'condition': self.tk.graph.frame.condition_build_surface, 'button': self.__build_surface_btn},
             'tk.graph.frame.condition_scan_mode': {'condition': self.tk.graph.frame.atoms_logic.is_scan_mode(), 'button': self.__scan_mode},
             # 'tk.graph.frame.condition_is_it_surface': {'condition': self.tk.graph.frame.atoms_logic.is_it_surface(), 'button': self.__is_it_surface_btn},
         }.get(cause)
 
         self.cycle_change_bg(cause)
-
 
     def cycle_change_bg(self, cause):
         if cause['condition']:
@@ -366,4 +368,16 @@ class ConstructorFrames:
         else:
             cause['button'].configure(bg=self.default_bg)
 
+
+    def __stop_go_render(self):
+        if self.tk.graph.frame.stop_graph:
+            self.tk.graph.frame.stop_graph = False
+            threading.Thread(target=self.tk.graph.frame.draw_graph).start()
+        else:
+            self.tk.graph.frame.stop_graph = True
+
+    def close(self):
+        self.tk.graph.frame.atoms_logic.server.set_down()
+        self.tk.graph.frame.close_matplot()
+        self.tk.graph.frame.stop_graph = True
 

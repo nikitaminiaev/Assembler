@@ -8,7 +8,7 @@ if path not in sys.path:
     sys.path.insert(0, path)
     sys.path.insert(0, os.path.abspath("../../../stub_microcontroller"))
 
-from controller.core_logic.service.feature_scanner import FeatureScanner
+from controller.core_logic.service.scanner import Scanner
 from unittest import TestCase
 from controller.core_logic.lapshin_algorithm.entity.atom import Atom
 from controller.core_logic.lapshin_algorithm.service.recognition.lapshin_feature_recognizer import LapshinFeatureRecognizer
@@ -28,7 +28,7 @@ class TestBindingProbeToFeature(TestCase):
         push_coord_to_mk = MagicMock()
         binding_in_delay = MagicMock()
         allow_binding = MagicMock()
-        scanner = FeatureScanner(get_val_func, set_x_func, set_y_func, touching_surface_event, external_surface, push_coord_to_mk, 0)
+        scanner = Scanner(get_val_func, set_x_func, set_y_func, touching_surface_event, external_surface, push_coord_to_mk, 0)
 
         self.binding_probe_to_feature = BindingProbeToFeature(
             LapshinFeatureRecognizer(),
