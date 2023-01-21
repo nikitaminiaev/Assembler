@@ -84,16 +84,17 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
         self.allow_binding.clear()
         vector = current_feature.vector_to_next
         on_next_feature = False
+        sleep(self.delay/4)
         for i in range(jump_count):
             if i % 2 == 0:
                 feature = next_feature
                 vector = self.__refine_vector_to_feature(vector, feature, i+1)
-                on_next_feature = False
+                on_next_feature = True
             else:
                 feature = current_feature
                 reverse_vector = self.__refine_vector_to_feature(VectorOperations.get_reverse_vector(vector), feature, i+1)
                 vector = VectorOperations.get_reverse_vector(reverse_vector)
-                on_next_feature = True
+                on_next_feature = False
         if not on_next_feature:
             self.scanner.go_to_direction(vector)
         current_feature.vector_to_next = vector
@@ -103,8 +104,10 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
         self.scanner.go_to_direction(vector)
         x_correction, y_correction = self.return_to_feature(feature)
         #todo логирование correction
+        # print(x_correction, y_correction)
         vector[0] += x_correction / contribution_coefficient
         vector[1] += y_correction / contribution_coefficient
+        # print(vector) #todo логирование vector
         return vector
 
     def set_stop(self, is_stop: bool) -> None:

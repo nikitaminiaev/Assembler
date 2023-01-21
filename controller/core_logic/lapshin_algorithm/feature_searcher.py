@@ -63,7 +63,7 @@ class FeatureSearcher:
         surface = self.scanner.scan_aria() #todo избавиться от это-го (уйдет выше или другой метод)
         self.find_first_feature(surface.copy())
         #todo проверить везде что корректно передается surface.copy()
-        while self.structure_of_feature.count < 3:
+        while self.structure_of_feature.count < 6:
             self.binding_in_delay.wait()
             self.allow_binding.clear()
             current_feature = self.structure_of_feature.get_current_feature()
@@ -82,17 +82,29 @@ class FeatureSearcher:
 
             self.structure_of_feature.insert_to_end(next_feature)
             self.binding_to_feature.set_current_feature(next_feature)
+            print(next_feature.to_string())
+            print('structure_of_feature.count' + str(self.structure_of_feature.count))
             self.allow_binding.set()
-        self.binding_to_feature.set_stop(True)
-        self.structure_of_feature.display()
+        # self.binding_to_feature.set_stop(True)
+        # self.structure_of_feature.display()
 
-    def find_first_feature(self, surface: np.ndarray):
+    def display(self) -> np.ndarray:
+        return self.structure_of_feature.display()
+
+    def stop_algorithm(self) -> None:
+        self.allow_binding.clear()
+        self.reset_structure()
+
+    def reset_structure(self):
+        self.structure_of_feature = DoublyLinkedList()
+
+    def find_first_feature(self, surface: np.ndarray) -> None:
         figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface.copy())
         first_figure = next(figure_gen)
         feature = self.feature_recognizer.recognize_feature(first_figure, surface)
         self.structure_of_feature.insert_to_end(feature)
         self.scanner.go_to_coordinate(*feature.coordinates)
-        self.binding_to_feature.set_current_feature(feature)
+        self.binding_to_feature.set_current_feature(feature) #todo нужно искать каскадно снижая размер скана
         self.allow_binding.set()
         threading.Thread(target=self.binding_to_feature.bind_to_current_feature).start()
 
@@ -102,6 +114,7 @@ class FeatureSearcher:
         neighbors_center = list(neighbors.keys())
         vectors_to_neighbors = VectorOperations.calc_vectors_to_neighbors(current_center, neighbors_center)
         next_direction = self.structure_of_feature.get_next_direction()
+        print(next_direction)
         vector_to_next_feature = self.__find_close_vector(vectors_to_neighbors, next_direction)
         if vector_to_next_feature is None:
             raise RuntimeError('next feature not found')
@@ -156,6 +169,7 @@ class FeatureSearcher:
         result = None
         for vector in vectors_to_neighbors:
             angle = VectorOperations.calc_vectors_cos_angle(next_direction, vector)
+            print(angle)
             if angle < self.COS_QUARTER_PI:   #todo константу в параметр, функцию в VectorOperations
                 continue
             if optimal_angle is None:

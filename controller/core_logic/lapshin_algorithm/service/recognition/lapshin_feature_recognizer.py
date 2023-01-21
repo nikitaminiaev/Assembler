@@ -1,3 +1,4 @@
+import traceback
 from typing import Tuple, Iterator
 import numpy as np
 from controller.core_logic.lapshin_algorithm.entity.feature import Feature
@@ -18,7 +19,7 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
         center = tuple(int(item) for item in center)
         max_rad = self.calc_max_feature_rad(center, figure)
         rad = int(round(max_rad))
-        max_height = self.get_max_height(surface[center[1]-rad*2:center[1]+rad*2, center[0]-rad*2:center[0]+rad*2].copy())
+        max_height = self.get_max_height(surface[center[1]-rad:center[1]+rad, center[0]-rad:center[0]+rad].copy())
         return FeatureFactory.create(len(figure), max_rad, *(*center, max_height))
 
     def recognize_all_figure_in_aria(self, surface: np.ndarray) -> Iterator[np.ndarray]:
@@ -30,6 +31,10 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
                         figure = self.recognize_figure((x, y), surface, self.__optimal_height)
                     except IndexError as e:
                         print(e)
+                        continue
+                    except RuntimeError as e:
+                        print(e)
+                        print(traceback.format_exc())
                         continue
                     yield figure
 

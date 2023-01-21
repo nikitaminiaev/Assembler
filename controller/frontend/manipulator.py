@@ -102,8 +102,8 @@ class ConstructorFrames:
         self.__auto_on_off_btn = Button(self.__bottom_area_4, text='go/stop auto_scan', bg='#595959', command=self.auto)
 
         self.__bind_to_tip_btn = Button(self.__bottom_area_5, text='bind to tip', command=self.__bind_scale_to_tip)
-        self.__bind_to_origin_btn = Button(self.__bottom_area_5, text='bind to origin', command=self.__bind_to_origin)
-        self.__set_origin_btn = Button(self.__bottom_area_5, text='set new origin', command=self.__set_new_origin)
+        self.__display_lapshin_btn = Button(self.__bottom_area_5, text='display lapshin)', command=self.__display_lapshin)
+        self.__reset_btn = Button(self.__bottom_area_5, text='reset', command=self.__reset)
         self.__go_scan_count_btn = Button(self.__bottom_area_5, text='go scan count', command=self.__go_scan_count)
         # self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
         # self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
@@ -208,12 +208,13 @@ class ConstructorFrames:
         self.__scale_y.set(self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Y))
         self.__scale_z.set(self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Z))
 
-    def __set_new_origin(self):
-        self.tk.graph.frame.atoms_logic.set_new_origin_coordinate()
+    def __reset(self):
+        self.tk.graph.frame.atoms_logic.reset()
 
-    def __bind_to_origin(self):
-        self.tk.graph.frame.atoms_logic.set_origin_to_dto()
-        self.__bind_scale_to_tip()
+    def __display_lapshin(self):
+        self.tk.graph.frame.atoms_logic.display_lapshin()
+        # self.tk.graph.frame.atoms_logic.set_origin_to_dto()
+        # self.__bind_scale_to_tip()
 
     def __remove_surface(self):
         self.tk.graph.frame.remove_surface()
@@ -331,8 +332,8 @@ class ConstructorFrames:
 
         # self.__is_atom_captured_btn.pack(side=c.RIGHT)
         self.__bind_to_tip_btn.pack(side=c.RIGHT, padx=5)
-        self.__set_origin_btn.pack(side=c.RIGHT)
-        self.__bind_to_origin_btn.pack(side=c.RIGHT)
+        self.__reset_btn.pack(side=c.RIGHT)
+        self.__display_lapshin_btn.pack(side=c.RIGHT)
         self.__go_scan_count_btn.pack(side=c.LEFT)
         # self.__remove_surface_btn.pack(side=c.LEFT, padx=50)
         # self.__show_surface_btn.pack(side=c.LEFT)
@@ -377,6 +378,7 @@ class ConstructorFrames:
             self.tk.graph.frame.stop_graph = True
 
     def close(self):
+        self.tk.graph.frame.atoms_logic.server.send_data_to_all_clients('stop')
         self.tk.graph.frame.atoms_logic.server.set_down()
         self.tk.graph.frame.close_matplot()
         self.tk.graph.frame.stop_graph = True

@@ -61,7 +61,15 @@ class AtomsLogic:
 
     def del_surface_data(self):
         self.surface_data = np.zeros((self.x_field_size, self.y_field_size))
-        self.scan_transformer.clear_data()
+        self.is_surface_changed_event = True
+
+    def reset(self):
+        self.lapshin_algorithm.stop_algorithm()
+        self.server.send_data_to_all_clients('{"reset": 1}')
+        self.is_surface_changed_event = True
+
+    def display_lapshin(self):
+        self.surface_data = self.lapshin_algorithm.display()
         self.is_surface_changed_event = True
 
     def remove_noise(self):

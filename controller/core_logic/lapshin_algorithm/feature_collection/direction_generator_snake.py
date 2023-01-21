@@ -5,9 +5,16 @@ class DirectionGeneratorSnake:
 
     @staticmethod
     def generate_next_direction(count: int) -> np.ndarray:
-        x = 3
+        x = 1
         y = 0
-        if count < 5:
+        if count < 4:
             x = 0
-            y = 3
+            y = 1
+        if count == 4:
+            x = -1
+            y = 1
+        if count > 4:
+            x = -1
+            y = 0
         return np.array([x, y], dtype='int8')
+

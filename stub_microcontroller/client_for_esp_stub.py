@@ -1,3 +1,5 @@
+from time import sleep
+
 import ujson
 import sys
 from mySocket_stub import Socket
@@ -21,6 +23,7 @@ class Client(Socket):
         self.listen_server()
 
     def listen_server(self):
+        data = None
         while not self._quit:
             try:
                 data = self.recv(self.PACKAGE_SIZE).decode(self.CODING)
@@ -36,6 +39,10 @@ class Client(Socket):
                     finally:
                         self.data_prev = data
             except Exception as e:
+                print(data)
+                print(e)
+                self.servoController.shutdown_noise.set()
+                sleep(0.5)
                 self.send_data(str(e))
                 self.set_down()
                 break

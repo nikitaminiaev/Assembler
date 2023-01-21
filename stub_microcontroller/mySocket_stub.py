@@ -25,7 +25,7 @@ class Socket(socket.socket):
         print(self.status)
         self._quit = True
         self.close()
-        exit(0)
+        exit()
 
     def set_up(self):
         raise NotImplemented()
