@@ -97,13 +97,17 @@ class ConstructorFrames:
         self.__del_surface_data_btn = Button(self.__bottom_area_2, text='del surface', command=self.__del_surface_data)
 
         self.__stop_render_btn = Button(self.__bottom_area_3, text='stop/go render',
-                                        command=self.__stop_go_render)  # stop/go __drow_graph: canvas.draw_idle()
+                                        command=self.__stop_go_render)
+        self.__del_lapshin_data_btn = Button(self.__bottom_area_3, text='del lapshin data',
+                                        command=self.__del_lapshin_data)
 
         self.__auto_on_off_btn = Button(self.__bottom_area_4, text='go/stop auto_scan', bg='#595959', command=self.auto)
+        self.__start_lapshin_btn = Button(self.__bottom_area_4, text='start lapshin', command=self.start_lapshin_algorithm)
+        self.__reset_offset_btn = Button(self.__bottom_area_4, text='reset offset', command=self.reset_offset)
 
         self.__bind_to_tip_btn = Button(self.__bottom_area_5, text='bind to tip', command=self.__bind_scale_to_tip)
-        self.__display_lapshin_btn = Button(self.__bottom_area_5, text='display lapshin)', command=self.__display_lapshin)
-        self.__reset_btn = Button(self.__bottom_area_5, text='reset', command=self.__reset)
+        self.__display_lapshin_btn = Button(self.__bottom_area_5, text='display lapshin', command=self.__display_lapshin)
+        self.__stop_lapshin_btn = Button(self.__bottom_area_5, text='pause lapshin', command=self.__pause_lapshin)
         self.__go_scan_count_btn = Button(self.__bottom_area_5, text='go scan count', command=self.__go_scan_count)
         # self.__remove_surface_btn = Button(self.__frame_bottom_2, text='remove_surface', command=self.__remove_surface)
         # self.__show_surface_btn = Button(self.__frame_bottom_2, text='show_surface', command=self.__show_surface)
@@ -208,13 +212,14 @@ class ConstructorFrames:
         self.__scale_y.set(self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Y))
         self.__scale_z.set(self.tk.graph.frame.atoms_logic.get_dto_val(DTO_Z))
 
-    def __reset(self):
-        self.tk.graph.frame.atoms_logic.reset()
+    def __pause_lapshin(self):
+        self.tk.graph.frame.atoms_logic.pause_lapshin()
 
     def __display_lapshin(self):
         self.tk.graph.frame.atoms_logic.display_lapshin()
-        # self.tk.graph.frame.atoms_logic.set_origin_to_dto()
-        # self.__bind_scale_to_tip()
+
+    def __del_lapshin_data(self):
+        self.tk.graph.frame.atoms_logic.del_lapshin_data()
 
     def __remove_surface(self):
         self.tk.graph.frame.remove_surface()
@@ -267,6 +272,9 @@ class ConstructorFrames:
         vars = self.__get_params()
         threading.Thread(target=self.__go_n_scan, args=(count, vars)).start()
 
+    def reset_offset(self):
+        self.tk.graph.frame.atoms_logic.reset_offset()
+
     def __go_n_scan(self, count, vars):
         for _ in range(count):
             self.scanner.scan_algorithm.stop = False
@@ -276,9 +284,24 @@ class ConstructorFrames:
         self.tk.graph.frame.atoms_logic.remove_noise()
 
     def auto(self):
-        self.feature_scanner.switch_scan()
+        if self.scanner.scan_algorithm.stop:
+            self.scanner.scan_algorithm.stop = False
+        else:
+            self.scanner.scan_algorithm.stop = True
         vars = self.__get_params()
-        threading.Thread(target=self._go_auto, args=vars).start()
+        try:
+            threading.Thread(target=self._go_auto, args=vars).start()
+        except Exception as e:
+            print(traceback.format_exc())
+            print(str(e))
+
+    def start_lapshin_algorithm(self):
+        vars = self.__get_params()
+        try:
+            threading.Thread(target=self._go_lapshin_algorithm, args=vars).start()
+        except Exception as e:
+            print(traceback.format_exc())
+            print(str(e))
 
     def __get_params(self) -> tuple:
         params = ()
@@ -291,6 +314,11 @@ class ConstructorFrames:
 
     def _go_auto(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None:
         self.scanner.scan_aria(x_min, y_min, x_max, y_max)
+
+    def _go_lapshin_algorithm(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None:
+        self.scanner.scan_algorithm.stop = False
+        surface = self.scanner.scan_aria(x_min, y_min, x_max, y_max)
+        self.tk.graph.frame.atoms_logic.lapshin_algorithm.search_features(surface)
 
     def pack(self):
         self.__build_surface_btn.bind('<Button-1>',
@@ -321,7 +349,10 @@ class ConstructorFrames:
         self.__scan_vars_entry_y_max.pack(side=c.LEFT)
         self.__scan_count_entry.pack(side=c.LEFT)
         self.__auto_on_off_btn.pack(side=c.LEFT)
-        self.__stop_render_btn.pack(side=c.RIGHT, padx=5)
+        self.__start_lapshin_btn.pack(side=c.LEFT, padx=5)
+        self.__reset_offset_btn.pack(side=c.RIGHT, padx=5)
+        self.__del_lapshin_data_btn.pack(side=c.RIGHT, padx=5)
+        self.__stop_render_btn.pack(side=c.RIGHT, padx=15)
         self.__scan_mode.pack(side=c.RIGHT, padx=5)
         self.__build_surface_btn.pack(side=c.RIGHT, padx=5)
         self.__remember_surface_btn.pack(side=c.RIGHT, padx=10)
@@ -332,7 +363,7 @@ class ConstructorFrames:
 
         # self.__is_atom_captured_btn.pack(side=c.RIGHT)
         self.__bind_to_tip_btn.pack(side=c.RIGHT, padx=5)
-        self.__reset_btn.pack(side=c.RIGHT)
+        self.__stop_lapshin_btn.pack(side=c.RIGHT)
         self.__display_lapshin_btn.pack(side=c.RIGHT)
         self.__go_scan_count_btn.pack(side=c.LEFT)
         # self.__remove_surface_btn.pack(side=c.LEFT, padx=50)

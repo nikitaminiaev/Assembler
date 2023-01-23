@@ -89,12 +89,11 @@ class FeatureSearcher:
             next_feature = self.recur_find_next_feature(current_feature, rad_count+2)
         return next_feature
 
-    def display(self) -> np.ndarray:
+    def display(self) -> np.ndarray or None:
         return self.structure_of_feature.display()
 
-    def stop_algorithm(self) -> None:
+    def pause_algorithm(self) -> None:
         self.allow_binding.clear()
-        self.reset_structure()
 
     def reset_structure(self):
         self.structure_of_feature = DoublyLinkedList()
