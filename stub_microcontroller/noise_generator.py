@@ -21,7 +21,6 @@ class NoiseGenerator:
         pass
 
     def gen_thermal_offset_x(self, shutdown: threading.Event) -> None:
-        sleep(10)
         delay = 0.2
         while not shutdown.is_set():
             sleep(abs(delay))
@@ -32,7 +31,6 @@ class NoiseGenerator:
                 delay -= 0.5 * random.random()
 
     def gen_thermal_offset_y(self, shutdown: threading.Event) -> None:
-        sleep(10)
         delay = 0.2
         while not shutdown.is_set():
             sleep(abs(delay))

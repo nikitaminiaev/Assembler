@@ -27,8 +27,8 @@ class VectorOperations:
         return np.array([-v[0], -v[1], v[2]])
 
     @staticmethod
-    def get_vector_between_to_point(p1: tuple, p2: tuple) -> np.ndarray:
-        return np.array([p2[0] - p1[0], p2[1] - p1[1]])
+    def get_vector_between_to_point(destination_point: tuple, start_point: tuple) -> np.ndarray:
+        return np.array([start_point[0] - destination_point[0], start_point[1] - destination_point[1]])
 
     @staticmethod
     def get_vector_len(vector: np.ndarray) -> float:

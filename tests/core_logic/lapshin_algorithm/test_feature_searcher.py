@@ -60,29 +60,30 @@ class TestFeatureSearcher(TestCase):
         self.assertEqual([10, 11], list(vector))
 
     def test_find_first_feature(self):
-        surface = SurfaceGenerator(20, 20, [(10, 10)]).generate()
-        self.binding_probe_to_feature.scanner.external_surface = surface
+        surface = SurfaceGenerator(30, 20, [(14, 14)]).generate()
+        self.feature_searcher.scanner.external_surface = surface
         any_val = 1
-        self.binding_probe_to_feature.scanner.get_val_func = MagicMock(
-            side_effect=[any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val])
+        self.feature_searcher.scanner.get_val_func = MagicMock(
+            side_effect=[14, 14, any_val, any_val, any_val,
+                         any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val
+                         ])
 
         self.binding_probe_to_feature.stop = True
         self.feature_searcher.find_first_feature(surface)
-        self.assertEqual(self.binding_probe_to_feature.current_feature.coordinates, (10, 10, 24))
+        self.assertEqual(self.binding_probe_to_feature.current_feature.coordinates, (14, 14, 24))
         self.assertEqual(self.binding_probe_to_feature.current_feature, self.feature_searcher.structure_of_feature.get_current_feature())
 
     def test_find_next_feature(self):
-        vector_to_next_atom = np.array([6, 6, 24], dtype='int8')
-        surface = SurfaceGenerator(30, 20, [(6, 6), (6 + vector_to_next_atom[0], 6 + vector_to_next_atom[1])]).generate()
+        vector_to_next_atom = np.array([12, 12, 24], dtype='int8')
+        surface = SurfaceGenerator(30, 20, [(12, 12), (12 + vector_to_next_atom[0], 12 + vector_to_next_atom[1])]).generate()
         any_val = 1
         self.binding_probe_to_feature.scanner.get_val_func = MagicMock(
-            side_effect=[any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
-                         any_val])
+            side_effect=[12, 12, 3, 4, 5, 6, 7, 8, 9,
+                         10, any_val,any_val,any_val, any_val,any_val,any_val])
 
         self.binding_probe_to_feature.stop = True
+        self.feature_searcher.scanner.external_surface = surface
         self.feature_searcher.find_first_feature(surface)
-
-        surface = SurfaceGenerator(30, 20, [(15, 15), (15 + vector_to_next_atom[0], 15 + vector_to_next_atom[1])]).generate()
 
         next_feature = self.feature_searcher.find_next_feature(surface)
         self.assertIsNotNone(next_feature)

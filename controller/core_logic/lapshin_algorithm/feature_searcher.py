@@ -59,34 +59,35 @@ class FeatureSearcher:
         self.allow_binding = allow_binding
         self.scanner_around_feature = ScannerAroundFeature(scanner)
 
-    def search_features(self):
-        surface = self.scanner.scan_aria() #todo избавиться от это-го (уйдет выше или другой метод)
-        self.find_first_feature(surface.copy())
-        #todo проверить везде что корректно передается surface.copy()
+    def search_features(self, surface: np.ndarray):
+        # todo вычислять и логировать время выполнения функций
+        self.find_first_feature(surface)
         while self.structure_of_feature.count < 6:
+            current_feature = self.structure_of_feature.get_current_feature()
+            next_feature = self.recur_find_next_feature(current_feature, 5)
+
             self.binding_in_delay.wait()
             self.allow_binding.clear()
-            current_feature = self.structure_of_feature.get_current_feature()
-            surface = self.scanner_around_feature.scan_aria_around_current_position(current_feature.max_rad*5) #todo выделить в рекурсивную функцию
-            self.allow_binding.set()
-            try:
-                next_feature = self.find_next_feature(surface)
-            except RuntimeError:
-                self.binding_in_delay.wait()
-                self.allow_binding.clear()
-                surface = self.scanner_around_feature.scan_aria_around_current_position(current_feature.max_rad*7)
-                self.allow_binding.set()
-                next_feature = self.find_next_feature(surface)
-
             self.binding_to_feature.jumping(current_feature, next_feature, 5)
 
             self.structure_of_feature.insert_to_end(next_feature)
             self.binding_to_feature.set_current_feature(next_feature)
-            print(next_feature.to_string())
-            print('structure_of_feature.count' + str(self.structure_of_feature.count))
             self.allow_binding.set()
-        # self.binding_to_feature.set_stop(True)
-        # self.structure_of_feature.display()
+            # todo логирвоание print(next_feature.to_string())
+
+
+    def recur_find_next_feature(self, current_feature: Feature, rad_count: int):
+        if rad_count > 7:
+            raise RuntimeError('next feature not found')
+        self.binding_in_delay.wait()
+        self.allow_binding.clear()
+        surface = self.scanner_around_feature.scan_aria_around_current_position(current_feature.max_rad * rad_count)
+        self.allow_binding.set()
+        try:
+            next_feature = self.find_next_feature(surface)
+        except RuntimeError:
+            next_feature = self.recur_find_next_feature(current_feature, rad_count+2)
+        return next_feature
 
     def display(self) -> np.ndarray:
         return self.structure_of_feature.display()
@@ -99,17 +100,37 @@ class FeatureSearcher:
         self.structure_of_feature = DoublyLinkedList()
 
     def find_first_feature(self, surface: np.ndarray) -> None:
-        figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface.copy())
-        first_figure = next(figure_gen)
-        feature = self.feature_recognizer.recognize_feature(first_figure, surface)
-        self.structure_of_feature.insert_to_end(feature)
+        feature = self.__get_first_feature(surface)
         self.scanner.go_to_coordinate(*feature.coordinates)
-        self.binding_to_feature.set_current_feature(feature) #todo нужно искать каскадно снижая размер скана
+
+        self.go_to_feature_more_accurate(feature, 5)
+
+        self.structure_of_feature.insert_to_end(feature)
+        self.binding_to_feature.set_current_feature(feature)
         self.allow_binding.set()
         threading.Thread(target=self.binding_to_feature.bind_to_current_feature).start()
 
+    def go_to_feature_more_accurate(self, feature: Feature, rad_count: int):
+        surface = self.scanner_around_feature.scan_aria_around_current_position(feature.max_rad * rad_count)
+        # todo логирование print('=========_surface===========')
+        current, _ = self.__get_figures_center(surface.copy())
+        current_center = list(current.keys())[0]
+        aria_center = self.scanner.get_scan_aria_center(surface)
+        vector_to_center = VectorOperations.get_vector_between_to_point(current_center, aria_center)
+        vector_to_center = np.append(vector_to_center, feature.max_height)
+        self.scanner.go_to_direction(vector_to_center)
+        # todo логирование print('=========vector_to_center===========')
+
+    def __get_first_feature(self, surface):
+        figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface.copy())
+        first_figure = next(figure_gen)
+        feature = self.feature_recognizer.recognize_feature(first_figure, surface)
+        return feature
+
     def find_next_feature(self, surface: np.ndarray) -> Feature: #TODO сделать рефакторинг функции, выделить приватный метод
         current, neighbors = self.__get_figures_center(surface.copy())
+        if len(neighbors) == 0:
+            raise RuntimeError('neighbors not found')
         current_center = list(current.keys())[0]
         neighbors_center = list(neighbors.keys())
         vectors_to_neighbors = VectorOperations.calc_vectors_to_neighbors(current_center, neighbors_center)
@@ -137,6 +158,10 @@ class FeatureSearcher:
         # получить координаты из self.get_val_func
         # делать сканы по кругу и в каждом искать фичу
 
+    """
+    :return current: dict{figure_center:tuple : figure:np.ndarray}
+    :return neighbors: dict{figure_center:tuple : figure:np.ndarray}
+    """
     def __get_figures_center(self, surface) -> Tuple[dict, dict]:
         figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface.copy())
         neighbors = {}
@@ -153,8 +178,6 @@ class FeatureSearcher:
         min_vector = min(vectors_len.keys())
         current = {vectors_len[min_vector]: neighbors[vectors_len[min_vector]]}
         del neighbors[list(current.keys())[0]]
-        if len(neighbors) == 0:
-            raise RuntimeError('neighbors not found')
         if current is None:
             raise RuntimeError('current not found')
         return current, neighbors

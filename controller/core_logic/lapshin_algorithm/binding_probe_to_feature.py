@@ -80,8 +80,6 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
         raise RuntimeError('feature not found')
 
     def jumping(self, current_feature: Feature, next_feature: Feature, jump_count: int) -> None:
-        self.binding_in_delay.wait()
-        self.allow_binding.clear()
         vector = current_feature.vector_to_next
         on_next_feature = False
         sleep(self.delay/4)
