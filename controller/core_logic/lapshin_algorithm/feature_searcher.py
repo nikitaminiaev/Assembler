@@ -111,10 +111,10 @@ class FeatureSearcher:
         surface_for_accurate = self.scanner_around_feature.scan_aria_around_current_position(
             feature.max_rad * rad_count)
         # todo логирование print('=========_surface===========')
-        current, _ = self.__get_figures_center(surface_for_accurate.copy())
-        current_center = list(current.keys())[0]
+        actual, _ = self.__get_figures_center(surface_for_accurate.copy())
+        actual_center = list(actual.keys())[0]
         aria_center = self.scanner.get_scan_aria_center(surface_for_accurate)
-        vector_to_center = VectorOperations.get_vector_between_to_point(current_center, aria_center)
+        vector_to_center = VectorOperations.get_vector_between_to_point(actual_center, aria_center)
         z_current = self.scanner.get_current_position()[2]
         vector_to_center = np.append(vector_to_center, feature.max_height - z_current)
         self.scanner.go_to_direction(vector_to_center)
