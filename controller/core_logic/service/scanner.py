@@ -28,6 +28,7 @@ class Scanner(ScannerInterface):
 
         self.push_coord_to_mk(DTO_Z, True)
 
+        self.scan_algorithm.stop = False
         self.scan_algorithm.scan_line_by_line(
             self.get_val_func,
             self.set_x_func,
@@ -46,8 +47,9 @@ class Scanner(ScannerInterface):
         self.set_y_func((int(coordinate[0]), int(coordinate[1]), int(coordinate[2]) + 3))
 
     def go_to_direction(self, vector: np.ndarray) -> None:
-        self.set_x_func((self.get_val_func(DTO_X) + int(vector[0]), self.get_val_func(DTO_Y), vector[2] + 3))
-        self.set_y_func((self.get_val_func(DTO_X), self.get_val_func(DTO_Y) + int(vector[1]), vector[2] + 3))
+        print('------- ' + str(vector) + '----------------')
+        self.set_x_func((self.get_val_func(DTO_X) + int(vector[0]), self.get_val_func(DTO_Y), self.get_val_func(DTO_Z) + int(vector[2]) + 3))
+        self.set_y_func((self.get_val_func(DTO_X), self.get_val_func(DTO_Y) + int(vector[1]), self.get_val_func(DTO_Z) + int(vector[2]) + 3))
 
     def switch_scan(self, stop: bool) -> None:
         self.scan_algorithm.stop = stop

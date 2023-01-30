@@ -5,7 +5,7 @@ from typing import Tuple
 from controller.constants import *
 from controller.core_logic.exceptions.touching_surface import TouchingSurface
 
-WAIT_TIMEOUT = 0.2
+WAIT_TIMEOUT = 0.06
 FIELD_SIZE = MAX_FIELD_SIZE - 1
 
 

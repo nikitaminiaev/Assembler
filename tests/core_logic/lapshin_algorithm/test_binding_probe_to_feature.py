@@ -40,10 +40,14 @@ class TestBindingProbeToFeature(TestCase):
     def test_bind_to_feature(self) -> None:
         surface = SurfaceGenerator(20, 20, [(10, 10)]).generate()
         self.binding_probe_to_feature.scanner.external_surface = surface
+        self.binding_probe_to_feature.scanner.scan_algorithm = MagicMock()
         any_val = 1
-        self.binding_probe_to_feature.scanner.get_val_func = MagicMock(side_effect=[9, 9, 27, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val])
+        self.binding_probe_to_feature.scanner.get_val_func = MagicMock(side_effect=[9, 9, 27,
+                                                                                    any_val, any_val, any_val, any_val, any_val, any_val, any_val,
+                                                                                    any_val, any_val, any_val, any_val,any_val, any_val])
         feature = Atom((9, 9, 24))
         feature.max_rad = 2
+        feature.max_height = 24
         self.assertEqual(0, feature.perimeter_len)
 
         correction = self.binding_probe_to_feature.return_to_feature(feature)
@@ -51,8 +55,8 @@ class TestBindingProbeToFeature(TestCase):
         height = self.binding_probe_to_feature.feature_recognizer.get_max_height(surface)
         self.assertNotEqual(0, feature.perimeter_len)
         self.assertEqual((10, 10, height), feature.coordinates)
-        self.binding_probe_to_feature.scanner.set_x_func.assert_called_with((any_val + correction[0], any_val, feature.max_height + 3))
-        self.binding_probe_to_feature.scanner.set_y_func.assert_called_with((any_val, any_val + correction[0], feature.max_height + 3))
+        self.binding_probe_to_feature.scanner.set_x_func.assert_called_with((any_val + int(correction[0]), any_val, any_val + 3))
+        self.binding_probe_to_feature.scanner.set_y_func.assert_called_with((any_val, any_val + int(correction[0]), any_val + 3))
 
     def test_feature_not_found(self) -> None:
         surface = SurfaceGenerator(20, 20, []).generate()
@@ -67,12 +71,15 @@ class TestBindingProbeToFeature(TestCase):
         vector_to_next_atom = np.array([6.0, 6.0, 24.0])
         surface = SurfaceGenerator(30, 20, [(15, 15), (15 + int(vector_to_next_atom[0]), 15 + int(vector_to_next_atom[1]))]).generate()
         self.binding_probe_to_feature.scanner.external_surface = surface
+        self.binding_probe_to_feature.scanner.scan_algorithm = MagicMock()
         any_val = 1
         self.binding_probe_to_feature.scanner.get_val_func = MagicMock(
-            side_effect=[any_val, any_val, any_val, any_val,
+            side_effect=[any_val, any_val, any_val, any_val, any_val, any_val,
                          20, 21, 27,
-                         any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
+                         any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
                          14, 14, 27,
+                         any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
+                         any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
                          any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
                          ])
         current_feature = Atom((15,15,24))
@@ -80,6 +87,7 @@ class TestBindingProbeToFeature(TestCase):
         current_feature.vector_to_next = vector_to_next_atom
         next_feature = Atom((21,21,24))
         next_feature.max_rad = 3
+
         self.binding_probe_to_feature.jumping(current_feature, next_feature, 2)
 
         self.assertTrue((current_feature.vector_to_next == VectorOperations.get_reverse_vector(next_feature.vector_to_prev)).all())

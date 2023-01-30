@@ -40,7 +40,6 @@ from controller.core_logic.service.scanner_interface import ScannerInterface
 
 
 class FeatureSearcher:
-
     COS_QUARTER_PI = 0.7071
 
     def __init__(self,
@@ -75,7 +74,6 @@ class FeatureSearcher:
             self.allow_binding.set()
             # todo логирвоание print(next_feature.to_string())
 
-
     def recur_find_next_feature(self, current_feature: Feature, rad_count: int):
         if rad_count > 7:
             raise RuntimeError('next feature not found')
@@ -86,7 +84,7 @@ class FeatureSearcher:
         try:
             next_feature = self.find_next_feature(surface)
         except RuntimeError:
-            next_feature = self.recur_find_next_feature(current_feature, rad_count+2)
+            next_feature = self.recur_find_next_feature(current_feature, rad_count + 2)
         return next_feature
 
     def display(self) -> np.ndarray or None:
@@ -107,16 +105,18 @@ class FeatureSearcher:
         self.structure_of_feature.insert_to_end(feature)
         self.binding_to_feature.set_current_feature(feature)
         self.allow_binding.set()
-        threading.Thread(target=self.binding_to_feature.bind_to_current_feature).start()
+        threading.Thread(target=self.__start_binding_thread, args=(self.binding_to_feature,)).start()
 
     def go_to_feature_more_accurate(self, feature: Feature, rad_count: int):
-        surface = self.scanner_around_feature.scan_aria_around_current_position(feature.max_rad * rad_count)
+        surface_for_accurate = self.scanner_around_feature.scan_aria_around_current_position(
+            feature.max_rad * rad_count)
         # todo логирование print('=========_surface===========')
-        current, _ = self.__get_figures_center(surface.copy())
+        current, _ = self.__get_figures_center(surface_for_accurate.copy())
         current_center = list(current.keys())[0]
-        aria_center = self.scanner.get_scan_aria_center(surface)
+        aria_center = self.scanner.get_scan_aria_center(surface_for_accurate)
         vector_to_center = VectorOperations.get_vector_between_to_point(current_center, aria_center)
-        vector_to_center = np.append(vector_to_center, feature.max_height)
+        z_current = self.scanner.get_current_position()[2]
+        vector_to_center = np.append(vector_to_center, feature.max_height - z_current)
         self.scanner.go_to_direction(vector_to_center)
         # todo логирование print('=========vector_to_center===========')
 
@@ -126,8 +126,9 @@ class FeatureSearcher:
         feature = self.feature_recognizer.recognize_feature(first_figure, surface)
         return feature
 
-    def find_next_feature(self, surface: np.ndarray) -> Feature: #TODO сделать рефакторинг функции, выделить приватный метод
+    def find_next_feature(self, surface: np.ndarray) -> Feature:  # TODO сделать рефакторинг функции, выделить приватный метод
         current, neighbors = self.__get_figures_center(surface.copy())
+        print(neighbors)
         if len(neighbors) == 0:
             raise RuntimeError('neighbors not found')
         current_center = list(current.keys())[0]
@@ -143,9 +144,9 @@ class FeatureSearcher:
             neighbors[(current_center[0] + vector_to_next_feature[0], current_center[1] + vector_to_next_feature[1])],
             surface
         )
-        vector_to_next_feature = np.append(vector_to_next_feature, next_feature.max_height)
-        next_feature.vector_to_prev = VectorOperations.get_reverse_vector(vector_to_next_feature)
         current_feature = self.structure_of_feature.get_current_feature()
+        vector_to_next_feature = np.append(vector_to_next_feature, next_feature.max_height - current_feature.max_height)
+        next_feature.vector_to_prev = VectorOperations.get_reverse_vector(vector_to_next_feature)
         if current_feature is not None:
             current_feature: Feature
             current_feature.vector_to_next = vector_to_next_feature
@@ -172,7 +173,7 @@ class FeatureSearcher:
             vectors_len[VectorOperations.get_vector_len(vector_to_center)] = figure_center
             neighbors[figure_center] = figure
         if len(vectors_len) == 0:
-            #todo логирвоание surface
+            # todo логирвоание surface
             raise RuntimeError('figure not found')
         min_vector = min(vectors_len.keys())
         current = {vectors_len[min_vector]: neighbors[vectors_len[min_vector]]}
@@ -192,7 +193,7 @@ class FeatureSearcher:
         for vector in vectors_to_neighbors:
             angle = VectorOperations.calc_vectors_cos_angle(next_direction, vector)
             print(angle)
-            if angle < self.COS_QUARTER_PI:   #todo константу в параметр, функцию в VectorOperations
+            if angle < self.COS_QUARTER_PI:  # todo константу в параметр, функцию в VectorOperations
                 continue
             if optimal_angle is None:
                 optimal_angle = angle
@@ -203,4 +204,5 @@ class FeatureSearcher:
                 result = vector
         return result
 
-
+    def __start_binding_thread(self, binding_to_feature: BindingProbeToFeatureInterface):
+        binding_to_feature.bind_to_current_feature()

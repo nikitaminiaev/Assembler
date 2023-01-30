@@ -58,7 +58,7 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
         _len = len(figure)
         _x = sum(_x_list) / _len
         _y = sum(_y_list) / _len
-        return _x, _y       #todo убрать приведение к int
+        return _x, _y
 
     def calc_optimal_height(self, surface_copy: np.ndarray) -> int: # todo сделать приватным
         def recur_clip(arr: np.ndarray, next_to_clip: int):

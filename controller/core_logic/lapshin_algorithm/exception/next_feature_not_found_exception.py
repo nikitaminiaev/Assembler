@@ -1,0 +1,2 @@
+class NextFeatureNotFoundException(RuntimeError):
+    pass
