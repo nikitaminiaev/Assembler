@@ -29,7 +29,7 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
                 if self.__is_start_point(val, optimal_height):
                     try:
                         figure = self.recognize_figure((x, y), surface, optimal_height)
-                    except IndexError as e:
+                    except (IndexError, ValueError) as e:
                         print(e)
                         continue
                     except RuntimeError as e:
@@ -92,7 +92,7 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
         points = np.array([[0, 0]], dtype='int8')
         x, y = x_start, y_start
         x_prev, y_prev = x_start, y_start
-        max_iterations = 500
+        max_iterations = 50
         i = 0
         while not self.__is_vector_entry(points, np.array([x_start, y_start], dtype='int8')):
             i += 1

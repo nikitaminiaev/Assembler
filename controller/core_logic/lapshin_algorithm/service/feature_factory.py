@@ -8,7 +8,7 @@ class FeatureFactory:
 
     @staticmethod
     def create(feature_perimeter: int, max_rad: float, *coord) -> Feature:
-        if (feature_perimeter < MAX_ATOM_SIZE):
+        if feature_perimeter < MAX_ATOM_SIZE:
             feature = Atom(coord)
         else:
             feature = Feature(coord)

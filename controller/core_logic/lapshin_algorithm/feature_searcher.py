@@ -5,6 +5,10 @@ from typing import Tuple
 import numpy as np
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature_interface import BindingProbeToFeatureInterface
 from controller.core_logic.lapshin_algorithm.entity.feature import Feature
+from controller.core_logic.lapshin_algorithm.exception.loss_current_feature_exception import LossCurrentFeatureException
+from controller.core_logic.lapshin_algorithm.exception.neighbors_not_found_exception import NeighborsNotFoundException
+from controller.core_logic.lapshin_algorithm.exception.next_feature_not_found_exception import \
+    NextFeatureNotFoundException
 from controller.core_logic.lapshin_algorithm.feature_collection.doubly_linked_list import DoublyLinkedList
 from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import \
     FeatureRecognizerInterface
@@ -63,11 +67,11 @@ class FeatureSearcher:
         self.find_first_feature(surface)
         while self.structure_of_feature.count < 6:
             current_feature = self.structure_of_feature.get_current_feature()
-            next_feature = self.recur_find_next_feature(current_feature, 5)
+            next_feature = self.recur_find_next_feature(current_feature, 5) #todo обработать NextFeatureNotFoundException
 
             self.binding_in_delay.wait()
             self.allow_binding.clear()
-            self.binding_to_feature.jumping(current_feature, next_feature, 5)
+            self.binding_to_feature.jumping(current_feature, next_feature, 5) #todo обработать LossCurrentFeatureException
 
             self.structure_of_feature.insert_to_end(next_feature)
             self.binding_to_feature.set_current_feature(next_feature)
@@ -76,7 +80,7 @@ class FeatureSearcher:
 
     def recur_find_next_feature(self, current_feature: Feature, rad_count: int):
         if rad_count > 7:
-            raise RuntimeError('next feature not found')
+            raise NextFeatureNotFoundException
         self.binding_in_delay.wait()
         self.allow_binding.clear()
         surface = self.scanner_around_feature.scan_aria_around_current_position(current_feature.max_rad * rad_count)
@@ -84,6 +88,9 @@ class FeatureSearcher:
         try:
             next_feature = self.find_next_feature(surface)
         except RuntimeError:
+            self.allow_binding.set()
+            self.binding_in_delay.wait()
+            self.allow_binding.clear()
             next_feature = self.recur_find_next_feature(current_feature, rad_count + 2)
         return next_feature
 
@@ -111,10 +118,14 @@ class FeatureSearcher:
         surface_for_accurate = self.scanner_around_feature.scan_aria_around_current_position(
             feature.max_rad * rad_count)
         # todo логирование print('=========_surface===========')
-        actual, _ = self.__get_figures_center(surface_for_accurate.copy())
+        try:
+            actual, _ = self.__get_figures_center(surface_for_accurate.copy())
+        except ValueError as e:
+            print(surface_for_accurate)
+            raise e
         actual_center = list(actual.keys())[0]
         aria_center = self.scanner.get_scan_aria_center(surface_for_accurate)
-        vector_to_center = VectorOperations.get_vector_between_to_point(actual_center, aria_center)
+        vector_to_center = VectorOperations.get_vector_between_to_point(aria_center, actual_center)
         z_current = self.scanner.get_current_position()[2]
         vector_to_center = np.append(vector_to_center, feature.max_height - z_current)
         self.scanner.go_to_direction(vector_to_center)
@@ -127,10 +138,14 @@ class FeatureSearcher:
         return feature
 
     def find_next_feature(self, surface: np.ndarray) -> Feature:  # TODO сделать рефакторинг функции, выделить приватный метод
-        current, neighbors = self.__get_figures_center(surface.copy())
+        try:
+            current, neighbors = self.__get_figures_center(surface.copy())
+        except ValueError as e:
+            print(surface)
+            raise e
         print(neighbors)
         if len(neighbors) == 0:
-            raise RuntimeError('neighbors not found')
+            raise NeighborsNotFoundException
         current_center = list(current.keys())[0]
         neighbors_center = list(neighbors.keys())
         vectors_to_neighbors = VectorOperations.calc_vectors_to_neighbors(current_center, neighbors_center)
@@ -138,22 +153,23 @@ class FeatureSearcher:
         print(next_direction)
         vector_to_next_feature = self.__find_close_vector(vectors_to_neighbors, next_direction)
         if vector_to_next_feature is None:
-            raise RuntimeError('next feature not found')
-
-        next_feature = self.feature_recognizer.recognize_feature(
-            neighbors[(current_center[0] + vector_to_next_feature[0], current_center[1] + vector_to_next_feature[1])],
-            surface
-        )
+            raise NextFeatureNotFoundException
+        try:
+            next_feature = self.feature_recognizer.recognize_feature(
+                neighbors[(current_center[0] + vector_to_next_feature[0], current_center[1] + vector_to_next_feature[1])],
+                surface
+            )
+        except ValueError:
+            raise NextFeatureNotFoundException
         current_feature = self.structure_of_feature.get_current_feature()
         vector_to_next_feature = np.append(vector_to_next_feature, next_feature.max_height - current_feature.max_height)
         next_feature.vector_to_prev = VectorOperations.get_reverse_vector(vector_to_next_feature)
         if current_feature is not None:
             current_feature: Feature
             current_feature.vector_to_next = vector_to_next_feature
-
         return next_feature
 
-    def bind_to_nearby_feature(self) -> None:  # в случае ошибки при сильном смещении
+    def bind_to_nearby_feature(self) -> None:  # todo в случае LossCurrentFeatureException
         pass
         # получить координаты из self.get_val_func
         # делать сканы по кругу и в каждом искать фичу
@@ -161,6 +177,7 @@ class FeatureSearcher:
     """
     :return current: dict{figure_center:tuple : figure:np.ndarray}
     :return neighbors: dict{figure_center:tuple : figure:np.ndarray}
+    :raise ValueError
     """
     def __get_figures_center(self, surface) -> Tuple[dict, dict]:
         figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface.copy())

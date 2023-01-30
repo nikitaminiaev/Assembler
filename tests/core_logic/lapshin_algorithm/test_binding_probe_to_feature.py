@@ -1,6 +1,6 @@
 import sys, os
 
-
+from controller.core_logic.lapshin_algorithm.exception.loss_current_feature_exception import LossCurrentFeatureException
 from controller.core_logic.lapshin_algorithm.service.vector_operations import VectorOperations
 root = sys.path[1]
 path = os.path.join(root, "stub_microcontroller")
@@ -65,7 +65,7 @@ class TestBindingProbeToFeature(TestCase):
         any_val = 1
         self.binding_probe_to_feature.scanner.get_val_func = MagicMock(side_effect=[9, 9, 27, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val])
 
-        self.assertRaises(RuntimeError, self.binding_probe_to_feature.return_to_feature, feature)
+        self.assertRaises(LossCurrentFeatureException, self.binding_probe_to_feature.return_to_feature, feature)
 
     def test_jumping(self) -> None:
         vector_to_next_atom = np.array([6.0, 6.0, 24.0])

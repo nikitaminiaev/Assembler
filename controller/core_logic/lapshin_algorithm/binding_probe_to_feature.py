@@ -5,6 +5,7 @@ from typing import Tuple
 import numpy as np
 from controller.core_logic.lapshin_algorithm.entity.feature import Feature
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature_interface import BindingProbeToFeatureInterface
+from controller.core_logic.lapshin_algorithm.exception.loss_current_feature_exception import LossCurrentFeatureException
 from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import FeatureRecognizerInterface
 from controller.core_logic.lapshin_algorithm.service.scanner_around_feature import ScannerAroundFeature
 from controller.core_logic.lapshin_algorithm.service.vector_operations import VectorOperations
@@ -50,7 +51,7 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
         while not self.stop:
             self.allow_binding.wait()
             try:
-                correction = self.return_to_feature(self.current_feature)
+                correction = self.return_to_feature(self.current_feature) #todo обработать LossCurrentFeatureException
                 self.__correct_delay(*correction)
             except Exception as e:
                 self.stop = True
@@ -63,26 +64,30 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
     def set_current_feature(self, feature: Feature) -> None:
         self.current_feature = feature
 
-    def return_to_feature(self, feature: Feature) -> Tuple[int, int]:
+    def return_to_feature(self, feature: Feature, try_count=1) -> Tuple[int, int]:
+        if try_count > 2:
+            raise LossCurrentFeatureException
         _surface = self.scanner_around_feature.scan_aria_around_current_position(int(round(feature.max_rad)) * 3)
         feature_height = self.feature_recognizer.get_max_height(_surface.copy())
         figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(_surface)
         scan_center = self.scanner.get_scan_aria_center(_surface)
         scan_center_int = tuple(int(item) for item in scan_center)
-        for figure in figure_gen:
-            if self.feature_recognizer.feature_in_aria(scan_center_int, figure):
-                actual_center = self.feature_recognizer.get_center(figure)
-                correction = self.__calc_correction(actual_center, scan_center)
-                self.__update_feature_coord(feature, figure, correction, feature_height, actual_center)
-                self.scanner.go_to_direction(np.asarray((*correction, feature_height - feature.max_height)))
-                return correction
+        try:
+            for figure in figure_gen:
+                if self.feature_recognizer.feature_in_aria(scan_center_int, figure):
+                    actual_center = self.feature_recognizer.get_center(figure)
+                    correction = self.__calc_correction(actual_center, scan_center)
+                    self.__update_feature_coord(feature, figure, correction, feature_height, actual_center)
+                    self.scanner.go_to_direction(np.asarray((*correction, feature_height - feature.max_height)))
+                    return correction
+        except ValueError:
+            self.return_to_feature(feature, try_count+1)
         print(_surface) #todo логировать
-        raise RuntimeError('feature not found')
+        raise LossCurrentFeatureException
 
     def jumping(self, current_feature: Feature, next_feature: Feature, jump_count: int) -> None:
         vector = current_feature.vector_to_next
         on_next_feature = False
-        # sleep(self.delay/4)
         for i in range(jump_count):
             if i % 2 == 0:
                 feature = next_feature
@@ -100,12 +105,15 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
 
     def __refine_vector_to_feature(self, vector, feature, contribution_coefficient: int) -> np.ndarray:
         self.scanner.go_to_direction(vector)
-        x_correction, y_correction = self.return_to_feature(feature)
+        try:
+            x_correction, y_correction = self.return_to_feature(feature)
+        except LossCurrentFeatureException:
+            raise LossCurrentFeatureException('in jumping')
         #todo логирование correction
         # print(x_correction, y_correction)
         vector[0] += x_correction / contribution_coefficient
         vector[1] += y_correction / contribution_coefficient
-        # print(vector) #todo логирование vector
+        #todo логирование vector
         return vector
 
     def set_stop(self, is_stop: bool) -> None:
