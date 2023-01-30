@@ -23,12 +23,12 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
         return FeatureFactory.create(len(figure), max_rad, *(*center, max_height))
 
     def recognize_all_figure_in_aria(self, surface: np.ndarray) -> Iterator[np.ndarray]:
-        self.__optimal_height = self.calc_optimal_height(surface.copy())
+        optimal_height = self.calc_optimal_height(surface.copy())
         for y, row in enumerate(surface):
             for x, val in enumerate(row):
-                if self.__is_start_point(val):
+                if self.__is_start_point(val, optimal_height):
                     try:
-                        figure = self.recognize_figure((x, y), surface, self.__optimal_height)
+                        figure = self.recognize_figure((x, y), surface, optimal_height)
                     except IndexError as e:
                         print(e)
                         continue
@@ -115,8 +115,8 @@ class LapshinFeatureRecognizer(FeatureRecognizerInterface):
     def __is_vector_entry(self, arr: np.ndarray, entry: np.ndarray) -> bool:
         return np.isclose(arr - entry, np.zeros(entry.shape)).all(axis=1).any()
 
-    def __is_start_point(self, val: int) -> bool:
-        return val > self.__optimal_height
+    def __is_start_point(self, val: int, optimal_height: int) -> bool:
+        return val > optimal_height
 
     def __gen_bypass_point(self, point: Tuple[int, int]): #todo кандидат чтобы переписать в go
         """
