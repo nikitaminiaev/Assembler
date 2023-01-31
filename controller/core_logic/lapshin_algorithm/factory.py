@@ -10,7 +10,6 @@ class Factory:
 
     @staticmethod
     def create_lapshin_feature_searcher(scanner: ScannerInterface) -> FeatureSearcher:
-        scanner.switch_scan(False)
         binding_in_delay = Event()
         allow_binding = Event()
         binding_feature = BindingProbeToFeature(

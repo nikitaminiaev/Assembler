@@ -18,3 +18,6 @@ class ScannerAroundFeature:
         x_max = int(x + rad + 1)
         y_max = int(y + rad + 1)
         return x_min, x_max, y_min, y_max
+
+    def get_scan_aria_center(self, surface: np.ndarray) -> tuple:
+        return (surface.shape[1] - 1) / 2, (surface.shape[0] - 1) / 2

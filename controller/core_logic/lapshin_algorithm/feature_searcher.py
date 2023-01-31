@@ -5,7 +5,6 @@ from typing import Tuple
 import numpy as np
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature_interface import BindingProbeToFeatureInterface
 from controller.core_logic.lapshin_algorithm.entity.feature import Feature
-from controller.core_logic.lapshin_algorithm.exception.loss_current_feature_exception import LossCurrentFeatureException
 from controller.core_logic.lapshin_algorithm.exception.neighbors_not_found_exception import NeighborsNotFoundException
 from controller.core_logic.lapshin_algorithm.exception.next_feature_not_found_exception import \
     NextFeatureNotFoundException
@@ -124,7 +123,7 @@ class FeatureSearcher:
             print(surface_for_accurate)
             raise e
         actual_center = list(actual.keys())[0]
-        aria_center = self.scanner.get_scan_aria_center(surface_for_accurate)
+        aria_center = self.scanner_around_feature.get_scan_aria_center(surface_for_accurate)
         vector_to_center = VectorOperations.get_vector_between_to_point(aria_center, actual_center)
         z_current = self.scanner.get_current_position()[2]
         vector_to_center = np.append(vector_to_center, feature.max_height - z_current)
@@ -182,7 +181,7 @@ class FeatureSearcher:
     def __get_figures_center(self, surface) -> Tuple[dict, dict]:
         figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(surface.copy())
         neighbors = {}
-        aria_center = self.scanner.get_scan_aria_center(surface)
+        aria_center = self.scanner_around_feature.get_scan_aria_center(surface)
         vectors_len = {}
         for figure in figure_gen:
             figure_center = self.feature_recognizer.get_center(figure)

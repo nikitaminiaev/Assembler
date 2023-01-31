@@ -70,7 +70,7 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
         _surface = self.scanner_around_feature.scan_aria_around_current_position(int(round(feature.max_rad)) * 3)
         feature_height = self.feature_recognizer.get_max_height(_surface.copy())
         figure_gen = self.feature_recognizer.recognize_all_figure_in_aria(_surface)
-        scan_center = self.scanner.get_scan_aria_center(_surface)
+        scan_center = self.scanner_around_feature.get_scan_aria_center(_surface)
         scan_center_int = tuple(int(item) for item in scan_center)
         try:
             for figure in figure_gen:

@@ -18,13 +18,5 @@ class ScannerInterface(ABC):
         pass
 
     @abstractmethod
-    def switch_scan(self, stop: bool) -> None:
-        pass
-
-    @abstractmethod
-    def get_scan_aria_center(self, surface: np.ndarray) -> tuple:
-        pass
-
-    @abstractmethod
     def get_current_position(self) -> tuple:
         pass

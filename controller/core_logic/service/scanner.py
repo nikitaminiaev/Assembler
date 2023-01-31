@@ -51,11 +51,5 @@ class Scanner(ScannerInterface):
         self.set_x_func((self.get_val_func(DTO_X) + int(vector[0]), self.get_val_func(DTO_Y), self.get_val_func(DTO_Z) + int(vector[2]) + 3))
         self.set_y_func((self.get_val_func(DTO_X), self.get_val_func(DTO_Y) + int(vector[1]), self.get_val_func(DTO_Z) + int(vector[2]) + 3))
 
-    def switch_scan(self, stop: bool) -> None:
-        self.scan_algorithm.stop = stop
-
-    def get_scan_aria_center(self, surface: np.ndarray) -> tuple:
-        return (surface.shape[1] - 1) / 2, (surface.shape[0] - 1) / 2
-
     def get_current_position(self) -> tuple:
         return self.get_val_func(DTO_X), self.get_val_func(DTO_Y), self.get_val_func(DTO_Z)
