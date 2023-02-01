@@ -53,7 +53,6 @@ class FeatureSearcher:
                  allow_binding: Event
                  ):
         self.scanner = scanner
-        self.local_surface = None
         self.binding_to_feature = binding_to_feature
         self.feature_recognizer = feature_recognizer
         self.structure_of_feature = DoublyLinkedList()
