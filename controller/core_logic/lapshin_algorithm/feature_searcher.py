@@ -92,8 +92,8 @@ class FeatureSearcher:
             next_feature = self.recur_find_next_feature(current_feature, rad_count + 2)
         return next_feature
 
-    def display(self) -> np.ndarray or None:
-        return self.structure_of_feature.display()
+    def display(self) -> list or None:
+        return self.structure_of_feature.get_all_features()
 
     def pause_algorithm(self) -> None:
         self.allow_binding.clear()

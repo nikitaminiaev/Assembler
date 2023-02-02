@@ -1,7 +1,6 @@
 from controller.core_logic.lapshin_algorithm.entity.feature import Feature
 from controller.core_logic.lapshin_algorithm.feature_collection.direction_generator_snake import DirectionGeneratorSnake
 import numpy as np
-from controller.core_logic.lapshin_algorithm.service.surface_generator import SurfaceGenerator
 
 
 class Node:
@@ -63,7 +62,7 @@ class DoublyLinkedList:
         self.current_node = self.current_node.prev
         return self.current_node.item
 
-    def display(self) -> np.ndarray or None:
+    def get_all_features(self) -> list or None:
         atoms = []
         if self.list_is_empty():
             print("The list is empty")
@@ -81,7 +80,7 @@ class DoublyLinkedList:
                     atoms.append(atom)
                 n = n.next
         print("\n")
-        return SurfaceGenerator(76, 20, atoms).generate()
+        return atoms
 
     def list_is_empty(self) -> bool:
         return self.start_node is None

@@ -9,6 +9,7 @@ from controller.core_logic.lapshin_algorithm.factory import Factory
 from controller.core_logic.origin import Origin
 from controller.core_logic.scan_transformer import ScanTransformer
 from controller.core_logic.service.scanner import Scanner
+from controller.core_logic.service.surface_generator import SurfaceGenerator
 from controller.core_logic.tool import Tool
 from sockets.server import Server
 
@@ -75,8 +76,9 @@ class AtomsLogic:
         self.lapshin_algorithm.reset_structure()
 
     def display_lapshin(self):
-        surface = self.lapshin_algorithm.display()
-        if surface is None: return
+        atoms = self.lapshin_algorithm.display()
+        if atoms is None: return
+        surface = SurfaceGenerator(76, 20, atoms).generate()
         self.surface_data = surface
         self.is_surface_changed_event = True
 
