@@ -1,34 +1,11 @@
+from threading import Event
+
 import numpy as np
 from typing import List, Tuple
 from noise_generator import NoiseGenerator
 
 MAX_FIELD_SIZE = 1000
 GENERAL_HEIGHT = 20
-OFFSET = 0
-ATOMS = [
-    # (10 + OFFSET, 5 + OFFSET),
-    # (10 + OFFSET, 25 + OFFSET),
-    # (10 + OFFSET, 45 + OFFSET),
-    # (10 + OFFSET, 65 + OFFSET),
-    # (20 + OFFSET, 10 + OFFSET),
-    # (20 + OFFSET, 20 + OFFSET),
-    # (20 + OFFSET, 30 + OFFSET),
-    # (20 + OFFSET, 40 + OFFSET),
-    # (20 + OFFSET, 50 + OFFSET),
-    # (20 + OFFSET, 60 + OFFSET),
-    # (30 + OFFSET, 25 + OFFSET),
-    (30 + OFFSET, 40 + OFFSET),
-    (30 + OFFSET, 60 + OFFSET),
-    # (40 + OFFSET, 25 + OFFSET),
-    (40 + OFFSET, 40 + OFFSET),
-    (40 + OFFSET, 60 + OFFSET),
-    # (50 + OFFSET, 10 + OFFSET),
-    # (50 + OFFSET, 20 + OFFSET),
-    (50 + OFFSET, 25 + OFFSET),
-    (50 + OFFSET, 35 + OFFSET),
-    (50 + OFFSET, 45 + OFFSET),
-    (50 + OFFSET, 55 + OFFSET),
-]
 
 '''
 # # 1  2  3  4  5  6  7  8  9 10 11 12 13
@@ -50,6 +27,7 @@ ATOMS = [
 # 3. Ползучесть в разные стороны зонда во время сканирования
 #
 '''
+
 
 class SurfaceGenerator:
 
@@ -99,14 +77,4 @@ class SurfaceGenerator:
     def __get_empty_surface(self):
         return np.full((self.max_field_size, self.max_field_size), self.general_height)
 
-
-if __name__ == '__main__':
-    arr = SurfaceGenerator(20, 20, [(5,5)]).generate()
-    # arr = SurfaceGenerator(20, 20, [(5,5)]).generate()
-    print(arr)
-    # arr2 = arr[2:9, 2:9].copy()
-    #
-    # arr2[3, 3] = 0
-    # print(arr2)
-    # print(arr2[3,3])
 

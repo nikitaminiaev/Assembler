@@ -48,39 +48,37 @@ class DoublyLinkedList:
             return None
         return self.current_node.prev.item
 
-    def go_to_next_feature(self) -> Feature or None:
+    def pointer_to_next_feature(self) -> Feature or None:
         if self.list_is_empty() or self.current_node.next is None:
             return None
-        # todo добавить физический переход к next
         self.current_node = self.current_node.next
         return self.current_node.item
 
-    def go_to_prev_feature(self) -> Feature or None:
+    def pointer_to_prev_feature(self) -> Feature or None:
         if self.list_is_empty() or self.current_node.prev is None:
             return None
-        # todo добавить физический переход к prev
         self.current_node = self.current_node.prev
         return self.current_node.item
 
     def get_all_features(self) -> list or None:
-        atoms = []
+        features = []
         if self.list_is_empty():
             print("The list is empty")
             return
         else:
             print(self.count)
             n = self.start_node
-            atoms.append((60, 10))
+            features.append((60, 10))
             while n is not None:
                 print("Element is: ", n.item)
                 print("feature ", n.item.to_string())
                 to_next = n.item.vector_to_next
                 if to_next is not None:
-                    atom = (atoms[-1][0] + int(round(to_next[0])), atoms[-1][1] + int(round(to_next[1])))
-                    atoms.append(atom)
+                    feature = (features[-1][0] + int(round(to_next[0])), features[-1][1] + int(round(to_next[1])))
+                    features.append(feature)
                 n = n.next
         print("\n")
-        return atoms
+        return features
 
     def list_is_empty(self) -> bool:
         return self.start_node is None

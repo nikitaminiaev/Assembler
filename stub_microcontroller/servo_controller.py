@@ -1,5 +1,4 @@
-from threading import Event
-
+from atom_structure import OFFSET, ATOMS
 from surface_generator import *
 from noise_generator import NoiseGenerator
 
@@ -9,11 +8,11 @@ class ServoController:
 
     def __init__(self, external_send_func):
         self.external_send_func = external_send_func
-        self.surface_generator = SurfaceGenerator(MAX_FIELD_SIZE, GENERAL_HEIGHT, ATOMS)
         self.shutdown_noise = Event()
         self.shutdown_noise.clear()
-        self.noise_generator = NoiseGenerator()
-        self.noise_generator.start(self.shutdown_noise)
+        self.surface_generator = SurfaceGenerator(MAX_FIELD_SIZE, GENERAL_HEIGHT, ATOMS)
+        self.noise_generator = NoiseGenerator(self.shutdown_noise)
+        self.noise_generator.start_gen_offset(self.shutdown_noise)
         self.noise_surface = self.surface_generator.generate()
         self.x_current = 0 + OFFSET
         self.y_current = 0 + OFFSET
