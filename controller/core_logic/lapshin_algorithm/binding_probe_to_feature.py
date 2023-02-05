@@ -86,24 +86,26 @@ class BindingProbeToFeature(BindingProbeToFeatureInterface):
         raise LossCurrentFeatureException
 
     def jumping(self, current_feature: Feature, next_feature: Feature, jump_count: int) -> None:
-        vector = current_feature.vector_to_next
+        vector_to_next = current_feature.vector_to_next
         on_next_feature = False
         for i in range(jump_count):
             if i % 2 == 0:
                 feature = next_feature
-                vector = self.__refine_vector_to_feature(vector, feature, i+1)
+                vector_to_next = self.__clarify_vector_to_feature(vector_to_next, feature, i + 1)
                 on_next_feature = True
             else:
                 feature = current_feature
-                reverse_vector = self.__refine_vector_to_feature(VectorOperations.get_reverse_vector(vector), feature, i+1)
-                vector = VectorOperations.get_reverse_vector(reverse_vector)
+                reverse_vector = self.__clarify_vector_to_feature(VectorOperations.get_reverse_vector(vector_to_next), feature, i + 1)
+                vector_to_next = VectorOperations.get_reverse_vector(reverse_vector)
                 on_next_feature = False
-        if not on_next_feature:
-            self.scanner.go_to_direction(vector)
-        current_feature.vector_to_next = vector
-        next_feature.vector_to_prev = VectorOperations.get_reverse_vector(vector)
+        if on_next_feature:
+            """вконце всегда остаться на current_feature"""
+            reverse_vector = self.__clarify_vector_to_feature(VectorOperations.get_reverse_vector(vector_to_next), current_feature, jump_count + 1)
+            vector_to_next = VectorOperations.get_reverse_vector(reverse_vector)
+        current_feature.vector_to_next = vector_to_next
+        next_feature.vector_to_prev = VectorOperations.get_reverse_vector(vector_to_next)
 
-    def __refine_vector_to_feature(self, vector, feature, contribution_coefficient: int) -> np.ndarray:
+    def __clarify_vector_to_feature(self, vector, feature, contribution_coefficient: int) -> np.ndarray:
         self.scanner.go_to_direction(vector)
         try:
             x_correction, y_correction = self.return_to_feature(feature)

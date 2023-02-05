@@ -65,18 +65,23 @@ class FeatureSearcher:
         self.find_first_feature(surface)
         while self.structure_of_feature.count < 6:
             current_feature = self.structure_of_feature.get_current_feature()
-            next_feature = self.recur_find_next_feature(current_feature, 5) #todo обработать NextFeatureNotFoundException
-
-            self.binding_in_delay.wait()
-            self.allow_binding.clear()
-            self.binding_to_feature.jumping(current_feature, next_feature, 5) #todo обработать LossCurrentFeatureException
-
-            self.structure_of_feature.insert_to_end(next_feature)
-            self.binding_to_feature.set_current_feature(next_feature)
-            self.allow_binding.set()
+            next_feature = self.recur_find_next_feature(current_feature, 5) #todo обработать NextFeatureNotFoundException, current_feature получать внутри, параметр - next_direction
+            self.average_vector_between_features(current_feature, next_feature)
+            self.join_next_feature(next_feature, current_feature.vector_to_next)
             # todo логирвоание print(next_feature.to_string())
 
-    def recur_find_next_feature(self, current_feature: Feature, rad_count: int):
+    def join_next_feature(self, next_feature: Feature, vector_to_next_feature: np.ndarray) -> None:
+        self.scanner.go_to_direction(vector_to_next_feature)
+        self.structure_of_feature.insert_to_end(next_feature)
+        self.binding_to_feature.set_current_feature(next_feature)
+        self.allow_binding.set()
+
+    def average_vector_between_features(self, current_feature: Feature, next_feature: Feature) -> None:
+        self.binding_in_delay.wait()
+        self.allow_binding.clear()
+        self.binding_to_feature.jumping(current_feature, next_feature, 5)  # todo обработать LossCurrentFeatureException
+
+    def recur_find_next_feature(self, current_feature: Feature, rad_count: int) -> Feature:
         if rad_count > 7:
             raise NextFeatureNotFoundException
         self.binding_in_delay.wait()
