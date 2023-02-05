@@ -66,6 +66,7 @@ class TestFeatureSearcher(TestCase):
         any_val = 1
         self.feature_searcher.scanner.get_val_func = MagicMock(
             side_effect=[14, 14, any_val, any_val, any_val,
+                         any_val, any_val, any_val, any_val, 14, 14, any_val, any_val, any_val, any_val, any_val, any_val,
                          any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val, any_val,
                          ])
 
@@ -75,12 +76,13 @@ class TestFeatureSearcher(TestCase):
         self.assertEqual(self.binding_probe_to_feature.current_feature, self.feature_searcher.structure_of_feature.get_current_feature())
 
     def test_find_next_feature(self):
-        vector_to_next_atom = np.array([12, 12, 0], dtype='int8')
+        vector_to_next_atom = np.array([12, 12], dtype='int8')
         self.binding_probe_to_feature.scanner.scan_algorithm = MagicMock()
         surface = SurfaceGenerator(30, 20, [(12, 12), (12 + vector_to_next_atom[0], 12 + vector_to_next_atom[1])]).generate()
         any_val = 1
         self.binding_probe_to_feature.scanner.get_val_func = MagicMock(
             side_effect=[12, 12, 3, 4, 5, 6, 7, 8, 9,
+                         12, 12,any_val,any_val, any_val,any_val,any_val,
                          10, any_val,any_val,any_val, any_val,any_val,any_val,
                          10, any_val,any_val,any_val, any_val,any_val,any_val,
                          ])
@@ -89,11 +91,11 @@ class TestFeatureSearcher(TestCase):
         self.feature_searcher.scanner.external_surface = surface
         self.feature_searcher.find_first_feature(surface)
 
-        next_feature = self.feature_searcher.find_next_feature(surface)
+        next_feature = self.feature_searcher.find_next_feature(surface, vector_to_next_atom)
         self.assertIsNotNone(next_feature)
 
         current_feature = self.feature_searcher.structure_of_feature.get_current_feature()
-        self.assertTrue((vector_to_next_atom == current_feature.vector_to_next).all())
+        self.assertTrue((np.append(vector_to_next_atom, [0]) == current_feature.vector_to_next).all())
 
     #
     # def test_search_features(self):
