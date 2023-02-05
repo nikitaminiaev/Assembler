@@ -9,10 +9,6 @@ class ScannerInterface(ABC):
         pass
 
     @abstractmethod
-    def go_to_coordinate(self, *coordinate) -> None:
-        pass
-
-    @abstractmethod
     def go_to_direction(self, vector: np.ndarray) -> None:
         pass
 

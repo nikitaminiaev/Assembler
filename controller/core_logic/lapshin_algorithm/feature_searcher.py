@@ -108,8 +108,9 @@ class FeatureSearcher:
 
     def find_first_feature(self, surface: np.ndarray) -> None:
         feature = self.__get_first_feature(surface)
-        self.scanner.go_to_coordinate(*feature.coordinates)
-
+        current_position = self.scanner.get_current_position()
+        vector = VectorOperations.get_vector_between_to_point(feature.coordinates, current_position)
+        self.scanner.go_to_direction(vector)
         self.go_to_feature_more_accurate(feature, 5)
 
         self.structure_of_feature.insert_to_end(feature)
@@ -118,8 +119,7 @@ class FeatureSearcher:
         threading.Thread(target=self.__start_binding_thread, args=(self.binding_to_feature,)).start()
 
     def go_to_feature_more_accurate(self, feature: Feature, rad_count: int):
-        surface_for_accurate = self.scanner_around_feature.scan_aria_around_current_position(
-            feature.max_rad * rad_count)
+        surface_for_accurate = self.scanner_around_feature.scan_aria_around_current_position(feature.max_rad * rad_count)
         # todo логирование print('=========_surface===========')
         try:
             actual, _ = self.__get_figures_center(surface_for_accurate.copy())
@@ -128,7 +128,7 @@ class FeatureSearcher:
             raise e
         actual_center = list(actual.keys())[0]
         aria_center = self.scanner_around_feature.get_scan_aria_center(surface_for_accurate)
-        vector_to_center = VectorOperations.get_vector_between_to_point(aria_center, actual_center)
+        vector_to_center = VectorOperations.get_vector_between_to_point(actual_center, aria_center)
         z_current = self.scanner.get_current_position()[2]
         vector_to_center = np.append(vector_to_center, feature.max_height - z_current)
         self.scanner.go_to_direction(vector_to_center)

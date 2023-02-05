@@ -28,7 +28,22 @@ class VectorOperations:
 
     @staticmethod
     def get_vector_between_to_point(destination_point: tuple, start_point: tuple) -> np.ndarray:
-        return np.array([start_point[0] - destination_point[0], start_point[1] - destination_point[1]])
+        if len(destination_point) == 2 and len(start_point) == 2:
+            return np.array(
+                [
+                    destination_point[0] - start_point[0],
+                    destination_point[1] - start_point[1],
+                ]
+            )
+        if len(destination_point) == 3 and len(start_point) == 3:
+            return np.array(
+                [
+                    destination_point[0] - start_point[0],
+                    destination_point[1] - start_point[1],
+                    destination_point[2] - start_point[2],
+                ]
+            )
+        raise ValueError('vector_between_to_point exception')
 
     @staticmethod
     def get_vector_len(vector: np.ndarray) -> float:

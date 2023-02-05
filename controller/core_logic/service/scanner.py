@@ -42,7 +42,7 @@ class Scanner(ScannerInterface):
         self.go_to_coordinate(*current_position)
         return self.external_surface[y_min:y_max, x_min:x_max].copy()
 
-    def go_to_coordinate(self, *coordinate) -> None: # todo перейти на использование метода go_to_direction
+    def go_to_coordinate(self, *coordinate) -> None:
         self.set_x_func((int(coordinate[0]), int(coordinate[1]), int(coordinate[2]) + 3))
         self.set_y_func((int(coordinate[0]), int(coordinate[1]), int(coordinate[2]) + 3))
 
