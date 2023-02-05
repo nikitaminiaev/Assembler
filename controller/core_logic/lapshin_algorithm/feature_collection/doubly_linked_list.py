@@ -82,6 +82,3 @@ class DoublyLinkedList:
 
     def list_is_empty(self) -> bool:
         return self.start_node is None
-
-    def get_next_direction(self) -> np.ndarray:
-        return DirectionGeneratorSnake.generate_next_direction(self.count)

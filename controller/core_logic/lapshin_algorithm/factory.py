@@ -1,5 +1,6 @@
 from threading import Event
 from controller.core_logic.lapshin_algorithm.binding_probe_to_feature import BindingProbeToFeature
+from controller.core_logic.lapshin_algorithm.feature_collection.direction_generator_snake import DirectionGeneratorSnake
 from controller.core_logic.lapshin_algorithm.feature_searcher import FeatureSearcher
 from controller.core_logic.lapshin_algorithm.service.recognition.lapshin_feature_recognizer import \
     LapshinFeatureRecognizer

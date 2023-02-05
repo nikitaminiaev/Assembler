@@ -2,6 +2,8 @@ import traceback
 from time import sleep
 
 import matplotlib as plt
+
+from controller.core_logic.lapshin_algorithm.feature_collection.direction_generator_snake import DirectionGeneratorSnake
 from controller.core_logic.scan_algorithms import FIELD_SIZE
 from controller.core_logic.exceptions.touching_surface import TouchingSurface
 from controller.frontend.graph import Graph, GraphFrame
@@ -318,7 +320,7 @@ class ConstructorFrames:
     def _go_lapshin_algorithm(self, x_min: int = 0, y_min: int = 0, x_max: int = FIELD_SIZE, y_max: int = FIELD_SIZE) -> None:
         self.scanner.scan_algorithm.stop = False
         surface = self.scanner.scan_aria(x_min, y_min, x_max, y_max)
-        self.tk.graph.frame.atoms_logic.lapshin_algorithm.search_features(surface)
+        self.tk.graph.frame.atoms_logic.lapshin_algorithm.search_features_auto(surface, DirectionGeneratorSnake(), 6)
 
     def pack(self):
         self.__build_surface_btn.bind('<Button-1>',

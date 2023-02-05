@@ -8,7 +8,10 @@ from controller.core_logic.lapshin_algorithm.entity.feature import Feature
 from controller.core_logic.lapshin_algorithm.exception.neighbors_not_found_exception import NeighborsNotFoundException
 from controller.core_logic.lapshin_algorithm.exception.next_feature_not_found_exception import \
     NextFeatureNotFoundException
+from controller.core_logic.lapshin_algorithm.feature_collection.direction_generator_interface import \
+    DirectionGeneratorInterface
 from controller.core_logic.lapshin_algorithm.feature_collection.doubly_linked_list import DoublyLinkedList
+from controller.core_logic.lapshin_algorithm.feature_searcher_interface import FeatureSearcherInterface
 from controller.core_logic.lapshin_algorithm.service.recognition.feature_recognizer_interface import \
     FeatureRecognizerInterface
 from controller.core_logic.lapshin_algorithm.service.scanner_around_feature import ScannerAroundFeature
@@ -42,7 +45,7 @@ from controller.core_logic.service.scanner_interface import ScannerInterface
 """
 
 
-class FeatureSearcher:
+class FeatureSearcher(FeatureSearcherInterface):
     COS_QUARTER_PI = 0.7071
 
     def __init__(self,
@@ -60,12 +63,12 @@ class FeatureSearcher:
         self.allow_binding = allow_binding
         self.scanner_around_feature = ScannerAroundFeature(scanner)
 
-    def search_features(self, surface: np.ndarray):
+    def search_features_auto(self, surface: np.ndarray, direction_generator: DirectionGeneratorInterface, max_feature_count: int) -> None:
         # todo вычислять и логировать время выполнения функций
         self.find_first_feature(surface)
-        while self.structure_of_feature.count < 6:
+        while self.structure_of_feature.count < max_feature_count:
             current_feature = self.structure_of_feature.get_current_feature()
-            next_feature = self.recur_find_next_feature(current_feature, 5) #todo обработать NextFeatureNotFoundException, current_feature получать внутри, параметр - next_direction
+            next_feature = self.recur_find_next_feature(current_feature, direction_generator.generate_next_direction(self.structure_of_feature.count), 5) #todo обработать NextFeatureNotFoundException, current_feature получать внутри, параметр - next_direction
             self.average_vector_between_features(current_feature, next_feature)
             self.join_next_feature(next_feature, current_feature.vector_to_next)
             # todo логирвоание print(next_feature.to_string())
@@ -81,20 +84,20 @@ class FeatureSearcher:
         self.allow_binding.clear()
         self.binding_to_feature.jumping(current_feature, next_feature, 5)  # todo обработать LossCurrentFeatureException
 
-    def recur_find_next_feature(self, current_feature: Feature, rad_count: int) -> Feature:
-        if rad_count > 7:
+    def recur_find_next_feature(self, current_feature: Feature, next_direction: np.ndarray, count_feature_rad: int) -> Feature:
+        if count_feature_rad > 7:
             raise NextFeatureNotFoundException
         self.binding_in_delay.wait()
         self.allow_binding.clear()
-        surface = self.scanner_around_feature.scan_aria_around_current_position(current_feature.max_rad * rad_count)
+        surface = self.scanner_around_feature.scan_aria_around_current_position(current_feature.max_rad * count_feature_rad)
         self.allow_binding.set()
         try:
-            next_feature = self.find_next_feature(surface)
+            next_feature = self.find_next_feature(surface, next_direction)
         except RuntimeError:
             self.allow_binding.set()
             self.binding_in_delay.wait()
             self.allow_binding.clear()
-            next_feature = self.recur_find_next_feature(current_feature, rad_count + 2)
+            next_feature = self.recur_find_next_feature(current_feature, next_direction, count_feature_rad + 2)
         return next_feature
 
     def display(self) -> list or None:
@@ -103,10 +106,10 @@ class FeatureSearcher:
     def pause_algorithm(self) -> None:
         self.allow_binding.clear()
 
-    def reset_structure(self):
+    def reset_structure(self) -> None:
         self.structure_of_feature = DoublyLinkedList()
 
-    def find_first_feature(self, surface: np.ndarray) -> None:
+    def find_first_feature(self, surface: np.ndarray) -> Feature:
         feature = self.__get_first_feature(surface)
         current_position = self.scanner.get_current_position()
         vector = VectorOperations.get_vector_between_to_point(feature.coordinates, current_position)
@@ -117,6 +120,7 @@ class FeatureSearcher:
         self.binding_to_feature.set_current_feature(feature)
         self.allow_binding.set()
         threading.Thread(target=self.__start_binding_thread, args=(self.binding_to_feature,)).start()
+        return feature
 
     def go_to_feature_more_accurate(self, feature: Feature, rad_count: int):
         surface_for_accurate = self.scanner_around_feature.scan_aria_around_current_position(feature.max_rad * rad_count)
@@ -140,7 +144,7 @@ class FeatureSearcher:
         feature = self.feature_recognizer.recognize_feature(first_figure, surface)
         return feature
 
-    def find_next_feature(self, surface: np.ndarray) -> Feature:  # TODO сделать рефакторинг функции, выделить приватный метод
+    def find_next_feature(self, surface: np.ndarray, next_direction: np.ndarray) -> Feature:  # TODO сделать рефакторинг функции, выделить приватный метод
         try:
             current, neighbors = self.__get_figures_center(surface.copy())
         except ValueError as e:
@@ -152,7 +156,6 @@ class FeatureSearcher:
         current_center = list(current.keys())[0]
         neighbors_center = list(neighbors.keys())
         vectors_to_neighbors = VectorOperations.calc_vectors_to_neighbors(current_center, neighbors_center)
-        next_direction = self.structure_of_feature.get_next_direction()
         print(next_direction)
         vector_to_next_feature = self.__find_close_vector(vectors_to_neighbors, next_direction)
         if vector_to_next_feature is None:

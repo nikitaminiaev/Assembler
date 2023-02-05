@@ -1,7 +1,10 @@
 import numpy as np
 
+from controller.core_logic.lapshin_algorithm.feature_collection.direction_generator_interface import \
+    DirectionGeneratorInterface
 
-class DirectionGeneratorSnake:
+
+class DirectionGeneratorSnake(DirectionGeneratorInterface):
 
     @staticmethod
     def generate_next_direction(count: int) -> np.ndarray:
