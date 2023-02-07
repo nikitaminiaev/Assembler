@@ -2,6 +2,6 @@
 /*.pdb
 /plt
 /sys
-/esp8266/cred.*
+/esp8266/cred.py
 /.env
-/stub_microcontroller/cred.*
+/stub_microcontroller/cred.py

@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 import traceback
-from time import sleep
-
 from controller.frontend.manipulator import Manipulator
 
 root = Manipulator()
