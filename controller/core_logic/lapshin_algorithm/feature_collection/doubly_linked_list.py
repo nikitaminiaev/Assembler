@@ -1,6 +1,6 @@
+from abc import ABC, abstractmethod
+
 from controller.core_logic.lapshin_algorithm.entity.feature import Feature
-from controller.core_logic.lapshin_algorithm.feature_collection.direction_generator_snake import DirectionGeneratorSnake
-import numpy as np
 
 
 class Node:
@@ -10,7 +10,31 @@ class Node:
         self.prev = None
 
 
-class DoublyLinkedList:
+class StructureOfFeatureInterface(ABC):
+
+    @abstractmethod
+    def get_current_feature(self) -> Feature or None:
+        pass
+
+    @abstractmethod
+    def get_next_feature(self) -> Feature or None:
+        pass
+    
+    @abstractmethod
+    def get_prev_feature(self) -> Feature or None:
+        pass
+
+    @abstractmethod
+    def get_all_features(self) -> list or None:
+        pass
+
+    @abstractmethod
+    def reset_structure(self) -> None:
+        pass
+
+
+class DoublyLinkedList(StructureOfFeatureInterface):
+
     def __init__(self):
         self.current_node = None
         self.start_node = None
@@ -32,6 +56,11 @@ class DoublyLinkedList:
         new_node.prev = n
         self.current_node = new_node
         self.count += 1
+
+    def reset_structure(self) -> None:
+        self.current_node = None
+        self.start_node = None
+        self.count = 0
 
     def get_current_feature(self) -> Feature or None:
         if self.list_is_empty() or self.current_node is None:
@@ -82,3 +111,9 @@ class DoublyLinkedList:
 
     def list_is_empty(self) -> bool:
         return self.start_node is None
+
+    def is_set_next_feature(self) -> bool:
+        return not self.list_is_empty() and self.current_node.next is not None
+
+    def is_set_prev_feature(self) -> bool:
+        return not self.list_is_empty() and self.current_node.prev is not None

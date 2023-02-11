@@ -1,5 +1,7 @@
 import sys, os
 
+from controller.core_logic.lapshin_algorithm.feature_collection.doubly_linked_list import DoublyLinkedList
+
 root = sys.path[1]
 path = os.path.join(root, "stub_microcontroller")
 if path not in sys.path:
@@ -40,6 +42,7 @@ class TestFeatureSearcher(TestCase):
             self.binding_probe_to_feature,
             scanner,
             LapshinFeatureRecognizer(),
+            DoublyLinkedList(),
             binding_in_delay,
             allow_binding,
         )

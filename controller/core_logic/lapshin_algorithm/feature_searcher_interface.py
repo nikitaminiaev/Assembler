@@ -28,3 +28,7 @@ class FeatureSearcherInterface(ABC):
     def join_next_feature(self, next_feature: Feature, vector_to_next_feature: np.ndarray) -> None:
         pass
 
+    @abstractmethod
+    def pause_algorithm(self):    #временно
+        pass
+

@@ -18,6 +18,8 @@ from controller.core_logic.lapshin_algorithm.service.scanner_around_feature impo
 from controller.core_logic.lapshin_algorithm.service.vector_operations import VectorOperations
 from controller.core_logic.service.scanner_interface import ScannerInterface
 
+JUMP_COUNT = 5
+
 """
 при создании затравки производится поиск такого атома, который расположен под
 наименьшим углом к прямой, задающей направление движения. Найденный атом полу-
@@ -52,13 +54,14 @@ class FeatureSearcher(FeatureSearcherInterface):
                  binding_to_feature: BindingProbeToFeatureInterface,
                  scanner: ScannerInterface,
                  feature_recognizer: FeatureRecognizerInterface,
+                 structure_of_feature: DoublyLinkedList,
                  binding_in_delay: Event,
                  allow_binding: Event
                  ):
         self.scanner = scanner
         self.binding_to_feature = binding_to_feature
         self.feature_recognizer = feature_recognizer
-        self.structure_of_feature = DoublyLinkedList()
+        self.structure_of_feature = structure_of_feature
         self.binding_in_delay = binding_in_delay
         self.allow_binding = allow_binding
         self.scanner_around_feature = ScannerAroundFeature(scanner)
@@ -82,7 +85,7 @@ class FeatureSearcher(FeatureSearcherInterface):
     def average_vector_between_features(self, current_feature: Feature, next_feature: Feature) -> None:
         self.binding_in_delay.wait()
         self.allow_binding.clear()
-        self.binding_to_feature.jumping(current_feature, next_feature, 5)  # todo обработать LossCurrentFeatureException
+        self.binding_to_feature.jumping(current_feature, next_feature, JUMP_COUNT)  # todo обработать LossCurrentFeatureException
 
     def recur_find_next_feature(self, current_feature: Feature, next_direction: np.ndarray, count_feature_rad: int) -> Feature:
         if count_feature_rad > 7:
@@ -100,14 +103,8 @@ class FeatureSearcher(FeatureSearcherInterface):
             next_feature = self.recur_find_next_feature(current_feature, next_direction, count_feature_rad + 2)
         return next_feature
 
-    def display(self) -> list or None:
-        return self.structure_of_feature.get_all_features()
-
     def pause_algorithm(self) -> None:
         self.allow_binding.clear()
-
-    def reset_structure(self) -> None:
-        self.structure_of_feature = DoublyLinkedList()
 
     def find_first_feature(self, surface: np.ndarray) -> Feature:
         feature = self.__get_first_feature(surface)

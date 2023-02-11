@@ -42,7 +42,9 @@ class AtomsLogic:
         self.touching_surface_event = Event()
         self.__origin = Origin()
         self.scan_transformer = ScanTransformer()
-        self.lapshin_algorithm = Factory.create_lapshin_feature_searcher(self.create_scanner(self.touching_surface_event))
+        self.lapshin_searcher, \
+        self.walker_by_features, \
+        self.structure_of_feature = Factory.create_lapshin_algorithm(self.create_scanner(self.touching_surface_event))
 
     def create_scanner(self, touching_surface_event) -> Scanner:
         get_val_func = self.get_dto_val
@@ -69,14 +71,14 @@ class AtomsLogic:
         self.is_surface_changed_event = True
 
     def pause_lapshin(self):
-        self.lapshin_algorithm.pause_algorithm()
+        self.lapshin_searcher.pause_algorithm()
         self.is_surface_changed_event = True
 
     def del_lapshin_data(self):
-        self.lapshin_algorithm.reset_structure()
+        self.structure_of_feature.reset_structure()
 
     def display_lapshin(self):
-        atoms = self.lapshin_algorithm.display()
+        atoms = self.structure_of_feature.get_all_features()
         if atoms is None: return
         surface = SurfaceGenerator(76, 20, atoms).generate()
         self.surface_data = surface
