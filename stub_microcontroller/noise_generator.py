@@ -28,12 +28,14 @@ class NoiseGenerator:
             self.y_offset += self.__get_offset()
 
     def __get_offset(self):
-        delay = 0.2
+        delay = 0.5
         if bool(random.getrandbits(1)):
-            delay += 0.5 * random.random()
+            delay += 0.1 * random.random()
         else:
-            delay -= 0.5 * random.random()
-        sleep(abs(delay))
+            delay -= 0.1 * random.random()
+        d = abs(delay)
+        # print("______delay_______ : " + str(d))
+        sleep(d)
         return random.randint(0, random.randint(0, 1))
 
     @staticmethod
