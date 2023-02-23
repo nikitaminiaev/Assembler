@@ -1,6 +1,6 @@
 from typing import List
 
-from controller.core_logic.atom import Atom
+from controller.core_logic.lapshin_algorithm.entity.atom import Atom
 from controller.core_logic.tool import Tool
 
 

@@ -22,6 +22,7 @@ class Server(Socket):
         threading.Thread(target=self.accept_sockets).start()
 
     def send_data_to_all_clients(self, data: str):
+        data += '\n'
         for client in self.clients:
             client.send(data.encode(CODING))
 
@@ -34,9 +35,6 @@ class Server(Socket):
                 print(traceback.format_exc())
                 print(str(e))
                 self.set_down()
-
-    # def handle_data_from_client(self, data: str):
-    #     self.external_handle_func(data)
 
     def accept_sockets(self):
         while not self._quit:
@@ -51,10 +49,3 @@ class Server(Socket):
                 print(traceback.format_exc())
                 print(str(e))
                 self.set_down()
-
-
-if __name__ == '__main__':
-    server = Server()
-    server.set_up()
-    if 1 in server.clients:
-        server.send_data_to_all_clients('hi')

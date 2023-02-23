@@ -1,0 +1,2 @@
+class NeighborsNotFoundException(RuntimeError):
+    pass

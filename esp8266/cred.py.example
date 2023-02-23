@@ -1,0 +1,5 @@
+IP = '192.123.0.123'
+PORT = 9999
+PASS = 'PassToWiFi'
+ESSID = 'WiFiNetworkName'
+PASS_ESP = 'PassWiFi_ESP'

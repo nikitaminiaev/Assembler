@@ -10,7 +10,7 @@ class Socket(socket.socket):
             socket.SOCK_STREAM,
         )
         self.IP = IP
-        self.PORT = PORT
+        self.PORT = int(PORT)
         self.CODING = 'utf-8'
         self.PACKAGE_SIZE = 2048
         self.CONNECTED = 'connected'
@@ -25,6 +25,7 @@ class Socket(socket.socket):
         print(self.status)
         self._quit = True
         self.close()
+        exit()
 
     def set_up(self):
         raise NotImplemented()

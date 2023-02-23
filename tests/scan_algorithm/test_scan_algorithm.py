@@ -6,16 +6,23 @@ from controller.constants import MAX, DTO_Z, DTO_X, DTO_Y
 from controller.core_logic.atom_logic import AtomsLogic
 from controller.core_logic.dto import Dto
 from controller.core_logic.exceptions.touching_surface import TouchingSurface
-from controller.core_logic.scan_algorithms import ScanAlgorithms
+from controller.core_logic.service.scanner import Scanner
 from controller.frontend.manipulator import ConstructorFrames
 from tests.scan_algorithm.fixture_scan_algo import INITIAL_DATA, X_DATA_WITHOUT_SURFACE, \
-    Y_DATA_WITHOUT_SURFACE, Z_DATA_WITHOUT_SURFACE, X_DATA_WITH_SURFACE, Y_DATA_WITH_SURFACE, Z_DATA_WITH_SURFACE
+    Y_DATA_WITHOUT_SURFACE, X_DATA_WITH_SURFACE, Y_DATA_WITH_SURFACE
 
 
 class FakeConstructorFrames(ConstructorFrames):
 
-    def __init__(self, atoms_logic):
-        self.scanAlgorithm = ScanAlgorithms(0)
+    def __init__(self, atoms_logic: AtomsLogic):
+        get_val_func = atoms_logic.get_dto_val
+        set_x_func = atoms_logic.set_val_dto_curried(DTO_X)
+        set_y_func = atoms_logic.set_val_dto_curried(DTO_Y)
+        touching_surface_event = MagicMock()
+        external_surface = atoms_logic.surface_data
+        push_coord_to_mk = MagicMock()
+        self.scanner = Scanner(get_val_func, set_x_func, set_y_func, touching_surface_event, external_surface, push_coord_to_mk, 0)
+        self.scanAlgorithm = self.scanner.scan_algorithm
         self.tk = Mock()
         self.tk.graph.frame.atoms_logic = atoms_logic
 
@@ -35,7 +42,7 @@ class FakeDto(Dto):
 
 
 class FakeAtomsLogic(AtomsLogic):
-    def set_val_to_dto(self, dto_str: str, coordinates: Tuple[int, int, int]) -> None:
+    def set_val_to_dto(self, dto_str: str, coordinates: Tuple[int, int, int], is_auto: bool = False) -> None:
         if dto_str == DTO_Z and coordinates[2] == 20:
             raise TouchingSurface()
         if dto_str == DTO_X and coordinates[0] == 4 and coordinates[2] == 30:
@@ -62,23 +69,21 @@ class TestScanAlgorithm(unittest.TestCase):
         atoms_logic = self.__get_atoms_logic(AtomsLogic, 10, 10, MAX)
 
         fake_constructor_frames = FakeConstructorFrames(atoms_logic)
-        fake_constructor_frames.scanAlgorithm.stop = False
+        fake_constructor_frames.scanner.scan_algorithm.stop = False
         fake_constructor_frames._go_auto(*INITIAL_DATA)
 
         atoms_logic.dto_x.mock_value.assert_has_calls(X_DATA_WITHOUT_SURFACE, any_order=False)
         atoms_logic.dto_y.mock_value.assert_has_calls(Y_DATA_WITHOUT_SURFACE, any_order=False)
-        atoms_logic.dto_z.mock_value.assert_has_calls(Z_DATA_WITHOUT_SURFACE, any_order=False)
 
     def test_auto_scan_with_surface(self):
         atoms_logic = self.__get_atoms_logic(FakeAtomsLogic, 10, 10, MAX)
 
         fake_constructor_frames = FakeConstructorFrames(atoms_logic)
-        fake_constructor_frames.scanAlgorithm.stop = False
+        fake_constructor_frames.scanner.scan_algorithm.stop = False
         fake_constructor_frames._go_auto(*INITIAL_DATA)
 
         atoms_logic.dto_x.mock_value.assert_has_calls(X_DATA_WITH_SURFACE, any_order=False)
         atoms_logic.dto_y.mock_value.assert_has_calls(Y_DATA_WITH_SURFACE, any_order=False)
-        atoms_logic.dto_z.mock_value.assert_has_calls(Z_DATA_WITH_SURFACE, any_order=False)
 
     def __get_atoms_logic(self, atoms_logic_class, x_max, y_max, z_max):
         atoms_logic = atoms_logic_class(x_max, y_max, self.server_mock)

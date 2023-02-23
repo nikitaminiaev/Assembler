@@ -1,6 +1,6 @@
 import traceback
 import matplotlib
-from controller.core_logic.atom import Atom
+from controller.core_logic.lapshin_algorithm.entity.atom import Atom
 from controller.core_logic.atom_logic import AtomsLogic
 
 matplotlib.use("TkAgg")
@@ -48,7 +48,7 @@ class GraphFrame(tk.Frame):
         label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
         self.is_new_point = False
-        self.quit = False
+        self.stop_graph = False
         self.x_arr, self.y_arr = np.meshgrid(np.arange(0, MAX_FIELD_SIZE, 1), np.arange(0, MAX_FIELD_SIZE, 1))
         self.surface = None
         self.tool_tip = None
@@ -69,7 +69,7 @@ class GraphFrame(tk.Frame):
 
     # главный алгоритм обновления визуальных данных графика при ручном управлении
     def update_graph_data_algorithm(self):
-        if self.atoms_logic.is_new_point():
+        if self.atoms_logic.is_new_point() or self.atoms_logic.is_surface_changed_event:
             try:
                 self.tool_tip.remove() if self.tool_tip is not None else None
                 self.origin.remove() if self.origin is not None else None
@@ -95,6 +95,7 @@ class GraphFrame(tk.Frame):
                 self.__build_surface()
                 self.atoms_logic.is_surface_changed_event = False
             self.__reset_sensor()
+            self.atoms_logic.is_surface_changed_event = False
 
     def __reset_sensor(self):
         if self.atoms_logic.tool_is_coming_down():
@@ -125,15 +126,19 @@ class GraphFrame(tk.Frame):
             print(traceback.format_exc())
             print(str(e))
 
+    def close_matplot(self):
+        plt.close('all')
+
     def draw_graph(self):
-        while not self.quit:
+        while not self.stop_graph:
             try:
                 time.sleep(SLEEP_BETWEEN_DRAW_GRAPH_FRAME)
                 self.canvas.draw_idle()
             except Exception as e:
-                self.quit = True
+                self.stop_graph = True
                 print(traceback.format_exc())
                 print(str(e))
+                self.close_matplot()
                 self.destroy()
                 exit(0)
 

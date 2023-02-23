@@ -1,13 +1,19 @@
+from threading import Event
 from typing import Tuple
 import json
 import numpy as np
 from controller.constants import *
 from controller.core_logic.atoms_collection import AtomCollection
 from controller.core_logic.dto import Dto
+from controller.core_logic.lapshin_algorithm.factory import Factory
 from controller.core_logic.origin import Origin
+from controller.core_logic.scan_transformer import ScanTransformer
+from controller.core_logic.service.scanner import Scanner
+from controller.core_logic.service.surface_generator import SurfaceGenerator
 from controller.core_logic.tool import Tool
 from sockets.server import Server
 
+DEPARTURE_BY_Z = 10
 INVALID_DTO = "Invalid dto"
 
 
@@ -19,19 +25,75 @@ class AtomsLogic:
             y_field_size: int = MAX_FIELD_SIZE,
             server=Server,
     ):
-        self.surface_data = np.zeros((x_field_size, y_field_size))
+        self.x_field_size = x_field_size
+        self.y_field_size = y_field_size
+        self.server = server(self.handle_server_data)
+        self.surface_data = np.zeros((self.x_field_size, self.y_field_size))
         self.atom_captured_event: bool = False
         self.is_surface_changed_event: bool = True    # это событие оптимизирует нагрузку на процессор
         self.atom_release_event: bool = False
-        self.append_unique_atom_event: bool = False
+        self.append_unique_atom_event: bool = False   # todo переместить все от чего зависит graph в отдельный класс
         self.__tool = Tool()
         self.dto_x = Dto(Dto.SERVO_X, self.surface_data, self.__tool)
         self.dto_y = Dto(Dto.SERVO_Y, self.surface_data, self.__tool)
         self.dto_z = Dto(Dto.SERVO_Z, self.surface_data, self.__tool)
         self.dto_z.set_val((0, 0, MAX))
-        self.server = server(self.handle_server_data)
         self.atom_collection = AtomCollection(self.__tool)
+        self.touching_surface_event = Event()
         self.__origin = Origin()
+        self.scan_transformer = ScanTransformer()
+        self.lapshin_searcher, \
+        self.walker_by_features, \
+        self.structure_of_feature = Factory.create_lapshin_algorithm(self.create_scanner(self.touching_surface_event))
+
+    def create_scanner(self, touching_surface_event) -> Scanner:
+        get_val_func = self.get_dto_val
+        set_x_func = self.set_val_dto_curried(DTO_X)
+        set_y_func = self.set_val_dto_curried(DTO_Y)
+        push_coord_to_mk = self.push_coord_to_mk
+
+        return Scanner(
+            get_val_func,
+            set_x_func,
+            set_y_func,
+            touching_surface_event,
+            self.surface_data,
+            push_coord_to_mk,
+            SLEEP_BETWEEN_SCAN_ITERATION
+        )
+
+    def del_surface_data(self):
+        self.surface_data = np.zeros((self.x_field_size, self.y_field_size))
+        self.is_surface_changed_event = True
+
+    def reset_offset(self):
+        self.server.send_data_to_all_clients('{"reset": 1}')
+        self.is_surface_changed_event = True
+
+    def pause_lapshin(self):
+        self.lapshin_searcher.pause_algorithm()
+        self.is_surface_changed_event = True
+
+    def del_lapshin_data(self):
+        self.structure_of_feature.reset_structure()
+
+    def display_lapshin(self):
+        atoms = self.structure_of_feature.get_all_features()
+        if atoms is None: return
+        surface = SurfaceGenerator(76, 20, atoms).generate()
+        self.surface_data = surface
+        self.is_surface_changed_event = True
+
+    def remove_noise(self):
+        if self.scan_transformer.is_surfaces_not_empty():
+            self.surface_data = self.scan_transformer.average_by_z()
+        self.is_surface_changed_event = True
+
+    def remember_surface(self):
+        self.scan_transformer.append_surface(self.surface_data.copy())
+
+    def gen_new_noise(self):  #метод для тестовой мк заглушки
+        self.server.send_data_to_all_clients('{"sensor": "gen_new_noise", "value": 1}')
 
     def tool_is_coming_down(self):
         return self.__tool.is_coming_down
@@ -42,16 +104,18 @@ class AtomsLogic:
     def set_scan_mode(self, pred: bool) -> None:
         self.__tool.scan_mode = pred
 
-    def set_val_to_dto(self, dto_str: str, coordinates: Tuple[int, int, int]) -> None:
+    def set_val_to_dto(self, dto_str: str, coordinates: Tuple[int, int, int], is_auto: bool = False) -> None:
         coordinates_int = tuple(map(int, coordinates))
         dto_name = 'dto_' + dto_str
         dto = getattr(self, dto_name, INVALID_DTO)
         if dto == INVALID_DTO:
             raise ValueError(dto)
         dto.validate_val(coordinates_int)
+        dto.set_val(coordinates_int)
+        # self.update_tool_coordinate(False)  //todo вернуть это, когда в графике перейдет на событие new_point
+        self.push_coord_to_mk(dto_str, is_auto)
         if self.__tool.scan_mode and dto_str == DTO_Z:
             self.__update_existing_surface(coordinates_int)
-        dto.set_val(coordinates_int)
 
     def __update_existing_surface(self, coordinates: Tuple[int, ...]) -> None:
         if not self.__tool.is_surface \
@@ -65,10 +129,15 @@ class AtomsLogic:
         if data_dict == False:
             return
         try:
-            is_surface_ = self.__tool.scan_mode and self.__tool.is_coming_down and data_dict['sensor'] == 'surface'
+            is_surface_ = self.__tool.scan_mode and data_dict['sensor'] == 'surface'
             if is_surface_:
-                self.set_is_surface(bool(data_dict['val']))
-                self.__build_new_surface()
+                # self.__tool.is_coming_down = True
+                z_val_ = data_dict['z_val']
+                self.dto_z.set_val((self.dto_x.get_val(), self.dto_y.get_val(), z_val_ + DEPARTURE_BY_Z))
+                self.__tool.z = z_val_ + DEPARTURE_BY_Z
+                self.set_is_surface(True)
+                self.__build_new_surface(z_val_)
+                self.touching_surface_event.set()
             # if data_dict['sensor'] == 'atom':  # todo это будет событие atom_captured
             #     self.set_is_atom_captured(bool(data_dict['val']))
         except Exception:
@@ -88,9 +157,9 @@ class AtomsLogic:
             data_dict = self.remove_noise_and_parse_server_data(json_str, i)  # todo возможно лучше передавать сюда data.split('}')[i]
         return data_dict
 
-    def __build_new_surface(self):
+    def __build_new_surface(self, z: int):
         if self.is_surface():
-            self.surface_data[self.dto_y.get_val(), self.dto_x.get_val()] = self.dto_z.get_val() - CORRECTION_Z
+            self.surface_data[self.dto_y.get_val(), self.dto_x.get_val()] = z - CORRECTION_Z
             self.is_surface_changed_event = True
 
     def is_surface(self) -> bool:
@@ -122,7 +191,6 @@ class AtomsLogic:
                ((self.dto_x.get_val() % MULTIPLICITY == 0) or (self.dto_y.get_val() % MULTIPLICITY == 0) or (self.dto_z.get_val() % MULTIPLICITY == 0))
 
     def update_tool_coordinate(self) -> None:
-        self.__set_command_to_microcontroller()
         self.__tool.x = self.dto_x.get_val()
         self.__tool.y = self.dto_y.get_val()
         self.__tool.z = self.dto_z.get_val()
@@ -140,29 +208,47 @@ class AtomsLogic:
         z_max = np.amax(self.surface_data)
         self.set_val_to_dto(DTO_Z, (self.dto_x.get_val(), self.dto_y.get_val(), z_max + 10))
         self.update_tool_coordinate()
+        self.push_x_coord_to_mk()
         self.set_val_to_dto(DTO_X, self.get_origin_coordinate())
         self.update_tool_coordinate()
+        self.push_x_coord_to_mk()
         self.set_val_to_dto(DTO_Y, self.get_origin_coordinate())
         self.update_tool_coordinate()
+        self.push_x_coord_to_mk()
         self.set_val_to_dto(DTO_Z, self.get_origin_coordinate())
         self.update_tool_coordinate()
+        self.push_x_coord_to_mk()
 
-    def __set_command_to_microcontroller(self) -> None:
+    def __set_command_to_microcontroller(self) -> None:  # может приходить False
         if self.dto_x.get_val() != self.__tool.x:
-            self.server.send_data_to_all_clients(json.dumps(self.dto_x.to_dict()))
+            self.push_x_coord_to_mk()
             return
         if self.dto_y.get_val() != self.__tool.y:
-            self.server.send_data_to_all_clients(json.dumps(self.dto_y.to_dict()))
+            self.push_y_coord_to_mk()
             return
-        if self.dto_z.get_val() != self.__tool.z:
-            data = self.__invert_data(self.dto_z.to_dict())
-            self.server.send_data_to_all_clients(json.dumps(data))
-            return
+        # if self.dto_z.get_val() != self.__tool.z:
+        #     self.server.send_data_to_all_clients(json.dumps(self.dto_z.to_dict()))
+        #     return
 
-    @staticmethod
-    def __invert_data(data: dict):
-        data['value'] = str(MAX - int(data['value']))
-        return data
+    def push_coord_to_mk(self, coord: str, auto_mod: bool = False) -> None:
+        if coord == DTO_X: self.push_x_coord_to_mk(auto_mod)
+        if coord == DTO_Y: self.push_y_coord_to_mk(auto_mod)
+        if coord == DTO_Z: self.push_z_coord_to_mk(auto_mod)
+
+    def push_z_coord_to_mk(self, auto_mod: bool = False) -> None:
+        dict = self.dto_z.to_dict()
+        dict['auto'] = int(auto_mod)
+        self.server.send_data_to_all_clients(json.dumps(dict))
+
+    def push_x_coord_to_mk(self, auto_mod: bool = False) -> None:
+        dict = self.dto_x.to_dict()
+        dict['auto'] = int(auto_mod)
+        self.server.send_data_to_all_clients(json.dumps(dict))
+
+    def push_y_coord_to_mk(self, auto_mod: bool = False) -> None:
+        dict = self.dto_y.to_dict()
+        dict['auto'] = int(auto_mod)
+        self.server.send_data_to_all_clients(json.dumps(dict))
 
     def get_dto_val(self, dto_str: str) -> int:
         dto_name = 'dto_' + dto_str
@@ -173,5 +259,6 @@ class AtomsLogic:
 
     def set_val_dto_curried(self, dto_str: str):
         def wrap(coordinates: Tuple[int, int, int]):
-            self.set_val_to_dto(dto_str, coordinates)
+            self.set_val_to_dto(dto_str, coordinates, True)
+
         return wrap

@@ -2,7 +2,7 @@ import unittest
 from unittest import TestCase
 from unittest.mock import Mock, MagicMock, call
 
-from controller.core_logic.atom import Atom
+from controller.core_logic.lapshin_algorithm.entity.atom import Atom
 from controller.frontend.graph import COLOR_ATOM, COLOR_TIP, COLOR_ORIGIN
 from tests.fake_graph_frame import FakeGraphFrame
 
@@ -26,6 +26,7 @@ class TestGraphWithFakeAtomLogic(TestCase):
 
     def test_update_graph_when_is_not_new_point(self):
         self.atoms_logic.is_new_point = MagicMock(return_value=False)
+        self.atoms_logic.is_surface_changed_event = False
         graph = self.__get_graph_obj()
         graph.update_graph_data_algorithm()
 
